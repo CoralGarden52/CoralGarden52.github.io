@@ -4,7 +4,14 @@ layout: page
 
 # About Me
 
-<img src="https://caihanlin.com/caihanlin.jpg" class="floatpic">
+<center>
+<img src = "/images/Yicai.jpg">
+</center>
+
+
+
+<img src="https://xukuncai1998.github.io/caihanlin.jpg" class="flatpic" width="360" h
+eight="480">
 
 Here is **Hanlin Cai (Lance, 蔡汉霖)**.<br>
 

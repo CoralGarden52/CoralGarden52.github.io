@@ -1,23 +1,23 @@
-title: Hanlin Cai
+title: Yicai ning
 # tagline: Here is personal website of Hanlin Cai. Powered by Jekyll, based on the Minimal Mistakes theme.
 # description: Two roads diverged in woods, I took the one less traveled by.
 #Comment out url when working locally to resolve base urls correctly
-url: https://caihanlin.com
+url: https://coralgarden52.github.io/
 
 # Owner/author information
 owner:
-  name: Hanlin Cai
-  avatar: hanlin.jpg
+  name: Yicai ning
+  avatar: Yicai.jpg
   # bio: Two roads diverged in woods, I took the one less traveled by.
-  email: hanlin.cai@ieee.org
-  cv: https://caihanlin.com/file/CV-HanlinCAI.pdf
+  email: ningyicai3976@163.com
+  cv: https://coralgarden52.github.io/file/CV-HanlinCAI.pdf
   # Social networking links are used in author-bio sidebar. Update and remove as you like.
-  twitter: lancecai2002
-  github: GuangLun2000
-  linkedin: hanlincai
-  scholar: https://scholar.google.com/citations?user=8igSoWgAAAAJ
+  # twitter: lancecai2002
+  github: coralgarden52
+  # # linkedin: hanlincai
+  # scholar: https://scholar.google.com/citations?user=8igSoWgAAAAJ
   bilibili: 594030035
-  researchgate: https://www.researchgate.net/profile/Hanlin-Cai
+  # researchgate: https://www.researchgate.net/profile/Hanlin-Cai
   zhihu: https://www.zhihu.com/people/chlire
   # facebook: caihanlin2002
   # instagram: lancecai2002
@@ -36,6 +36,8 @@ google_verify: "SkiyuGpJOKT74vv5GmXLvYXXDkXy4v8VWPtbelYz3Hs"
 # Links to include in top navigation
 # For external links add external: true
 links:
+    - title: Blogs
+    url: /blogs/
   - title: About Me
     url: /
   - title: Publications
@@ -46,8 +48,7 @@ links:
     url: /hobbies/
   # - title: Startups
     # url: /startups/
-  - title: Blogs
-    url: /blogs/
+
 
 # http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 timezone: China/Beijing
