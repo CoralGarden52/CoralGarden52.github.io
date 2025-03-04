@@ -4,9 +4,9 @@ permalink: /publications/index.html
 title: Publications
 ---
 
-> (†: equal contribution, ~: corresponding author)
+<!-- > (†: equal contribution, ~: corresponding author) -->
 
-## Working Paper
+<!-- ## Working Paper
 
 - [Semantic Learning for Molecular Communication in Internet of Bio-Nano Things](https://arxiv.org/abs/2502.08426)<br>**Hanlin Cai**, Ozgur B. Akan<br>[arXiv](https://arxiv.org/abs/2502.08426). February, 2025.<br>
 
@@ -23,24 +23,20 @@ title: Publications
 
 <br>
 
----
+--- -->
 
-## Degree Thesis
+## 学位论文
 
-- [Hybrid Detection Mechanism for Spoofing Attacks in Bluetooth Low Energy Networks](https://caihanlin.com/mypaper/thesis/UG-thesis.pdf)<br>**Hanlin Cai** (Advisor: Zhezhuang Xu). **Best Bachelor Thesis Award** (Top 1/300).<br>Proposal paper has been accepted by AAAI 2024<br>Expect to submit a long paper to KDD 2024.
-
-- [Industrial Inspection System based on Intelligent IoT and Bionic Quadruped Robot](https://caihanlin.com/mypaper/thesis/IP-report.pdf)<br>**Hanlin Cai** (Advisor: Zhezhuang Xu, Yuxiong Xia). Junior-year Intern Program.<br>Industrial Placement at China Huading Tech and IIoT Lab<br>
+- 基于图脉冲神经网络的抑郁脑电信号检测算法研究<br>
 
   <br>
 
 ---
 
-## Early Project
+## 项目
 
-- [Proposal: Securing Billion Bluetooth Devices leveraging Learning-based Techniques](https://ojs.aaai.org/index.php/AAAI/article/view/30544)<br>*Final year project (FYP).*<br>**Hanlin Cai** (Advisors: Zhezhuang Xu, Tozammel Hossain)<br>The 38th Annual AAAI Conference on Artificial Intelligence (AAAI 2024), Undergraduate Consortium.<br>Vancouver, Canada. February, 2024.
-
-- Optimizing Traffic Sign Detection System Using Deep Residual Neural Networks Combined with Analytic Hierarchy Process Model<br>*Junior-year course design.*<br>**Hanlin Cai**, Zheng Li, Jiaqi Hu, Wei Hong Lim, Sew Sun Tiang, Mastaneh Mokayef, Chin Hong Wong<br>The 28th International Conference on Artificial Life and Robotics.<br>Beppu, Japan. February, 2023.<br>Recommended for expanding publication in the Journal of Advances in Artificial Life Robotics (EI Compendex).
-
-- An IoT Garbage Monitoring System for Effective Garbage Management<br>*First-year course design.*<br>**Hanlin Cai**, Jiaqi Hu, Zheng Li, Wei Hong Lim, Mastaneh Mokayef, Chin Hong Wong<br>The 4th International Conference on Computer Engineering, Network and Intelligent Multimedia<br>Surabaya, Indonesia. November, 2022 (EI Compendex).<br>
+- 东软公众环保监督系统 2024年05月	-	2024年07月
+   - 内容：项目分为四端架构：公众监督员端（NEPS端）、AQI检测网格员端（NEPG端）、系统管理端（	NEPM端）、可视化大屏端（NEPV端）。其中NEPS端完成公众监督空气质量的全部业务流程；NEPG端完成对公众监督员反馈的空气质量问题做AQI确认的全部业务流程；NEPM端完成对公众监督员反馈的空气质量问题做指派处理，并对AQI检测网格员提交的AQI数据做统计处理，用于给决策者决策的依据；NEPV端将系统管理端统计数据用可视化的方式展示给决策者。
+   - 贡献：分析项目的需求，负责四端的前端代码的编写，并负责项目进度的管理以及项目的测试工作。<br>
 
   <br>

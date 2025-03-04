@@ -12,6 +12,5 @@ title: Hobbies
 
 <img src="/images/dancing1.jpg"><br>
 <img src="/images/dancing2.jpg"><br>
-<img src="/images/cat.jpg"><br>
 
 
