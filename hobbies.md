@@ -10,11 +10,8 @@ title: Hobbies
 
 ## 照片墙
 
-<div class="third">
-  <img src="/images/dancing1.jpg" style="display:block;">
-  <img src="/images/dancing2.jpg" style="display:block;">
-  <img src="/images/cat.jpg" style="display:block;">
-</div>
-<br>
+<img src="/images/dancing1.jpg"><br>
+<img src="/images/dancing2.jpg"><br>
+<img src="/images/cat.jpg"><br>
 
 
