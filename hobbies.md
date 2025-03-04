@@ -1,7 +1,7 @@
 ---
 layout: page
 permalink: /hobbies/index.html
-title: Hobbies
+title: 爱好
 ---
 
 # 爱好

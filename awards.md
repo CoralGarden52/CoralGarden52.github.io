@@ -1,7 +1,7 @@
 ---
 layout: page
 permalink: /awards/index.html
-title: Awards
+title: 奖项
 ---
 
 > 更新: 2025年3月4号
