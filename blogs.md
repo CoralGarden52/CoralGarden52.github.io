@@ -4,9 +4,9 @@ permalink: /blogs/index.html
 title: Blogs
 ---
 
-## Chinese Blogs 中文博客
+## 博客
 
-### 2024
+<!-- ### 2024
 
 - [22岁，站在人生的交叉路口](https://caihanlin.com/blogs/22yrs)
 - [AAAI 2024 温哥华参会实录](https://caihanlin.com/blogs/aaai-24/)
@@ -27,29 +27,23 @@ title: Blogs
 ### 2021
 
 - [19岁，山高路亦远](https://caihanlin.com/blogs/19yrs)<br>
-- [星野学社实习回忆录](https://caihanlin.com/blogs/star)
+- [星野学社实习回忆录](https://caihanlin.com/blogs/star) -->
 
-### 2020
-
-- [18岁，缓慢受锤的黄金年代](https://caihanlin.com/blogs/18yrs)<br>
-- [本科博客，笔记，回忆录](https://mieclance.club/)
-
+### 2025
+#### CSDN
+- [pip快速安装python软件包的两种方式（使用国内镜像和下载whl文件）](https://blog.csdn.net/m0_63834575/article/details/145411367?spm=1001.2014.3001.5501)<br>
+- [【Zotero插件】Easier Citation的安装和使用教程](https://blog.csdn.net/m0_63834575/article/details/145371500?spm=1001.2014.3001.5501)<br>
+- [力扣215.数组中的第k个最大元素（满足时间复杂度O(n)的两种写法）](https://blog.csdn.net/m0_63834575/article/details/145223015?spm=1001.2014.3001.5501)<br>
+#### 稀土掘金
+- [Docker Desktop的历史版本安装教程] (https://juejin.cn/post/7464537695172182043)<br>
+- [cline插件安装不上？试试将vscode版本安装到最新](https://juejin.cn/post/7464956894093541386)
 <br>
 
-## Leave a Message 欢迎留言
+<!-- ## Leave a Message 欢迎留言
 
 <br>
 
 {% include disqus.html %} 
 
-<br>
+<br> -->
 
-## Web Star History 点赞记录
-
-- [Leave a star if you like it 🥰](https://github.com/CoralGarden52/CoralGarden52.github.io) 
-- 如果你喜欢这个站点，请为我的[Github仓库](https://github.com/CoralGarden52/CoralGarden52.github.io)留下一个Star吧！
-
-<br>[![Star History Chart](https://api.star-history.com/svg?repos=GuangLun2000/GuangLun2000.github.io&type=Date)](https://star-history.com/#GuangLun2000/GuangLun2000.github.io&Date)
-
-
-<br>

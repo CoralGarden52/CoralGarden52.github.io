@@ -7,7 +7,7 @@ layout: page
 <center>
 <img src = "/images/Yicai.jpg">
 </center>
-
+<br>
 
 我叫宁艺彩。<br>
 
