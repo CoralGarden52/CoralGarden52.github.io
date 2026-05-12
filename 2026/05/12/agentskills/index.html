@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Agent Skills | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/05/12/agentskills/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="" />
+  
+  <meta name="description" content="面试小记这篇文章可以按“是什么、为什么、怎么设计、怎么评估、怎么落地”来记。Agent Skills 本质上是一种给 AI Agent 扩展能力的开放格式，把领域知识、项目规范、固定流程、脚本、模板和参考资料封装成可复用的技能包，让 Agent 在需要时按需加载，而不是每次都重新推理。  网站&#x2F;项目核心：Agent Skills 解决的是 Agent 缺少项目上下文、团队规范、领域知识和">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent Skills">
+<meta property="og:url" content="http://example.com/2026/05/12/agentskills/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试小记这篇文章可以按“是什么、为什么、怎么设计、怎么评估、怎么落地”来记。Agent Skills 本质上是一种给 AI Agent 扩展能力的开放格式，把领域知识、项目规范、固定流程、脚本、模板和参考资料封装成可复用的技能包，让 Agent 在需要时按需加载，而不是每次都重新推理。  网站&#x2F;项目核心：Agent Skills 解决的是 Agent 缺少项目上下文、团队规范、领域知识和">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/agentskills/agentskills-cover.png">
+<meta property="article:published_time" content="2026-05-12T13:17:09.089Z">
+<meta property="article:modified_time" content="2026-05-12T14:08:40.977Z">
+<meta property="article:author" content="CoralGarden52">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/agentskills/agentskills-cover.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Agent Skills","description":"面试小记这篇文章可以按“是什么、为什么、怎么设计、怎么评估、怎么落地”来记。Agent Skills 本质上是一种给 AI Agent 扩展能力的...","image":"http://example.com/2026/05/12/agentskills/assets/posts/agentskills/agentskills-cover.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-05-12T13:17:09.089Z","dateModified":"2026-05-12T14:08:40.977Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/05/12/agentskills/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/05/12/agentskills/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Agent Skills</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-05-12T13:17:09.089Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-05-12</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~7.71K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h2 id="面试小记"><a href="#面试小记" class="headerlink" title="面试小记"></a>面试小记</h2><p>这篇文章可以按“是什么、为什么、怎么设计、怎么评估、怎么落地”来记。Agent Skills 本质上是一种给 AI Agent 扩展能力的开放格式，把领域知识、项目规范、固定流程、脚本、模板和参考资料封装成可复用的技能包，让 Agent 在需要时按需加载，而不是每次都重新推理。</p>
+<ol>
+<li><p>网站&#x2F;项目核心：Agent Skills 解决的是 Agent 缺少项目上下文、团队规范、领域知识和工具调用方式的问题。面试时可以说，它把一次性的 prompt 经验沉淀成可版本化、可复用、可协作的工程资产。</p>
+</li>
+<li><p>Progressive Disclosure：这是核心机制。启动时只暴露 <code>name</code> 和 <code>description</code>，命中后加载 <code>SKILL.md</code>，执行时再读取 <code>scripts/</code>、<code>references/</code>、<code>assets/</code> 等资源。优点是节省上下文、降低噪音、提高技能触发精度。</p>
+</li>
+<li><p>标准结构：最小结构是一个目录加 <code>SKILL.md</code>。<code>scripts/</code> 放可执行脚本，<code>references/</code> 放长文档，<code>assets/</code> 放模板、图片、数据等资源。<code>description</code> 很关键，因为 Agent 主要靠它判断什么时候加载技能。</p>
+</li>
+<li><p>Quickstart：创建第一个 Skill 的重点不是复杂代码，而是清楚描述技能何时使用、如何执行。一个很轻量的 <code>SKILL.md</code> 也能工作，说明 Skills 的门槛低，适合把小而稳定的流程先沉淀下来。</p>
+</li>
+<li><p>最佳实践：Skill 的粒度要像设计函数一样，既不能太窄导致一次任务加载很多技能，也不能太宽导致误触发。内容应写项目特定规则、易错点、边界条件和真实失败案例，而不是解释通用概念。</p>
+</li>
+<li><p>有效指令写法：高质量 Skill 通常包含 gotchas、输出模板、checklist、validation loop、plan-validate-execute。面试时可以强调，给 Agent 写指令不是堆说明，而是把流程、格式、验证和异常处理结构化。</p>
+</li>
+<li><p>优化 <code>description</code>：<code>description</code> 决定技能是否会被正确激活。好的描述要说明“什么时候用”和“什么时候不用”，避免太宽导致误触发，太窄导致漏触发。可以用正负样本测试触发率。</p>
+</li>
+<li><p>评估 Skill：评估不能只看主观感觉，要设计 benchmark、assertion 和对照实验。把使用 Skill 与不使用 Skill 的输出对比，结合 failed assertions、人类反馈和执行日志迭代改进。</p>
+</li>
+<li><p>使用脚本：脚本适合处理可重复、可验证、容易出错的操作。脚本要面向非交互式 Agent 环境，避免密码框、确认菜单、TTY prompt；复杂命令应封装进 <code>scripts/</code> 并尽量固定工具版本。</p>
+</li>
+<li><p>客户端接入：客户端支持 Skills 的流程包括发现技能目录、解析 <code>SKILL.md</code> frontmatter、构造 skill catalog、激活技能、管理技能上下文。安全上要注意项目级 Skills 可能来自不可信仓库，加载前应有信任机制。</p>
+</li>
+<li><p>Client Showcase：这个页面主要说明生态位：Agent Skills 是开放格式，目标是被不同 Agent 客户端支持。面试时可以把它理解为一种跨客户端的能力扩展规范。</p>
+</li>
+<li><p>总体价值：Agent Skills 的价值不只是“让模型知道更多”，而是把 Agent 的行为约束、知识、工具和验证方式工程化。它让 Agent 更稳定、更可复用、更容易团队协作，也更容易评估质量。<br>下面是我对 <strong>agentskills.io</strong> 的阅读总结，原站链接：<a target="_blank" rel="noopener" href="https://agentskills.io/">https://agentskills.io/</a></p>
+</li>
+</ol>
+<h2 id="1-这个网站-项目在讲什么？"><a href="#1-这个网站-项目在讲什么？" class="headerlink" title="1. 这个网站&#x2F;项目在讲什么？"></a>1. 这个网站&#x2F;项目在讲什么？</h2><p><strong>Agent Skills</strong> 是一种给 AI Agent 扩展能力的开放格式。它的核心思想很简单：把某一类任务所需的专业知识、流程、脚本、模板、参考资料，打包成一个文件夹，让 Agent 在需要时加载使用。官方给出的最小结构是一个目录里包含 <code>SKILL.md</code>，可选地包含 <code>scripts/</code>、<code>references/</code>、<code>assets/</code> 等目录。</p>
+<p>可以把它理解为：</p>
+<blockquote>
+<p>Agent 的“可复用技能包”或“任务插件规范”。</p>
+</blockquote>
+<p>它解决的问题是：Agent 本身虽然有通用能力，但在实际项目中经常缺少<strong>项目上下文、团队规范、固定流程、领域知识、工具调用方式</strong>。Agent Skills 通过标准化目录和说明文件，把这些知识封装起来，使 Agent 能够按需调用，而不是每次都从零开始推理。</p>
+<hr>
+<h2 id="2-核心机制：Progressive-Disclosure-渐进式披露"><a href="#2-核心机制：Progressive-Disclosure-渐进式披露" class="headerlink" title="2. 核心机制：Progressive Disclosure 渐进式披露"></a>2. 核心机制：Progressive Disclosure 渐进式披露</h2><p>Agent Skills 最重要的设计是 <strong>渐进式披露</strong>。也就是不是一开始把所有技能的完整内容都塞进上下文，而是分三层加载：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>加载内容</th>
+<th>触发时机</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Discovery</td>
+<td>只加载 <code>name</code> 和 <code>description</code></td>
+<td>Agent 启动时</td>
+<td>让 Agent 知道有哪些技能</td>
+</tr>
+<tr>
+<td>Activation</td>
+<td>加载完整 <code>SKILL.md</code></td>
+<td>用户任务匹配技能描述时</td>
+<td>给 Agent 具体执行说明</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td>按需读取脚本、参考文件、模板等</td>
+<td>执行任务时</td>
+<td>完成复杂任务</td>
+</tr>
+</tbody></table>
+<p>这种设计可以让 Agent 同时拥有很多技能，但不会一开始消耗大量上下文。官方建议每个技能的 <code>SKILL.md</code> 主体控制在 5000 tokens 以内，主文件最好少于 500 行；更长的内容应该拆到 <code>references/</code> 或其他资源文件中。</p>
+<hr>
+<h2 id="3-Agent-Skill-的标准结构"><a href="#3-Agent-Skill-的标准结构" class="headerlink" title="3. Agent Skill 的标准结构"></a>3. Agent Skill 的标准结构</h2><p>一个 Skill 本质上是一个目录，最小结构如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">skill-name/</span><br><span class="line">├── SKILL.md</span><br><span class="line">├── scripts/</span><br><span class="line">├── references/</span><br><span class="line">├── assets/</span><br><span class="line">└── ...</span><br></pre></td></tr></table></figure>
+
+<p>其中只有 <code>SKILL.md</code> 是必需的。<code>scripts/</code> 用于放可执行代码，<code>references/</code> 用于放额外文档，<code>assets/</code> 用于放模板、图片、数据文件等资源。</p>
+<p><code>SKILL.md</code> 必须由两部分组成：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">name: skill-name</span><br><span class="line"><span class="section">description: A description of what this skill does and when to use it.</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line">这里写具体的执行说明。</span><br></pre></td></tr></table></figure>
+
+<p>Frontmatter 中：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>是否必需</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>name</code></td>
+<td>必需</td>
+<td>技能名，必须和目录名一致，只能小写字母、数字、连字符</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>必需</td>
+<td>描述技能做什么、什么时候用，是触发技能的关键</td>
+</tr>
+<tr>
+<td><code>license</code></td>
+<td>可选</td>
+<td>技能许可证</td>
+</tr>
+<tr>
+<td><code>compatibility</code></td>
+<td>可选</td>
+<td>环境要求，例如 Python 版本、依赖工具、网络要求</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>可选</td>
+<td>自定义元数据</td>
+</tr>
+<tr>
+<td><code>allowed-tools</code></td>
+<td>可选</td>
+<td>实验字段，表示预批准工具</td>
+</tr>
+</tbody></table>
+<p>其中 <code>description</code> 非常关键，因为 Agent 在启动阶段只看 <code>name</code> 和 <code>description</code> 来判断什么时候加载技能。</p>
+<hr>
+<h2 id="4-Quickstart：如何创建第一个-Skill？"><a href="#4-Quickstart：如何创建第一个-Skill？" class="headerlink" title="4. Quickstart：如何创建第一个 Skill？"></a>4. Quickstart：如何创建第一个 Skill？</h2><p>Quickstart 页面用“掷骰子”作为示例。它要求在项目中创建：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.agents/skills/roll-dice/SKILL.md</span><br></pre></td></tr></table></figure>
+
+<p>示例内容大致是：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">name: roll-dice</span><br><span class="line"><span class="section">description: Roll dice using a random number generator. Use when asked to roll a die...</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line">To roll a die, use the following command...</span><br></pre></td></tr></table></figure>
+
+<p>然后在 VS Code + GitHub Copilot Agent mode 中输入 <code>/skills</code> 检查技能是否被识别，再让 Agent 执行 “Roll a d20”。这个例子说明，一个 Skill 可以非常轻量，甚至不到 20 行，只要描述清楚，Agent 就能在合适的时候激活它。</p>
+<p>Quickstart 还强调：同一个 Skill 不只适用于 VS Code，Agent Skills 是开放格式，理论上可以被 Claude Code、OpenAI Codex 等兼容 Agent 使用。</p>
+<hr>
+<h2 id="5-Skill-创作者最佳实践"><a href="#5-Skill-创作者最佳实践" class="headerlink" title="5. Skill 创作者最佳实践"></a>5. Skill 创作者最佳实践</h2><p>Best practices 页面强调：不要让 LLM 凭空写一个泛泛的 Skill，而应该从真实任务、真实项目资料、真实错误中提炼技能。好的 Skill 应该来自：</p>
+<ol>
+<li>真实执行过的任务流程；</li>
+<li>你对 Agent 的纠正记录；</li>
+<li>项目文档、API 规范、Schema、配置文件；</li>
+<li>Code review 评论、Issue、修复补丁；</li>
+<li>真实失败案例及解决方法。</li>
+</ol>
+<h3 id="写-Skill-的核心原则"><a href="#写-Skill-的核心原则" class="headerlink" title="写 Skill 的核心原则"></a>写 Skill 的核心原则</h3><p><strong>第一，只写 Agent 不知道、容易做错的内容。</strong><br>不要解释“什么是 PDF”“什么是 HTTP”这种通用知识，而要写项目特定规则、工具选择、非显然边界条件。例如 PDF 技能里直接写“文本提取默认用 pdfplumber，扫描件再用 OCR”，比解释 PDF 格式更有价值。</p>
+<p><strong>第二，技能粒度要适中。</strong><br>过窄会导致一个任务要加载多个技能，过宽会导致触发不精准。官方类比为“像设计函数一样设计 Skill”：一个 Skill 应该封装一个连贯的工作单元。</p>
+<p><strong>第三，控制详细程度。</strong><br>过于全面的规则反而会让 Agent 难以判断当前任务该用哪部分说明。更推荐“简洁步骤 + 工作示例 + 关键边界条件”。</p>
+<p><strong>第四，脆弱任务要更严格，开放任务要更灵活。</strong><br>比如数据库迁移这种 fragile task，可以要求 Agent 精确执行某个命令；代码审查这种任务，则可以给检查点而不是规定每一步。</p>
+<hr>
+<h2 id="6-有效-Skill-指令的写法"><a href="#6-有效-Skill-指令的写法" class="headerlink" title="6. 有效 Skill 指令的写法"></a>6. 有效 Skill 指令的写法</h2><p>官方推荐几种结构：</p>
+<h3 id="1）Gotchas：易错点"><a href="#1）Gotchas：易错点" class="headerlink" title="1）Gotchas：易错点"></a>1）Gotchas：易错点</h3><p>这是很重要的部分。把 Agent 容易犯错的非显然事实放在 <code>SKILL.md</code> 中，例如：</p>
+<ul>
+<li>某个表使用软删除，查询必须加 <code>deleted_at IS NULL</code>；</li>
+<li>不同系统中的用户 ID 字段名不一样；</li>
+<li><code>/health</code> 只代表 Web 服务活着，不代表数据库连接正常。</li>
+</ul>
+<p>这类内容比泛泛的“注意错误处理”更有价值。</p>
+<h3 id="2）输出模板"><a href="#2）输出模板" class="headerlink" title="2）输出模板"></a>2）输出模板</h3><p>如果需要固定输出格式，直接给模板，而不是用自然语言描述格式。Agent 对具体结构的模仿通常比抽象描述更稳定。</p>
+<h3 id="3）Checklist"><a href="#3）Checklist" class="headerlink" title="3）Checklist"></a>3）Checklist</h3><p>对于多步骤任务，用 checklist 防止 Agent 跳步。例如表单处理可以写成：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> [ ] 分析表单</span><br><span class="line"><span class="bullet">-</span> [ ] 创建字段映射</span><br><span class="line"><span class="bullet">-</span> [ ] 验证映射</span><br><span class="line"><span class="bullet">-</span> [ ] 填充表单</span><br><span class="line"><span class="bullet">-</span> [ ] 验证输出</span><br></pre></td></tr></table></figure>
+
+<p>这种结构适合有依赖关系和验证门槛的任务。</p>
+<h3 id="4）Validation-loop"><a href="#4）Validation-loop" class="headerlink" title="4）Validation loop"></a>4）Validation loop</h3><p>让 Agent 做完一步后运行验证脚本，如果失败就根据错误修复，再重复验证，直到通过。这个思想对代码生成、表单填写、数据处理都很有价值。</p>
+<h3 id="5）Plan-validate-execute"><a href="#5）Plan-validate-execute" class="headerlink" title="5）Plan-validate-execute"></a>5）Plan-validate-execute</h3><p>对于批量操作或有破坏性的操作，先生成计划，再验证计划，最后执行。例如先提取 PDF 表单字段，再生成 <code>field_values.json</code>，再用脚本验证字段是否存在，最后填表。</p>
+<hr>
+<h2 id="7-如何优化-description"><a href="#7-如何优化-description" class="headerlink" title="7. 如何优化 description"></a>7. 如何优化 <code>description</code></h2><p><code>description</code> 是技能能否被正确触发的关键。官方明确说：技能只有被激活才有用，而 <code>description</code> 是 Agent 判断是否加载技能的主要机制。写得太窄会漏触发，写得太宽会误触发。</p>
+<p>推荐写法：</p>
+<ul>
+<li>用命令式表达，例如 “Use this skill when…”；</li>
+<li>关注用户意图，而不是内部实现；</li>
+<li>适当“pushy”，把适用场景说清楚；</li>
+<li>保持简洁，不能超过 1024 字符。</li>
+</ul>
+<p>官方建议准备约 20 条触发评估样本：</p>
+<ul>
+<li>8–10 条 should-trigger；</li>
+<li>8–10 条 should-not-trigger；</li>
+<li>包含正式表达、口语表达、错别字、缩写、明确&#x2F;不明确任务、短提示&#x2F;长提示等。</li>
+</ul>
+<p>负样本要选择“近似但不该触发”的例子，而不是明显无关的例子。例如 CSV 分析技能的负样本不应该是“今天天气怎么样”，而应该是“写一个 Python 脚本读取 CSV 并上传数据库”，因为它包含 CSV 但任务本质是 ETL，不是分析。</p>
+<p>还建议多次运行同一个 query，因为模型行为有随机性。可以用触发率判断是否通过，例如运行 3 次，触发率超过 0.5 才算 should-trigger 通过。</p>
+<hr>
+<h2 id="8-如何评估-Skill-输出质量"><a href="#8-如何评估-Skill-输出质量" class="headerlink" title="8. 如何评估 Skill 输出质量"></a>8. 如何评估 Skill 输出质量</h2><p>Evaluating skills 页面强调：不要只试一次觉得能用就结束，而要做结构化评测。一个测试用例包含：</p>
+<ol>
+<li>用户 prompt；</li>
+<li>期望输出；</li>
+<li>可选输入文件。</li>
+</ol>
+<p>评估时建议每个测试都跑两遍：</p>
+<ul>
+<li>with skill：加载技能；</li>
+<li>without skill：不加载技能，作为 baseline。</li>
+</ul>
+<p>这样可以判断 Skill 是否真正提升了质量，而不是模型本来就能完成。</p>
+<p>评估结果要记录：</p>
+<ul>
+<li>输出文件；</li>
+<li>token 消耗；</li>
+<li>耗时；</li>
+<li>assertion 评分结果；</li>
+<li>汇总 benchmark。</li>
+</ul>
+<h3 id="Assertion-设计"><a href="#Assertion-设计" class="headerlink" title="Assertion 设计"></a>Assertion 设计</h3><p>好的 assertion 应该可观察、可验证，例如：</p>
+<ul>
+<li>输出文件是合法 JSON；</li>
+<li>图表有坐标轴标签；</li>
+<li>报告包含至少 3 条建议。</li>
+</ul>
+<p>弱 assertion 包括：</p>
+<ul>
+<li>“输出很好”；</li>
+<li>“必须使用某个固定短语”。</li>
+</ul>
+<p>对于机械检查，比如 JSON 合法性、行数、文件尺寸，官方建议用脚本验证，而不是让 LLM 判断。</p>
+<h3 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h3><p>不要只看总分，还要分析模式：</p>
+<ul>
+<li>with skill 和 without skill 都通过的断言，说明 Skill 没带来增量；</li>
+<li>两者都失败，可能是测试太难或断言不合理；</li>
+<li>只有 with skill 通过，说明 Skill 真正有价值；</li>
+<li>结果波动大，说明指令可能有歧义；</li>
+<li>token 或时间异常，要看执行日志找瓶颈。</li>
+</ul>
+<p>最后用 failed assertions、人类反馈、执行日志一起改进 <code>SKILL.md</code>，反复迭代。</p>
+<hr>
+<h2 id="9-Skill-中如何使用脚本"><a href="#9-Skill-中如何使用脚本" class="headerlink" title="9. Skill 中如何使用脚本"></a>9. Skill 中如何使用脚本</h2><p>Using scripts 页面讲的是：Skill 可以直接要求 Agent 运行命令，也可以把可复用脚本打包到 <code>scripts/</code> 中。</p>
+<h3 id="一次性命令"><a href="#一次性命令" class="headerlink" title="一次性命令"></a>一次性命令</h3><p>如果现有工具已经能完成任务，可以直接在 <code>SKILL.md</code> 写命令，比如：</p>
+<ul>
+<li><code>uvx</code></li>
+<li><code>pipx</code></li>
+<li><code>npx</code></li>
+<li><code>bunx</code></li>
+<li><code>deno run</code></li>
+<li><code>go run</code></li>
+</ul>
+<p>官方建议固定版本，例如 <code>npx eslint@9.0.0</code>，避免未来工具更新导致行为变化。复杂命令则应该改成 <code>scripts/</code> 中的测试脚本。</p>
+<h3 id="脚本设计原则"><a href="#脚本设计原则" class="headerlink" title="脚本设计原则"></a>脚本设计原则</h3><p>脚本要面向 Agent 使用，因此要避免交互式输入。Agent 运行在非交互 shell 中，不能处理密码框、确认菜单、TTY prompt。输入应该通过命令行参数、环境变量或 stdin。</p>
+<p>还应做到：</p>
+<ul>
+<li>支持 <code>--help</code>，说明参数和示例；</li>
+<li>错误信息要具体，告诉 Agent 错在哪里、允许值是什么、下一步怎么修；</li>
+<li>输出尽量结构化，例如 JSON、CSV、TSV；</li>
+<li>数据输出走 stdout，日志和警告走 stderr；</li>
+<li>支持幂等、dry-run、安全默认值；</li>
+<li>大输出要分页或写文件，避免被工具截断。</li>
+</ul>
+<hr>
+<h2 id="10-Client-implementors：如何让自己的-Agent-支持-Skills"><a href="#10-Client-implementors：如何让自己的-Agent-支持-Skills" class="headerlink" title="10. Client implementors：如何让自己的 Agent 支持 Skills"></a>10. Client implementors：如何让自己的 Agent 支持 Skills</h2><p>面向客户端实现者的页面讲的是，如果你要开发一个 Agent 系统，如何接入 Agent Skills。核心流程是 5 步：</p>
+<h3 id="Step-1：发现-Skills"><a href="#Step-1：发现-Skills" class="headerlink" title="Step 1：发现 Skills"></a>Step 1：发现 Skills</h3><p>本地 Agent 通常扫描两个层级：</p>
+<ul>
+<li>项目级：当前项目里的技能；</li>
+<li>用户级：用户全局技能。</li>
+</ul>
+<p>推荐扫描 <code>.agents/skills/</code>，因为这是跨客户端共享的常见约定。也可以扫描客户端自己的目录，例如 <code>.&lt;your-client&gt;/skills/</code>。项目级技能优先级通常高于用户级技能。</p>
+<p>同时要考虑安全：项目级技能可能来自不可信仓库，因此可以要求用户先信任该目录，再加载其中的技能，避免陌生仓库静默注入指令。</p>
+<h3 id="Step-2：解析-SKILL-md"><a href="#Step-2：解析-SKILL-md" class="headerlink" title="Step 2：解析 SKILL.md"></a>Step 2：解析 <code>SKILL.md</code></h3><p>需要解析 YAML frontmatter，提取 <code>name</code>、<code>description</code>、可选字段和正文。官方建议实现上可以适度宽松：比如 name 不匹配目录名时可以警告但仍加载；description 缺失则应跳过，因为没有 description 就无法进行技能披露。</p>
+<h3 id="Step-3：把技能目录告诉模型"><a href="#Step-3：把技能目录告诉模型" class="headerlink" title="Step 3：把技能目录告诉模型"></a>Step 3：把技能目录告诉模型</h3><p>构造一个 skill catalog，包含每个技能的 <code>name</code>、<code>description</code>，可选包含 <code>location</code>。这个 catalog 可以放在 system prompt 中，也可以放在专门的 skill activation tool 描述里。</p>
+<h3 id="Step-4：激活-Skills"><a href="#Step-4：激活-Skills" class="headerlink" title="Step 4：激活 Skills"></a>Step 4：激活 Skills</h3><p>有两种常见方式：</p>
+<ol>
+<li><strong>文件读取激活</strong>：模型根据 catalog 自己读取对应 <code>SKILL.md</code>；</li>
+<li><strong>专用工具激活</strong>：提供 <code>activate_skill</code> 工具，输入 skill name，返回技能正文。</li>
+</ol>
+<p>专用工具的好处是可以控制返回内容、加结构化标签、列出资源文件、做权限控制、记录 analytics。官方建议如果使用专用工具，应把可选 skill name 限制成 enum，避免模型编造不存在的技能名。</p>
+<p>用户也应该能显式激活技能，例如通过 <code>/skill-name</code> 或 <code>$skill-name</code>。</p>
+<h3 id="Step-5：管理技能上下文"><a href="#Step-5：管理技能上下文" class="headerlink" title="Step 5：管理技能上下文"></a>Step 5：管理技能上下文</h3><p>技能一旦加载，应尽量保护它不被上下文压缩删除。因为 Skill 指令是持续有效的行为指导，如果中途丢失，Agent 的表现会隐性退化。还应该去重，避免同一个 Skill 被反复注入上下文。复杂任务也可以用 subagent 执行技能，把主对话保持简洁。</p>
+<hr>
+<h2 id="11-Client-Showcase-页面"><a href="#11-Client-Showcase-页面" class="headerlink" title="11. Client Showcase 页面"></a>11. Client Showcase 页面</h2><p>Client Showcase 页面目前内容很少，只说明它用于展示支持 Agent Skills 格式的 Agent 产品，但我在页面正文中没有看到具体产品列表。</p>
+<hr>
+<h2 id="12-总体评价：Agent-Skills-的设计价值"><a href="#12-总体评价：Agent-Skills-的设计价值" class="headerlink" title="12. 总体评价：Agent Skills 的设计价值"></a>12. 总体评价：Agent Skills 的设计价值</h2><p>这个项目的价值在于，它把“提示词工程”升级成了一个更工程化、可复用、可版本管理的机制。</p>
+<p>以前我们常见做法是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">把一大段 prompt 粘到 system prompt 或用户消息里。</span><br></pre></td></tr></table></figure>
+
+<p>Agent Skills 的做法是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">把某类任务的知识、流程、脚本、模板、评估方法封装成标准目录。</span><br><span class="line">Agent 只在需要时加载。</span><br></pre></td></tr></table></figure>
+
+<p>它更适合真实项目，因为它支持：</p>
+<ul>
+<li>项目级知识沉淀；</li>
+<li>团队规范复用；</li>
+<li>Agent 行为可审计；</li>
+<li>技能版本管理；</li>
+<li>脚本和模板打包；</li>
+<li>评估驱动迭代；</li>
+<li>跨 Agent 客户端复用。</li>
+</ul>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-05-12T14:08:40.977Z" itemprop="dateModified">最后编辑：2026-05-12</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" Hot100 刷题笔记" href="/2026/05/12/hot100刷题笔记/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                0
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/hot100%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/"><i class="fa fa-book"></i> Hot100 刷题笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/agentskills/"><i class="fa fa-book"></i> Agent Skills</a>
+            
+          
+        
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
