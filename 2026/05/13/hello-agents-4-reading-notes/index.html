@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Hello-Agents第四章智能体经典范式构建的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/05/13/hello-agents-4-reading-notes/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="hello-agents" />
+  
+  <meta name="description" content="面试速记一句话概括这一章主要讲了三种经典智能体构建范式：ReAct、Plan-and-Solve、Reflection。它们分别代表了智能体解决问题的三种思路：边想边做、先规划后执行、执行后反思优化。 背诵版总结第四章主要介绍了三种经典智能体范式：ReAct、Plan-and-Solve 和 Reflection。ReAct 通过 Thought、Action、Observation 的循环，把模">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hello-Agents第四章智能体经典范式构建的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/05/13/hello-agents-4-reading-notes/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记一句话概括这一章主要讲了三种经典智能体构建范式：ReAct、Plan-and-Solve、Reflection。它们分别代表了智能体解决问题的三种思路：边想边做、先规划后执行、执行后反思优化。 背诵版总结第四章主要介绍了三种经典智能体范式：ReAct、Plan-and-Solve 和 Reflection。ReAct 通过 Thought、Action、Observation 的循环，把模">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/hello-agents/hello-agents-4.png">
+<meta property="article:published_time" content="2026-05-13T06:53:14.862Z">
+<meta property="article:modified_time" content="2026-05-13T07:13:29.244Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="hello-agents">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/hello-agents/hello-agents-4.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Hello-Agents第四章智能体经典范式构建的阅读笔记","description":"面试速记一句话...","image":"http://example.com/2026/05/13/hello-agents-4-reading-notes/assets/posts/hello-agents/hello-agents-4.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-05-13T06:53:14.862Z","dateModified":"2026-05-13T07:13:29.244Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/05/13/hello-agents-4-reading-notes/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/05/13/hello-agents-4-reading-notes/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Hello-Agents第四章智能体经典范式构建的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-05-13T06:53:14.862Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-05-13</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~8.12K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p>这一章主要讲了三种经典智能体构建范式：<strong>ReAct、Plan-and-Solve、Reflection</strong>。它们分别代表了智能体解决问题的三种思路：<strong>边想边做、先规划后执行、执行后反思优化</strong>。</p>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>第四章主要介绍了三种经典智能体范式：ReAct、Plan-and-Solve 和 Reflection。ReAct 通过 Thought、Action、Observation 的循环，把模型推理和外部工具调用结合起来，适合搜索、计算、API 调用等需要外部反馈的任务。Plan-and-Solve 将任务分成规划和执行两个阶段，先生成完整计划，再逐步执行，适合逻辑清晰、多步骤推理的任务。Reflection 则通过执行、反思、优化的循环，让智能体能够检查并改进自己的结果，适合代码生成、技术报告和高质量输出场景。三种范式分别强调动态交互、结构化规划和自我优化，在真实 Agent 系统中可以组合使用，形成更稳定、更可靠的智能体架构。</p>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><p>如果面试官问“你怎么理解 Agent 的经典范式”，可以这样回答：</p>
+<blockquote>
+<p>我理解 Agent 的核心不是简单调用一次大模型，而是设计一个可循环、可反馈、可调用工具的任务执行系统。比较经典的范式有三类：第一类是 ReAct，它通过 Thought、Action、Observation 的循环，让模型边推理边调用工具，适合外部信息查询和 API 调用。第二类是 Plan-and-Solve，它先把复杂任务拆成计划，再逐步执行，适合路径比较明确的多步骤任务。第三类是 Reflection，它让模型对自己的初始结果进行反思和优化，适合代码生成、报告写作等对质量要求高的场景。在实际项目中，这三种范式可以组合使用，例如先规划任务，再用 ReAct 执行工具调用，最后用 Reflection 检查关键结果。</p>
+</blockquote>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="1-ReAct、Plan-and-Solve、Reflection-的核心区别是什么？"><a href="#1-ReAct、Plan-and-Solve、Reflection-的核心区别是什么？" class="headerlink" title="1. ReAct、Plan-and-Solve、Reflection 的核心区别是什么？"></a>1. ReAct、Plan-and-Solve、Reflection 的核心区别是什么？</h3><p><strong>简洁回答：</strong><br>ReAct 是“思考-行动-观察”的循环，适合需要调用外部工具和动态纠错的任务；Plan-and-Solve 是“先规划、再执行”，适合路径清晰的多步骤任务；Reflection 是“执行-反思-优化”，适合对结果质量要求高、允许多轮迭代的任务。</p>
+<p><strong>展开回答：</strong><br>ReAct 更强调实时交互，模型每一步都会先思考，再调用工具，最后根据工具返回结果继续调整下一步。Plan-and-Solve 则更强调全局计划，先把复杂任务拆成步骤，再按步骤执行。Reflection 的重点不是立即完成任务，而是让智能体对初始结果进行批判和修正，从而提升最终结果的质量和可靠性。</p>
+<h3 id="2-ReAct-为什么适合工具调用场景？"><a href="#2-ReAct-为什么适合工具调用场景？" class="headerlink" title="2. ReAct 为什么适合工具调用场景？"></a>2. ReAct 为什么适合工具调用场景？</h3><p>ReAct 的核心流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Thought -&gt; Action -&gt; Observation</span><br></pre></td></tr></table></figure>
+
+<p>模型先判断当前需要做什么，再决定调用哪个工具，工具返回结果后，模型继续基于观察结果推理。这种方式可以弥补 LLM 自身知识过时、计算不准确、不能访问外部系统等问题。因此，它适合搜索、计算、数据库查询、API 调用等场景。</p>
+<h3 id="3-Plan-and-Solve-和-ReAct-有什么不同？"><a href="#3-Plan-and-Solve-和-ReAct-有什么不同？" class="headerlink" title="3. Plan-and-Solve 和 ReAct 有什么不同？"></a>3. Plan-and-Solve 和 ReAct 有什么不同？</h3><p>ReAct 是<strong>边执行边调整</strong>，更灵活；Plan-and-Solve 是<strong>先生成完整计划，再逐步执行</strong>，更稳定。<br>如果任务环境变化大、不确定性强，ReAct 更合适；如果任务逻辑清楚、步骤明确，Plan-and-Solve 更合适。</p>
+<h3 id="4-Reflection-的价值是什么？"><a href="#4-Reflection-的价值是什么？" class="headerlink" title="4. Reflection 的价值是什么？"></a>4. Reflection 的价值是什么？</h3><p>Reflection 的价值在于让智能体具备“自我改进”能力。它不是只生成一次答案，而是先生成初稿，再从质量、逻辑、效率、准确性等角度进行反思，最后根据反馈优化结果。它适合代码生成、技术报告、复杂推理、论文写作等对质量要求高的任务。</p>
+<h3 id="5-三种范式可以组合吗？"><a href="#5-三种范式可以组合吗？" class="headerlink" title="5. 三种范式可以组合吗？"></a>5. 三种范式可以组合吗？</h3><p>可以。一个更完整的 Agent 系统可以采用混合架构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Plan-and-Solve 负责全局任务拆解</span><br><span class="line">ReAct 负责每个步骤中的工具调用和动态处理</span><br><span class="line">Reflection 负责关键结果的质量检查和优化</span><br></pre></td></tr></table></figure>
+
+<p>例如客服智能体可以先规划处理流程，再用 ReAct 查询订单、物流和政策，最后用 Reflection 检查退款判断是否合理、回复语气是否得体。</p>
+<hr>
+<h1 id="Hello-Agents-第四章：智能体经典范式构建阅读笔记"><a href="#Hello-Agents-第四章：智能体经典范式构建阅读笔记" class="headerlink" title="Hello-Agents 第四章：智能体经典范式构建阅读笔记"></a>Hello-Agents 第四章：智能体经典范式构建阅读笔记</h1><h2 id="1-本章核心内容"><a href="#1-本章核心内容" class="headerlink" title="1. 本章核心内容"></a>1. 本章核心内容</h2><p>第四章《智能体经典范式构建》从“如何真正构建一个智能体”出发，介绍了现代 Agent 的三种经典范式：</p>
+<ol>
+<li><strong>ReAct：Reasoning and Acting</strong></li>
+<li><strong>Plan-and-Solve</strong></li>
+<li><strong>Reflection</strong></li>
+</ol>
+<p>上一章主要讲大语言模型本身，而这一章进一步把 LLM 放到智能体系统中，让模型不只是生成文本，而是能够：</p>
+<ul>
+<li>理解用户意图；</li>
+<li>拆解复杂任务；</li>
+<li>调用外部工具；</li>
+<li>根据工具反馈继续推理；</li>
+<li>反思并优化自己的输出。</li>
+</ul>
+<p>也就是说，本章的重点是从“LLM 能回答问题”过渡到“Agent 能完成任务”。</p>
+<hr>
+<h2 id="2-为什么要学习智能体经典范式？"><a href="#2-为什么要学习智能体经典范式？" class="headerlink" title="2. 为什么要学习智能体经典范式？"></a>2. 为什么要学习智能体经典范式？</h2><p>现在已经有 LangChain、LlamaIndex、AutoGen、LangGraph 等很多成熟框架，为什么还要从零实现 Agent Loop？</p>
+<p>原因主要有三点：</p>
+<p>第一，直接使用高度封装的框架虽然效率高，但容易只停留在“会调用 API”的层面，不理解 Agent 背后的运行机制。</p>
+<p>第二，从零实现可以暴露真实工程问题，例如：</p>
+<ul>
+<li>模型输出格式不稳定；</li>
+<li>工具调用失败；</li>
+<li>Action 解析错误；</li>
+<li>多轮循环容易死循环；</li>
+<li>提示词稍微变化就可能影响行为。</li>
+</ul>
+<p>第三，理解底层范式后，才能根据业务需要定制 Agent，而不是只能使用现成框架的默认流程。</p>
+<p>因此，本章不是单纯讲概念，而是通过代码实现帮助读者理解 Agent 的核心设计逻辑。</p>
+<hr>
+<h1 id="3-范式一：ReAct"><a href="#3-范式一：ReAct" class="headerlink" title="3. 范式一：ReAct"></a>3. 范式一：ReAct</h1><p><img src="/assets/posts/hello-agents/react.png" alt="ReAct"></p>
+<h2 id="3-1-ReAct-的核心思想"><a href="#3-1-ReAct-的核心思想" class="headerlink" title="3.1 ReAct 的核心思想"></a>3.1 ReAct 的核心思想</h2><p>ReAct 是 <strong>Reasoning and Acting</strong> 的缩写，也就是把“推理”和“行动”结合起来。</p>
+<p>它的基本流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Thought -&gt; Action -&gt; Observation -&gt; Thought -&gt; Action -&gt; Observation ...</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><strong>Thought</strong>：模型的思考过程，用来分析问题、制定下一步计划；</li>
+<li><strong>Action</strong>：模型选择的行动，通常是调用工具；</li>
+<li><strong>Observation</strong>：工具返回的结果，作为下一轮推理的依据。</li>
+</ul>
+<p>ReAct 的关键思想是：<br><strong>思考指导行动，行动结果反过来修正思考。</strong></p>
+<h2 id="3-2-ReAct-解决了什么问题？"><a href="#3-2-ReAct-解决了什么问题？" class="headerlink" title="3.2 ReAct 解决了什么问题？"></a>3.2 ReAct 解决了什么问题？</h2><p>传统的 Chain-of-Thought 主要让模型“想得更清楚”，但它不能访问外部世界。如果问题涉及实时信息、精确计算或数据库查询，模型容易出现幻觉。</p>
+<p>而纯工具调用又缺少推理能力，模型可能不知道什么时候该调用哪个工具。</p>
+<p>ReAct 把两者结合起来：</p>
+<ul>
+<li>LLM 负责推理、判断和规划；</li>
+<li>工具负责搜索、计算、查询和执行；</li>
+<li>Observation 负责给模型提供外部反馈。</li>
+</ul>
+<p>因此，ReAct 可以让 Agent 处理 LLM 自身知识库无法覆盖的问题。</p>
+<h2 id="3-3-ReAct-的典型实现"><a href="#3-3-ReAct-的典型实现" class="headerlink" title="3.3 ReAct 的典型实现"></a>3.3 ReAct 的典型实现</h2><p>一个 ReAct Agent 通常包含几个部分：</p>
+<h3 id="1-LLM-客户端"><a href="#1-LLM-客户端" class="headerlink" title="1. LLM 客户端"></a>1. LLM 客户端</h3><p>负责统一调用大语言模型。<br>原文中封装了一个 <code>HelloAgentsLLM</code> 类，用来读取环境变量中的模型 ID、API Key 和 Base URL，并通过 OpenAI 兼容接口调用模型。</p>
+<h3 id="2-工具系统"><a href="#2-工具系统" class="headerlink" title="2. 工具系统"></a>2. 工具系统</h3><p>工具是 Agent 与外部世界交互的方式。<br>原文中实现了一个搜索工具，并用 <code>ToolExecutor</code> 管理工具注册和调用。</p>
+<p>一个工具通常包含：</p>
+<ul>
+<li>名称：例如 <code>Search</code></li>
+<li>描述：告诉模型什么时候该用这个工具</li>
+<li>执行逻辑：真正调用搜索引擎、数据库或 API 的函数</li>
+</ul>
+<h3 id="3-Prompt-模板"><a href="#3-Prompt-模板" class="headerlink" title="3. Prompt 模板"></a>3. Prompt 模板</h3><p>ReAct 的提示词需要强制模型按照固定格式输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Thought: ...</span><br><span class="line">Action: Search[...]</span><br></pre></td></tr></table></figure>
+
+<p>或者在任务完成时输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Action: Finish[最终答案]</span><br></pre></td></tr></table></figure>
+
+<p>这种格式方便程序用正则表达式解析模型输出。</p>
+<h3 id="4-循环控制"><a href="#4-循环控制" class="headerlink" title="4. 循环控制"></a>4. 循环控制</h3><p>ReAct 的核心是循环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">格式化 Prompt</span><br><span class="line">调用 LLM</span><br><span class="line">解析 Thought 和 Action</span><br><span class="line">执行工具</span><br><span class="line">得到 Observation</span><br><span class="line">写入历史记录</span><br><span class="line">进入下一轮</span><br></pre></td></tr></table></figure>
+
+<p>同时还需要设置 <code>max_steps</code>，防止模型陷入无限循环。</p>
+<h2 id="3-4-ReAct-的优点"><a href="#3-4-ReAct-的优点" class="headerlink" title="3.4 ReAct 的优点"></a>3.4 ReAct 的优点</h2><h3 id="高可解释性"><a href="#高可解释性" class="headerlink" title="高可解释性"></a>高可解释性</h3><p>ReAct 会显式输出 Thought、Action 和 Observation，因此开发者可以看到 Agent 每一步为什么这样做。</p>
+<h3 id="动态纠错能力强"><a href="#动态纠错能力强" class="headerlink" title="动态纠错能力强"></a>动态纠错能力强</h3><p>如果某一步工具返回结果不理想，Agent 可以在下一轮调整搜索词或换一种策略。</p>
+<h3 id="适合工具调用"><a href="#适合工具调用" class="headerlink" title="适合工具调用"></a>适合工具调用</h3><p>ReAct 天然适合搜索、计算、数据库查询、API 调用等任务，可以突破 LLM 自身知识边界。</p>
+<h2 id="3-5-ReAct-的局限"><a href="#3-5-ReAct-的局限" class="headerlink" title="3.5 ReAct 的局限"></a>3.5 ReAct 的局限</h2><h3 id="依赖模型能力"><a href="#依赖模型能力" class="headerlink" title="依赖模型能力"></a>依赖模型能力</h3><p>如果模型不能稳定遵循格式，或者推理能力不足，就可能生成错误 Action。</p>
+<h3 id="执行效率较低"><a href="#执行效率较低" class="headerlink" title="执行效率较低"></a>执行效率较低</h3><p>ReAct 通常需要多轮 LLM 调用，任务越复杂，耗时和成本越高。</p>
+<h3 id="Prompt-脆弱"><a href="#Prompt-脆弱" class="headerlink" title="Prompt 脆弱"></a>Prompt 脆弱</h3><p>提示词格式稍有变化，可能导致模型输出不符合解析规则。</p>
+<h3 id="缺少全局规划"><a href="#缺少全局规划" class="headerlink" title="缺少全局规划"></a>缺少全局规划</h3><p>ReAct 是“走一步看一步”，灵活但可能缺乏长远计划，复杂任务中可能陷入局部最优。</p>
+<hr>
+<h1 id="4-范式二：Plan-and-Solve"><a href="#4-范式二：Plan-and-Solve" class="headerlink" title="4. 范式二：Plan-and-Solve"></a>4. 范式二：Plan-and-Solve</h1><p><img src="/assets/posts/hello-agents/plan-and-solve.png" alt="Plan-and-Solve"></p>
+<h2 id="4-1-Plan-and-Solve-的核心思想"><a href="#4-1-Plan-and-Solve-的核心思想" class="headerlink" title="4.1 Plan-and-Solve 的核心思想"></a>4.1 Plan-and-Solve 的核心思想</h2><p>Plan-and-Solve 可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">先规划，再执行</span><br></pre></td></tr></table></figure>
+
+<p>它把任务分成两个阶段：</p>
+<ol>
+<li><strong>Plan：规划阶段</strong></li>
+<li><strong>Solve：执行阶段</strong></li>
+</ol>
+<p>与 ReAct 每一步都动态思考不同，Plan-and-Solve 会先生成完整的任务计划，然后按照计划逐步执行。</p>
+<p>如果说 ReAct 像侦探，一边调查一边调整方向；那么 Plan-and-Solve 更像建筑师，先画好蓝图，再按图施工。</p>
+<h2 id="4-2-Plan-阶段"><a href="#4-2-Plan-阶段" class="headerlink" title="4.2 Plan 阶段"></a>4.2 Plan 阶段</h2><p>规划阶段的目标是把复杂任务拆成多个可执行子任务。</p>
+<p>例如用户问题是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">一个水果店周一卖出了15个苹果。</span><br><span class="line">周二卖出的苹果数量是周一的两倍。</span><br><span class="line">周三卖出的数量比周二少了5个。</span><br><span class="line">请问这三天总共卖出了多少个苹果？</span><br></pre></td></tr></table></figure>
+
+<p>规划器可以生成：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  <span class="string">&quot;计算周一卖出的苹果数量&quot;</span>,</span><br><span class="line">  <span class="string">&quot;计算周二卖出的苹果数量&quot;</span>,</span><br><span class="line">  <span class="string">&quot;计算周三卖出的苹果数量&quot;</span>,</span><br><span class="line">  <span class="string">&quot;计算三天总销量&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>为了让代码方便解析，原文要求模型输出 Python 列表格式，并使用 <code>ast.literal_eval</code> 解析。</p>
+<h2 id="4-3-Solve-阶段"><a href="#4-3-Solve-阶段" class="headerlink" title="4.3 Solve 阶段"></a>4.3 Solve 阶段</h2><p>执行阶段由 Executor 负责。<br>它会逐步读取计划中的每个步骤，并维护历史状态。</p>
+<p>执行器的输入通常包括：</p>
+<ul>
+<li>原始问题；</li>
+<li>完整计划；</li>
+<li>已完成步骤和结果；</li>
+<li>当前需要执行的步骤。</li>
+</ul>
+<p>这样模型在执行当前步骤时，可以知道前面已经得到了哪些结果。</p>
+<h2 id="4-4-Plan-and-Solve-的优点"><a href="#4-4-Plan-and-Solve-的优点" class="headerlink" title="4.4 Plan-and-Solve 的优点"></a>4.4 Plan-and-Solve 的优点</h2><h3 id="结构清晰"><a href="#结构清晰" class="headerlink" title="结构清晰"></a>结构清晰</h3><p>先拆解任务，再执行任务，整个流程更容易理解。</p>
+<h3 id="适合多步骤推理"><a href="#适合多步骤推理" class="headerlink" title="适合多步骤推理"></a>适合多步骤推理</h3><p>对于数学应用题、流程固定的任务、逻辑路径明确的问题，Plan-and-Solve 比 ReAct 更稳定。</p>
+<h3 id="有利于状态管理"><a href="#有利于状态管理" class="headerlink" title="有利于状态管理"></a>有利于状态管理</h3><p>每一步执行结果都会被记录下来，后续步骤可以继续使用前面的结果。</p>
+<h2 id="4-5-Plan-and-Solve-的局限"><a href="#4-5-Plan-and-Solve-的局限" class="headerlink" title="4.5 Plan-and-Solve 的局限"></a>4.5 Plan-and-Solve 的局限</h2><h3 id="计划是静态的"><a href="#计划是静态的" class="headerlink" title="计划是静态的"></a>计划是静态的</h3><p>如果一开始生成的计划有问题，后续执行可能会一直沿着错误方向进行。</p>
+<h3 id="缺少外部反馈适应能力"><a href="#缺少外部反馈适应能力" class="headerlink" title="缺少外部反馈适应能力"></a>缺少外部反馈适应能力</h3><p>相比 ReAct，Plan-and-Solve 不擅长处理环境变化或工具返回异常的情况。</p>
+<h3 id="依赖计划质量"><a href="#依赖计划质量" class="headerlink" title="依赖计划质量"></a>依赖计划质量</h3><p>最终效果很大程度取决于第一步生成的计划是否合理。</p>
+<h2 id="4-6-适用场景"><a href="#4-6-适用场景" class="headerlink" title="4.6 适用场景"></a>4.6 适用场景</h2><p>Plan-and-Solve 适合：</p>
+<ul>
+<li>多步骤数学推理；</li>
+<li>流程固定的任务；</li>
+<li>文档处理流程；</li>
+<li>数据分析步骤规划；</li>
+<li>逻辑清晰的任务拆解。</li>
+</ul>
+<hr>
+<h1 id="5-范式三：Reflection"><a href="#5-范式三：Reflection" class="headerlink" title="5. 范式三：Reflection"></a>5. 范式三：Reflection</h1><p><img src="/assets/posts/hello-agents/reflection.png" alt="Reflection"></p>
+<h2 id="5-1-Reflection-的核心思想"><a href="#5-1-Reflection-的核心思想" class="headerlink" title="5.1 Reflection 的核心思想"></a>5.1 Reflection 的核心思想</h2><p>Reflection 是让智能体具备“自我反思与迭代优化”的能力。</p>
+<p>它的核心流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">执行 -&gt; 反思 -&gt; 优化 -&gt; 再反思 -&gt; 再优化</span><br></pre></td></tr></table></figure>
+
+<p>与 ReAct 和 Plan-and-Solve 不同，Reflection 的重点不是“如何执行任务”，而是“如何把结果变得更好”。</p>
+<h2 id="5-2-Reflection-的基本流程"><a href="#5-2-Reflection-的基本流程" class="headerlink" title="5.2 Reflection 的基本流程"></a>5.2 Reflection 的基本流程</h2><p>Reflection 通常包含三个阶段：</p>
+<h3 id="1-执行"><a href="#1-执行" class="headerlink" title="1. 执行"></a>1. 执行</h3><p>模型先生成一个初始答案或初始方案。</p>
+<p>例如生成一段 Python 代码。</p>
+<h3 id="2-反思"><a href="#2-反思" class="headerlink" title="2. 反思"></a>2. 反思</h3><p>模型扮演评审员，检查初始结果的问题。</p>
+<p>可能检查：</p>
+<ul>
+<li>是否正确；</li>
+<li>是否高效；</li>
+<li>是否有边界问题；</li>
+<li>是否有更优方法；</li>
+<li>是否符合要求。</li>
+</ul>
+<h3 id="3-优化"><a href="#3-优化" class="headerlink" title="3. 优化"></a>3. 优化</h3><p>模型根据反思反馈，重新生成更好的版本。</p>
+<p>这个过程可以重复多轮，直到反思认为“无需改进”，或者达到最大迭代次数。</p>
+<h2 id="5-3-Reflection-中的记忆模块"><a href="#5-3-Reflection-中的记忆模块" class="headerlink" title="5.3 Reflection 中的记忆模块"></a>5.3 Reflection 中的记忆模块</h2><p>Reflection 需要短期记忆来记录每一轮尝试和反馈。</p>
+<p>原文中设计了一个简单的 <code>Memory</code> 类，用来存储：</p>
+<ul>
+<li>每一轮生成的代码；</li>
+<li>每一轮反思得到的反馈；</li>
+<li>迭代轨迹。</li>
+</ul>
+<p>这样后续优化时，模型可以看到之前的尝试和批评意见，不会丢失上下文。</p>
+<h2 id="5-4-Reflection-的案例"><a href="#5-4-Reflection-的案例" class="headerlink" title="5.4 Reflection 的案例"></a>5.4 Reflection 的案例</h2><p>原文使用的任务是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">编写一个 Python 函数，找出 1 到 n 之间所有的素数。</span><br></pre></td></tr></table></figure>
+
+<p>初始版本可能使用逐个试除的方法，时间复杂度较高。</p>
+<p>反思阶段指出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">当前代码时间复杂度为 O(n * sqrt(n))，当 n 很大时效率较低。</span><br><span class="line">建议使用埃拉托斯特尼筛法。</span><br></pre></td></tr></table></figure>
+
+<p>优化阶段生成更高效的筛法版本，时间复杂度降低到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O(n log log n)</span><br></pre></td></tr></table></figure>
+
+<p>这说明 Reflection 不只是修复错误，还能推动方案在质量和效率上升级。</p>
+<h2 id="5-5-Reflection-的优点"><a href="#5-5-Reflection-的优点" class="headerlink" title="5.5 Reflection 的优点"></a>5.5 Reflection 的优点</h2><h3 id="提升结果质量"><a href="#提升结果质量" class="headerlink" title="提升结果质量"></a>提升结果质量</h3><p>它可以把一个“能用”的答案优化成一个“更好”的答案。</p>
+<h3 id="增强可靠性"><a href="#增强可靠性" class="headerlink" title="增强可靠性"></a>增强可靠性</h3><p>通过自我检查，可以发现逻辑漏洞、事实错误和边界问题。</p>
+<h3 id="适合复杂任务"><a href="#适合复杂任务" class="headerlink" title="适合复杂任务"></a>适合复杂任务</h3><p>对于代码生成、论文写作、技术报告、复杂规划等任务，Reflection 能显著提升最终质量。</p>
+<h2 id="5-6-Reflection-的成本"><a href="#5-6-Reflection-的成本" class="headerlink" title="5.6 Reflection 的成本"></a>5.6 Reflection 的成本</h2><h3 id="模型调用成本高"><a href="#模型调用成本高" class="headerlink" title="模型调用成本高"></a>模型调用成本高</h3><p>每一轮至少需要一次反思和一次优化，调用次数会明显增加。</p>
+<h3 id="延迟更高"><a href="#延迟更高" class="headerlink" title="延迟更高"></a>延迟更高</h3><p>Reflection 是串行迭代流程，不适合实时性要求高的任务。</p>
+<h3 id="Prompt-设计更复杂"><a href="#Prompt-设计更复杂" class="headerlink" title="Prompt 设计更复杂"></a>Prompt 设计更复杂</h3><p>需要分别设计执行、反思、优化等不同角色的提示词。</p>
+<h2 id="5-7-适用场景"><a href="#5-7-适用场景" class="headerlink" title="5.7 适用场景"></a>5.7 适用场景</h2><p>Reflection 适合：</p>
+<ul>
+<li>代码生成；</li>
+<li>技术报告；</li>
+<li>学术写作；</li>
+<li>复杂决策；</li>
+<li>高可靠性任务；</li>
+<li>需要多轮润色和检查的任务。</li>
+</ul>
+<hr>
+<h1 id="6-三种范式对比"><a href="#6-三种范式对比" class="headerlink" title="6. 三种范式对比"></a>6. 三种范式对比</h1><table>
+<thead>
+<tr>
+<th>范式</th>
+<th>核心流程</th>
+<th>主要优势</th>
+<th>主要局限</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ReAct</td>
+<td>Thought -&gt; Action -&gt; Observation</td>
+<td>灵活、可调用工具、能动态纠错</td>
+<td>多轮调用成本高，缺少全局规划</td>
+<td>搜索、API调用、实时信息查询、工具型任务</td>
+</tr>
+<tr>
+<td>Plan-and-Solve</td>
+<td>Plan -&gt; Solve</td>
+<td>结构清晰，适合多步骤推理</td>
+<td>计划静态，执行中不易调整</td>
+<td>数学推理、流程型任务、逻辑清晰任务</td>
+</tr>
+<tr>
+<td>Reflection</td>
+<td>Execute -&gt; Reflect -&gt; Refine</td>
+<td>结果质量高，能自我优化</td>
+<td>成本高、延迟高</td>
+<td>代码生成、报告写作、复杂推理、高质量任务</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="7-如何选择-Agent-范式？"><a href="#7-如何选择-Agent-范式？" class="headerlink" title="7. 如何选择 Agent 范式？"></a>7. 如何选择 Agent 范式？</h1><h2 id="7-1-选择-ReAct-的情况"><a href="#7-1-选择-ReAct-的情况" class="headerlink" title="7.1 选择 ReAct 的情况"></a>7.1 选择 ReAct 的情况</h2><p>当任务需要频繁和外部环境交互时，优先选择 ReAct。</p>
+<p>例如：</p>
+<ul>
+<li>查询实时新闻；</li>
+<li>搜索网页资料；</li>
+<li>调用数据库；</li>
+<li>查询订单信息；</li>
+<li>调用计算器；</li>
+<li>使用多个 API 完成任务。</li>
+</ul>
+<p>核心判断标准是：<br><strong>任务过程中是否需要不断根据外部反馈调整下一步？</strong></p>
+<p>如果是，ReAct 更合适。</p>
+<h2 id="7-2-选择-Plan-and-Solve-的情况"><a href="#7-2-选择-Plan-and-Solve-的情况" class="headerlink" title="7.2 选择 Plan-and-Solve 的情况"></a>7.2 选择 Plan-and-Solve 的情况</h2><p>当任务本身结构清楚，可以提前拆解成多个步骤时，优先选择 Plan-and-Solve。</p>
+<p>例如：</p>
+<ul>
+<li>解数学题；</li>
+<li>制定学习计划；</li>
+<li>拆解数据分析流程；</li>
+<li>生成项目实施步骤；</li>
+<li>整理文档处理流程。</li>
+</ul>
+<p>核心判断标准是：<br><strong>任务是否可以在执行前先生成一个相对稳定的计划？</strong></p>
+<p>如果是，Plan-and-Solve 更合适。</p>
+<h2 id="7-3-选择-Reflection-的情况"><a href="#7-3-选择-Reflection-的情况" class="headerlink" title="7.3 选择 Reflection 的情况"></a>7.3 选择 Reflection 的情况</h2><p>当任务对质量要求高，并且允许多轮迭代时，优先选择 Reflection。</p>
+<p>例如：</p>
+<ul>
+<li>生成高质量代码；</li>
+<li>优化论文段落；</li>
+<li>修改技术报告；</li>
+<li>检查复杂方案；</li>
+<li>生成正式邮件或商业文案。</li>
+</ul>
+<p>核心判断标准是：<br><strong>一次生成是否不够，需要自我检查和多轮优化？</strong></p>
+<p>如果是，Reflection 更合适。</p>
+<hr>
+<h1 id="8-三种范式的组合设计"><a href="#8-三种范式的组合设计" class="headerlink" title="8. 三种范式的组合设计"></a>8. 三种范式的组合设计</h1><p>实际应用中，三种范式并不是互斥的，而是可以组合使用。</p>
+<p>一个比较完整的 Agent 架构可以是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">用户任务</span><br><span class="line">   ↓</span><br><span class="line">Plan-and-Solve：生成全局计划</span><br><span class="line">   ↓</span><br><span class="line">ReAct：执行每个步骤，并调用工具</span><br><span class="line">   ↓</span><br><span class="line">Reflection：检查关键结果并优化</span><br><span class="line">   ↓</span><br><span class="line">最终答案 / 最终操作</span><br></pre></td></tr></table></figure>
+
+<p>例如构建一个“智能客服退款助手”：</p>
+<ol>
+<li>用 Plan-and-Solve 规划处理流程；</li>
+<li>用 ReAct 查询订单、物流、退款政策；</li>
+<li>用 Reflection 检查退款判断是否合理；</li>
+<li>最后生成用户友好的回复邮件。</li>
+</ol>
+<p>这种混合范式比单一范式更接近真实生产系统。</p>
+<hr>
+<h1 id="9-本章对-Agent-开发的启发"><a href="#9-本章对-Agent-开发的启发" class="headerlink" title="9. 本章对 Agent 开发的启发"></a>9. 本章对 Agent 开发的启发</h1><h2 id="9-1-Agent-的核心不是单次回答，而是循环机制"><a href="#9-1-Agent-的核心不是单次回答，而是循环机制" class="headerlink" title="9.1 Agent 的核心不是单次回答，而是循环机制"></a>9.1 Agent 的核心不是单次回答，而是循环机制</h2><p>普通 LLM 调用通常是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">输入 -&gt; 输出</span><br></pre></td></tr></table></figure>
+
+<p>而 Agent 的核心是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">输入 -&gt; 思考 -&gt; 行动 -&gt; 反馈 -&gt; 再思考 -&gt; 再行动 -&gt; 输出</span><br></pre></td></tr></table></figure>
+
+<p>因此，Agent 开发的重点不是只写一个 prompt，而是设计一个稳定的循环系统。</p>
+<h2 id="9-2-工具调用是-Agent-连接真实世界的关键"><a href="#9-2-工具调用是-Agent-连接真实世界的关键" class="headerlink" title="9.2 工具调用是 Agent 连接真实世界的关键"></a>9.2 工具调用是 Agent 连接真实世界的关键</h2><p>LLM 本身只是语言模型，不能直接访问数据库、网页、文件系统或业务系统。<br>工具让 Agent 具备“行动能力”。</p>
+<p>一个成熟 Agent 系统通常需要：</p>
+<ul>
+<li>工具注册；</li>
+<li>工具描述；</li>
+<li>工具选择；</li>
+<li>参数解析；</li>
+<li>工具执行；</li>
+<li>错误重试；</li>
+<li>结果反馈。</li>
+</ul>
+<h2 id="9-3-输出格式控制非常重要"><a href="#9-3-输出格式控制非常重要" class="headerlink" title="9.3 输出格式控制非常重要"></a>9.3 输出格式控制非常重要</h2><p>ReAct 和 Plan-and-Solve 都依赖模型输出结构化内容。<br>如果模型输出不稳定，后续解析就会失败。</p>
+<p>因此，实际开发中可以考虑使用：</p>
+<ul>
+<li>JSON 输出；</li>
+<li>Pydantic 校验；</li>
+<li>Function Calling；</li>
+<li>Tool Calling；</li>
+<li>XML 标签；</li>
+<li>更严格的 schema。</li>
+</ul>
+<p>这比单纯依赖正则表达式更稳定。</p>
+<h2 id="9-4-需要防止-Agent-死循环"><a href="#9-4-需要防止-Agent-死循环" class="headerlink" title="9.4 需要防止 Agent 死循环"></a>9.4 需要防止 Agent 死循环</h2><p>ReAct 和 Reflection 都可能陷入循环。<br>因此工程上要设置：</p>
+<ul>
+<li>最大步数；</li>
+<li>最大迭代次数；</li>
+<li>超时机制；</li>
+<li>工具调用失败次数限制；</li>
+<li>终止条件；</li>
+<li>人工接管机制。</li>
+</ul>
+<h2 id="9-5-不同任务需要不同-Agent-Loop"><a href="#9-5-不同任务需要不同-Agent-Loop" class="headerlink" title="9.5 不同任务需要不同 Agent Loop"></a>9.5 不同任务需要不同 Agent Loop</h2><p>没有一种范式适合所有任务。<br>Agent 设计的关键是根据任务特征选择合适的循环方式：</p>
+<ul>
+<li>需要实时外部信息：ReAct；</li>
+<li>需要稳定拆解流程：Plan-and-Solve；</li>
+<li>需要高质量结果：Reflection；</li>
+<li>复杂生产系统：三者组合。</li>
+</ul>
+<hr>
+<h1 id="10-参考来源"><a href="#10-参考来源" class="headerlink" title="10. 参考来源"></a>10. 参考来源</h1><ul>
+<li>Datawhale《Hello-Agents》第四章：智能体经典范式构建</li>
+<li>Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models, ICLR 2023</li>
+<li>Wang et al., Plan-and-Solve Prompting, arXiv 2023</li>
+<li>Shinn et al., Reflexion: Language Agents with Verbal Reinforcement Learning, NeurIPS 2023</li>
+</ul>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-05-13T07:13:29.244Z" itemprop="dateModified">最后编辑：2026-05-13</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Hot100 刷题笔记" href="/2026/05/12/hot100刷题笔记/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" Hello-Agents第六章框架开发实践的阅读笔记" href="/2026/05/13/hello-agents-6-reading-notes/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                4
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                1
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/hello-agents/" style="font-size: 0.6em;">hello-agents</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/13/hello-agents-6-reading-notes/"><i class="fa fa-book"></i> Hello-Agents第六章框架开发实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/13/hello-agents-4-reading-notes/"><i class="fa fa-book"></i> Hello-Agents第四章智能体经典范式构建的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/hot100%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/"><i class="fa fa-book"></i> Hot100 刷题笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/agentskills/"><i class="fa fa-book"></i> Agent Skills阅读笔记</a>
+            
+          
+        
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

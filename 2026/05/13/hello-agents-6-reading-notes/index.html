@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Hello-Agents第六章框架开发实践的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/05/13/hello-agents-6-reading-notes/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="hello-agents" />
+  
+  <meta name="description" content="背诵版总结本章重点介绍了四种代表性智能体框架：AutoGen、AgentScope、CAMEL 和 LangGraph。AutoGen 强调“对话驱动协作”，适合把复杂任务组织成多个角色之间的自动化群聊；AgentScope 强调“工程化和消息驱动”，适合高并发、分布式和生产级多智能体系统；CAMEL 强调“角色扮演和引导性提示”，适合两个专家智能体之间的轻量级深度协作；LangGraph 强调“">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hello-Agents第六章框架开发实践的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/05/13/hello-agents-6-reading-notes/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="背诵版总结本章重点介绍了四种代表性智能体框架：AutoGen、AgentScope、CAMEL 和 LangGraph。AutoGen 强调“对话驱动协作”，适合把复杂任务组织成多个角色之间的自动化群聊；AgentScope 强调“工程化和消息驱动”，适合高并发、分布式和生产级多智能体系统；CAMEL 强调“角色扮演和引导性提示”，适合两个专家智能体之间的轻量级深度协作；LangGraph 强调“">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/hello-agents/hello-agents-6.png">
+<meta property="article:published_time" content="2026-05-13T10:56:54.597Z">
+<meta property="article:modified_time" content="2026-05-13T11:09:31.824Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="hello-agents">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/hello-agents/hello-agents-6.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Hello-Agents第六章框架开发实践的阅读笔记","description":"背诵版总结本章重点介绍了四种代表性智能体框架：AutoGen、AgentScope、CAMEL 和 LangGraph","image":"http://example.com/2026/05/13/hello-agents-6-reading-notes/assets/posts/hello-agents/hello-agents-6.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-05-13T10:56:54.597Z","dateModified":"2026-05-13T11:09:31.824Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/05/13/hello-agents-6-reading-notes/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/05/13/hello-agents-6-reading-notes/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Hello-Agents第六章框架开发实践的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-05-13T10:56:54.597Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-05-13</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~11.02K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>本章重点介绍了四种代表性智能体框架：<strong>AutoGen、AgentScope、CAMEL 和 LangGraph</strong>。AutoGen 强调“对话驱动协作”，适合把复杂任务组织成多个角色之间的自动化群聊；AgentScope 强调“工程化和消息驱动”，适合高并发、分布式和生产级多智能体系统；CAMEL 强调“角色扮演和引导性提示”，适合两个专家智能体之间的轻量级深度协作；LangGraph 强调“状态机和图结构控制”，适合需要明确流程、循环反思和高可控性的复杂工作流。整体来看，本章的核心不是判断哪个框架最好，而是帮助我们理解不同框架背后的设计取舍：AutoGen 和 CAMEL 更依赖涌现式协作，适合快速构建多智能体协作原型；LangGraph 更强调显式流程控制，适合复杂、可控、可审计的 Agent 工作流；AgentScope 则更面向生产级工程化落地，强调消息驱动、分布式部署和多智能体系统管理。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AutoGen：涌现式协作 + 多角色群聊 + 快速构建多 Agent 原型</span><br><span class="line">CAMEL：涌现式协作 + 角色扮演 + 轻量级双 Agent 协作</span><br><span class="line">LangGraph：显式流程控制 + 状态机 / 图结构 + 可控复杂工作流</span><br><span class="line">AgentScope：工程化落地 + 消息驱动 + 分布式多 Agent 系统</span><br></pre></td></tr></table></figure>
+
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><p>如果面试官问“你怎么理解智能体框架开发”，可以这样回答：</p>
+<blockquote>
+<p>我理解智能体框架的价值在于把 Agent 应用中重复且复杂的部分标准化，例如 Agent Loop、模型调用、工具注册、状态管理、记忆机制、多智能体通信和日志追踪。手写 Agent 可以帮助我们理解原理，但当任务变复杂后，单纯脚本会面临复用性差、状态难管理、调试困难、扩展成本高等问题。因此需要使用框架来提高开发效率和系统可靠性。四种典型框架：AutoGen 以对话驱动多智能体协作，适合模拟软件团队这类多角色任务；AgentScope 更偏工程化，使用消息驱动架构，适合高并发、分布式和长期运行的多智能体系统；CAMEL 通过角色扮演和 Inception Prompting 让两个智能体自主协作，适合轻量级的专家协作任务；LangGraph 则把智能体流程建模成状态机和有向图，适合需要强控制、可审计、可循环反思的工作流。实际选型时，要根据任务是否需要开放式协作、流程是否固定、是否需要分布式部署、是否强调可控性来决定框架。</p>
+</blockquote>
+<hr>
+<h1 id="Hello-Agents-第六章：框架开发实践阅读笔记"><a href="#Hello-Agents-第六章：框架开发实践阅读笔记" class="headerlink" title="Hello-Agents 第六章：框架开发实践阅读笔记"></a>Hello-Agents 第六章：框架开发实践阅读笔记</h1><h2 id="1-本章核心内容"><a href="#1-本章核心内容" class="headerlink" title="1. 本章核心内容"></a>1. 本章核心内容</h2><p>第六章《框架开发实践》的主题是：<strong>如何使用主流智能体框架，高效、规范地构建可靠的 Agent 应用</strong>。</p>
+<p>在第四章中，我们通过原生代码实现了 ReAct、Plan-and-Solve、Reflection 等经典范式，这能帮助我们理解智能体的底层执行逻辑。但如果要构建真实项目，仅靠手写脚本会很快遇到工程瓶颈。</p>
+<p>因此，本章从“手动实现”转向“框架开发”，重点介绍四种主流智能体框架：</p>
+<ol>
+<li><strong>AutoGen</strong></li>
+<li><strong>AgentScope</strong></li>
+<li><strong>CAMEL</strong></li>
+<li><strong>LangGraph</strong></li>
+</ol>
+<p>这四个框架并不是简单的工具替代品，而是代表了四种不同的 Agent 系统设计思想。</p>
+<hr>
+<h2 id="2-为什么需要智能体框架？"><a href="#2-为什么需要智能体框架？" class="headerlink" title="2. 为什么需要智能体框架？"></a>2. 为什么需要智能体框架？</h2><p>手写 Agent Loop 的价值在于理解原理，但真实应用往往需要面对更多工程问题。比如：</p>
+<ul>
+<li>如何管理多轮对话状态；</li>
+<li>如何注册和调用工具；</li>
+<li>如何切换不同大模型；</li>
+<li>如何保存长期记忆；</li>
+<li>如何协调多个智能体协作；</li>
+<li>如何追踪每一步执行过程；</li>
+<li>如何处理失败、重试和终止条件；</li>
+<li>如何把系统部署到生产环境。</li>
+</ul>
+<p>如果每个项目都从零开始实现这些能力，开发成本会非常高。智能体框架的价值，就是把这些通用能力抽象出来，让开发者专注于业务逻辑本身。</p>
+<h3 id="2-1-框架带来的核心价值"><a href="#2-1-框架带来的核心价值" class="headerlink" title="2.1 框架带来的核心价值"></a>2.1 框架带来的核心价值</h3><h4 id="1-提升代码复用和开发效率"><a href="#1-提升代码复用和开发效率" class="headerlink" title="1. 提升代码复用和开发效率"></a>1. 提升代码复用和开发效率</h4><p>框架通常会封装通用的 Agent 执行逻辑，例如模型调用、消息传递、工具执行、任务循环等。开发者不需要每次都重新写一套 Agent Loop。</p>
+<h4 id="2-实现组件解耦"><a href="#2-实现组件解耦" class="headerlink" title="2. 实现组件解耦"></a>2. 实现组件解耦</h4><p>一个成熟 Agent 系统一般包括：</p>
+<ul>
+<li>模型层：负责调用 OpenAI、Claude、本地模型等；</li>
+<li>工具层：负责定义、注册和执行工具；</li>
+<li>记忆层：负责短期记忆、长期记忆和上下文管理；</li>
+<li>协作层：负责多智能体通信和流程编排；</li>
+<li>观测层：负责日志、回调、追踪和调试。</li>
+</ul>
+<p>框架能帮助这些模块保持松耦合，方便替换和扩展。</p>
+<h4 id="3-标准化状态管理"><a href="#3-标准化状态管理" class="headerlink" title="3. 标准化状态管理"></a>3. 标准化状态管理</h4><p>真实 Agent 应用并不是一次问答，而是持续运行的任务系统。它需要管理历史消息、中间结果、执行状态、任务进度等。框架通常会提供更规范的状态管理方式，减少手写状态逻辑带来的混乱。</p>
+<h4 id="4-提升可观测性和调试能力"><a href="#4-提升可观测性和调试能力" class="headerlink" title="4. 提升可观测性和调试能力"></a>4. 提升可观测性和调试能力</h4><p>复杂 Agent 的行为很难只靠 <code>print</code> 调试。框架可以通过回调、日志、事件追踪等方式记录智能体的完整运行轨迹，从而帮助开发者定位问题。</p>
+<hr>
+<h1 id="3-四种智能体框架总览"><a href="#3-四种智能体框架总览" class="headerlink" title="3. 四种智能体框架总览"></a>3. 四种智能体框架总览</h1><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>核心思想</th>
+<th>适合任务</th>
+<th>主要优势</th>
+<th>主要局限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AutoGen</td>
+<td>对话驱动协作</td>
+<td>多角色协作、软件开发团队、自动化群聊</td>
+<td>角色分工自然，协作流程直观</td>
+<td>对话不确定性高，调试较难</td>
+</tr>
+<tr>
+<td>AgentScope</td>
+<td>消息驱动 + 工程化平台</td>
+<td>大规模、多智能体、分布式、高并发任务</td>
+<td>工程化强，支持分布式和消息路由</td>
+<td>对简单任务可能过重</td>
+</tr>
+<tr>
+<td>CAMEL</td>
+<td>角色扮演 + 引导性提示</td>
+<td>两个专家智能体协作、创作类任务</td>
+<td>轻量、自然、低干预</td>
+<td>流程控制能力相对弱</td>
+</tr>
+<tr>
+<td>LangGraph</td>
+<td>状态机 + 有向图</td>
+<td>强流程控制、反思循环、复杂工作流</td>
+<td>可控、可审计、支持循环</td>
+<td>前期代码较多，开放协作弱</td>
+</tr>
+</tbody></table>
+<p>一句话记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AutoGen：让 Agent 像团队一样对话协作</span><br><span class="line">AgentScope：让 Agent 像工程系统一样稳定运行</span><br><span class="line">CAMEL：让两个 Agent 像专家一样角色扮演</span><br><span class="line">LangGraph：让 Agent 像流程图一样精确执行</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="4-框架一：AutoGen"><a href="#4-框架一：AutoGen" class="headerlink" title="4. 框架一：AutoGen"></a>4. 框架一：AutoGen</h1><h2 id="4-1-AutoGen-的核心思想"><a href="#4-1-AutoGen-的核心思想" class="headerlink" title="4.1 AutoGen 的核心思想"></a>4.1 AutoGen 的核心思想</h2><p>AutoGen 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">以对话驱动协作</span><br></pre></td></tr></table></figure>
+
+<p>它把多智能体系统抽象成一个“群聊”。每个智能体都是一个可以对话的角色，例如：</p>
+<ul>
+<li>产品经理；</li>
+<li>工程师；</li>
+<li>代码审查员；</li>
+<li>测试人员；</li>
+<li>用户代理。</li>
+</ul>
+<p>任务的完成过程，就是这些智能体按照一定规则不断对话、协作和迭代的过程。</p>
+<h2 id="4-2-AutoGen-的核心组件"><a href="#4-2-AutoGen-的核心组件" class="headerlink" title="4.2 AutoGen 的核心组件"></a>4.2 AutoGen 的核心组件</h2><h3 id="1-AssistantAgent"><a href="#1-AssistantAgent" class="headerlink" title="1. AssistantAgent"></a>1. AssistantAgent</h3><p><code>AssistantAgent</code> 是主要负责“思考和生成”的智能体。它通常由 LLM 驱动，可以通过系统提示词被设定成不同角色。</p>
+<p>例如：</p>
+<ul>
+<li>产品经理负责需求分析；</li>
+<li>工程师负责编写代码；</li>
+<li>代码审查员负责检查质量。</li>
+</ul>
+<h3 id="2-UserProxyAgent"><a href="#2-UserProxyAgent" class="headerlink" title="2. UserProxyAgent"></a>2. UserProxyAgent</h3><p><code>UserProxyAgent</code> 是用户代理，既可以代表用户发起任务，也可以承担执行器的作用。它可以执行代码、调用工具，并把结果反馈给其他智能体。</p>
+<p>这个设计体现了一个重要思想：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AssistantAgent 负责思考</span><br><span class="line">UserProxyAgent 负责行动和验证</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-RoundRobinGroupChat"><a href="#3-RoundRobinGroupChat" class="headerlink" title="3. RoundRobinGroupChat"></a>3. RoundRobinGroupChat</h3><p><code>RoundRobinGroupChat</code> 是一种轮询式群聊机制。多个智能体按照固定顺序依次发言，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">产品经理 -&gt; 工程师 -&gt; 代码审查员 -&gt; 用户代理</span><br></pre></td></tr></table></figure>
+
+<p>这种方式适合流程相对固定的任务，例如软件开发流程。</p>
+<h2 id="4-3-AutoGen-案例：软件开发团队"><a href="#4-3-AutoGen-案例：软件开发团队" class="headerlink" title="4.3 AutoGen 案例：软件开发团队"></a>4.3 AutoGen 案例：软件开发团队</h2><p>本章用 AutoGen 构建了一个模拟软件开发团队，目标是开发一个比特币价格显示应用。</p>
+<p>团队角色包括：</p>
+<ul>
+<li><strong>ProductManager</strong>：负责需求分析和开发计划；</li>
+<li><strong>Engineer</strong>：负责根据计划编写代码；</li>
+<li><strong>CodeReviewer</strong>：负责代码质量和安全审查；</li>
+<li><strong>UserProxy</strong>：代表用户执行和验证最终结果。</li>
+</ul>
+<p>这个案例完整模拟了一个软件开发闭环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">需求分析 -&gt; 编码实现 -&gt; 代码审查 -&gt; 用户测试 -&gt; 终止任务</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-4-AutoGen-的优势"><a href="#4-4-AutoGen-的优势" class="headerlink" title="4.4 AutoGen 的优势"></a>4.4 AutoGen 的优势</h2><h3 id="1-协作方式自然"><a href="#1-协作方式自然" class="headerlink" title="1. 协作方式自然"></a>1. 协作方式自然</h3><p>AutoGen 把复杂任务映射成人类熟悉的团队对话模式，不需要开发者手动设计复杂状态机。</p>
+<h3 id="2-角色分工清晰"><a href="#2-角色分工清晰" class="headerlink" title="2. 角色分工清晰"></a>2. 角色分工清晰</h3><p>每个 Agent 都可以通过系统提示词设定职责，形成专业分工。</p>
+<h3 id="3-适合多角色任务"><a href="#3-适合多角色任务" class="headerlink" title="3. 适合多角色任务"></a>3. 适合多角色任务</h3><p>例如软件开发、需求分析、文档审查、方案讨论等任务，都适合使用 AutoGen 的多智能体协作模式。</p>
+<h3 id="4-支持人类在环"><a href="#4-支持人类在环" class="headerlink" title="4. 支持人类在环"></a>4. 支持人类在环</h3><p><code>UserProxyAgent</code> 可以让人类参与确认、执行和验收，避免系统完全失控。</p>
+<h2 id="4-5-AutoGen-的局限"><a href="#4-5-AutoGen-的局限" class="headerlink" title="4.5 AutoGen 的局限"></a>4.5 AutoGen 的局限</h2><h3 id="1-对话不确定性较高"><a href="#1-对话不确定性较高" class="headerlink" title="1. 对话不确定性较高"></a>1. 对话不确定性较高</h3><p>因为智能体之间是自然语言对话，所以可能出现偏离预期、重复发言、流程跑偏等问题。</p>
+<h3 id="2-调试较困难"><a href="#2-调试较困难" class="headerlink" title="2. 调试较困难"></a>2. 调试较困难</h3><p>当任务失败时，开发者面对的不是清晰的错误堆栈，而是一长串对话历史，需要判断是哪一步的角色输出出了问题。</p>
+<h3 id="3-流程控制不如状态机精确"><a href="#3-流程控制不如状态机精确" class="headerlink" title="3. 流程控制不如状态机精确"></a>3. 流程控制不如状态机精确</h3><p>对于强约束流程，AutoGen 的对话式协作可能不如 LangGraph 这类图结构框架稳定。</p>
+<h2 id="4-6-面试回答角度"><a href="#4-6-面试回答角度" class="headerlink" title="4.6 面试回答角度"></a>4.6 面试回答角度</h2><p>如果面试官问 AutoGen 的特点，可以这样回答：</p>
+<blockquote>
+<p>AutoGen 的核心是多智能体对话协作。它把复杂任务组织成多个角色之间的自动化群聊，每个智能体通过系统提示词定义角色和职责，再由群聊机制协调发言顺序和终止条件。它适合软件开发团队、需求评审、代码审查等多角色协作场景。优势是直观自然、角色分工清晰；局限是对话具有不确定性，复杂情况下调试较难。</p>
+</blockquote>
+<hr>
+<h1 id="5-框架二："><a href="#5-框架二：" class="headerlink" title="5. 框架二："></a>5. 框架二：</h1><p><img src="/assets/posts/hello-agents/AgentScope.png" alt="AgentScope"></p>
+<h2 id="5-1-AgentScope-的核心思想"><a href="#5-1-AgentScope-的核心思想" class="headerlink" title="5.1 AgentScope 的核心思想"></a>5.1 AgentScope 的核心思想</h2><p>AgentScope 更强调：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">工程化优先的多智能体平台</span><br></pre></td></tr></table></figure>
+
+<p>如果说 AutoGen 更像一个“对话工作室”，那么 AgentScope 更像一个“智能体操作系统”。</p>
+<p>它不仅关注多智能体能不能协作，还关注：</p>
+<ul>
+<li>是否易于部署；</li>
+<li>是否支持分布式；</li>
+<li>是否支持高并发；</li>
+<li>是否有可观测性；</li>
+<li>是否能长期稳定运行；</li>
+<li>是否支持复杂生命周期管理。</li>
+</ul>
+<h2 id="5-2-AgentScope-的核心架构"><a href="#5-2-AgentScope-的核心架构" class="headerlink" title="5.2 AgentScope 的核心架构"></a>5.2 AgentScope 的核心架构</h2><p>AgentScope 采用分层设计，大致可以分为：</p>
+<h3 id="1-基础组件层"><a href="#1-基础组件层" class="headerlink" title="1. 基础组件层"></a>1. 基础组件层</h3><p>包括：</p>
+<ul>
+<li><code>Message</code>：统一消息格式；</li>
+<li><code>Memory</code>：记忆管理；</li>
+<li><code>Model API</code>：模型调用抽象；</li>
+<li><code>Tool</code>：工具封装。</li>
+</ul>
+<h3 id="2-智能体基础设施层"><a href="#2-智能体基础设施层" class="headerlink" title="2. 智能体基础设施层"></a>2. 智能体基础设施层</h3><p>提供预构建智能体、ReAct 支持、状态管理、并行工具调用、钩子机制等。</p>
+<h3 id="3-多智能体协作层"><a href="#3-多智能体协作层" class="headerlink" title="3. 多智能体协作层"></a>3. 多智能体协作层</h3><p>核心是 <code>MsgHub</code> 和 <code>Pipeline</code>。</p>
+<ul>
+<li><code>MsgHub</code> 负责消息路由和状态管理；</li>
+<li><code>Pipeline</code> 负责顺序、并发等工作流编排。</li>
+</ul>
+<h3 id="4-开发与部署层"><a href="#4-开发与部署层" class="headerlink" title="4. 开发与部署层"></a>4. 开发与部署层</h3><p>提供 AgentScope Runtime 和 AgentScope Studio，支持生产环境运行和可视化开发。</p>
+<h2 id="5-3-消息驱动架构"><a href="#5-3-消息驱动架构" class="headerlink" title="5.3 消息驱动架构"></a>5.3 消息驱动架构</h2><p>AgentScope 的关键特点是消息驱动。<br>它不是让一个智能体直接调用另一个智能体的函数，而是把所有交互都抽象为消息的发送和接收。</p>
+<p>这种设计带来几个好处：</p>
+<h3 id="1-异步解耦"><a href="#1-异步解耦" class="headerlink" title="1. 异步解耦"></a>1. 异步解耦</h3><p>发送方和接收方不需要同步等待，适合高并发场景。</p>
+<h3 id="2-位置透明"><a href="#2-位置透明" class="headerlink" title="2. 位置透明"></a>2. 位置透明</h3><p>智能体可以运行在本地，也可以运行在远程服务器上，消息系统负责路由。</p>
+<h3 id="3-可观测性强"><a href="#3-可观测性强" class="headerlink" title="3. 可观测性强"></a>3. 可观测性强</h3><p>每条消息都可以被记录、追踪和分析，方便调试复杂系统。</p>
+<h3 id="4-容错能力更好"><a href="#4-容错能力更好" class="headerlink" title="4. 容错能力更好"></a>4. 容错能力更好</h3><p>消息可以持久化、重试和恢复，有利于构建长期运行的系统。</p>
+<h2 id="5-4-AgentScope-案例：三国狼人杀"><a href="#5-4-AgentScope-案例：三国狼人杀" class="headerlink" title="5.4 AgentScope 案例：三国狼人杀"></a>5.4 AgentScope 案例：三国狼人杀</h2><p>本章使用 AgentScope 构建了一个“三国狼人杀”游戏。</p>
+<p>这个案例结合了：</p>
+<ul>
+<li>多智能体实时交互；</li>
+<li>角色扮演；</li>
+<li>游戏规则约束；</li>
+<li>消息广播；</li>
+<li>私密频道；</li>
+<li>结构化输出。</li>
+</ul>
+<p>系统大致包括三层：</p>
+<h3 id="1-游戏控制层"><a href="#1-游戏控制层" class="headerlink" title="1. 游戏控制层"></a>1. 游戏控制层</h3><p>负责维护全局状态，例如：</p>
+<ul>
+<li>当前回合；</li>
+<li>存活玩家；</li>
+<li>游戏阶段；</li>
+<li>胜负判断。</li>
+</ul>
+<h3 id="2-智能体交互层"><a href="#2-智能体交互层" class="headerlink" title="2. 智能体交互层"></a>2. 智能体交互层</h3><p>由 <code>MsgHub</code> 驱动，负责不同角色之间的消息通信。</p>
+<p>例如：</p>
+<ul>
+<li>狼人之间私密讨论；</li>
+<li>白天所有玩家公开发言；</li>
+<li>预言家单独查验；</li>
+<li>女巫执行行动。</li>
+</ul>
+<h3 id="3-角色建模层"><a href="#3-角色建模层" class="headerlink" title="3. 角色建模层"></a>3. 角色建模层</h3><p>每个玩家都是一个智能体，同时拥有两层身份：</p>
+<ul>
+<li>游戏身份：狼人、预言家、女巫、村民等；</li>
+<li>三国人物身份：刘备、曹操、诸葛亮等。</li>
+</ul>
+<p>这要求智能体既遵守游戏规则，又体现人物性格。</p>
+<h2 id="5-5-结构化输出的作用"><a href="#5-5-结构化输出的作用" class="headerlink" title="5.5 结构化输出的作用"></a>5.5 结构化输出的作用</h2><p>在狼人杀场景中，如果让模型自由输出，很容易违反规则。AgentScope 使用结构化输出限制智能体行为，例如：</p>
+<ul>
+<li>是否达成共识；</li>
+<li>投票目标是谁；</li>
+<li>是否使用解药；</li>
+<li>是否使用毒药；</li>
+<li>行动信心程度。</li>
+</ul>
+<p>这种方式可以把游戏规则转化为代码层面的约束，提升系统稳定性。</p>
+<h2 id="5-6-AgentScope-的优势"><a href="#5-6-AgentScope-的优势" class="headerlink" title="5.6 AgentScope 的优势"></a>5.6 AgentScope 的优势</h2><h3 id="1-工程化能力强"><a href="#1-工程化能力强" class="headerlink" title="1. 工程化能力强"></a>1. 工程化能力强</h3><p>适合构建复杂、长期运行、可观测的智能体系统。</p>
+<h3 id="2-支持分布式部署"><a href="#2-支持分布式部署" class="headerlink" title="2. 支持分布式部署"></a>2. 支持分布式部署</h3><p>不同智能体可以运行在不同进程或服务器中，适合大规模多智能体应用。</p>
+<h3 id="3-消息驱动适合复杂协作"><a href="#3-消息驱动适合复杂协作" class="headerlink" title="3. 消息驱动适合复杂协作"></a>3. 消息驱动适合复杂协作</h3><p>尤其适合游戏、仿真、群体协作、实时交互等场景。</p>
+<h3 id="4-结构化输出提升可靠性"><a href="#4-结构化输出提升可靠性" class="headerlink" title="4. 结构化输出提升可靠性"></a>4. 结构化输出提升可靠性</h3><p>可以减少模型输出不符合规则的问题。</p>
+<h2 id="5-7-AgentScope-的局限"><a href="#5-7-AgentScope-的局限" class="headerlink" title="5.7 AgentScope 的局限"></a>5.7 AgentScope 的局限</h2><h3 id="1-学习成本较高"><a href="#1-学习成本较高" class="headerlink" title="1. 学习成本较高"></a>1. 学习成本较高</h3><p>需要理解异步编程、消息系统、分布式部署等概念。</p>
+<h3 id="2-对简单任务可能过度工程化"><a href="#2-对简单任务可能过度工程化" class="headerlink" title="2. 对简单任务可能过度工程化"></a>2. 对简单任务可能过度工程化</h3><p>如果只是做一个简单问答 Agent，使用 AgentScope 可能显得过重。</p>
+<h3 id="3-生态还在发展"><a href="#3-生态还在发展" class="headerlink" title="3. 生态还在发展"></a>3. 生态还在发展</h3><p>相比 LangChain 等早期框架，AgentScope 的生态和社区资源仍在完善。</p>
+<h2 id="5-8-面试回答角度"><a href="#5-8-面试回答角度" class="headerlink" title="5.8 面试回答角度"></a>5.8 面试回答角度</h2><p>如果面试官问 AgentScope 的特点，可以这样回答：</p>
+<blockquote>
+<p>AgentScope 是一个工程化优先的多智能体框架，它的核心是消息驱动架构。智能体之间不是直接函数调用，而是通过统一消息格式和 MsgHub 进行通信，这让系统具备异步解耦、位置透明、可观测和容错等能力。它特别适合构建高并发、分布式、长期运行的多智能体系统。缺点是学习成本较高，对简单应用可能过度工程化。</p>
+</blockquote>
+<hr>
+<h1 id="6-框架三：CAMEL"><a href="#6-框架三：CAMEL" class="headerlink" title="6. 框架三：CAMEL"></a>6. 框架三：CAMEL</h1><p><img src="/assets/posts/hello-agents/CAMEL.png" alt="CAMEL"></p>
+<h2 id="6-1-CAMEL-的核心思想"><a href="#6-1-CAMEL-的核心思想" class="headerlink" title="6.1 CAMEL 的核心思想"></a>6.1 CAMEL 的核心思想</h2><p>CAMEL 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">角色扮演 + 引导性提示</span><br></pre></td></tr></table></figure>
+
+<p>它最初关注的问题是：<br><strong>如何在尽量少的人类干预下，让两个智能体通过自主对话完成复杂任务？</strong></p>
+<p>CAMEL 通常让两个智能体分别扮演互补角色：</p>
+<ul>
+<li>一个是 AI User，负责提出需求、拆解任务、下达指令；</li>
+<li>一个是 AI Assistant，负责执行任务、给出方案、完成具体操作。</li>
+</ul>
+<h2 id="6-2-角色扮演机制"><a href="#6-2-角色扮演机制" class="headerlink" title="6.2 角色扮演机制"></a>6.2 角色扮演机制</h2><p>在 CAMEL 中，一个任务通常由两个具有互补能力的智能体协作完成。</p>
+<p>例如，开发股票交易策略分析工具：</p>
+<ul>
+<li>AI User：资深股票交易员，懂市场和策略；</li>
+<li>AI Assistant：Python 程序员，懂代码实现。</li>
+</ul>
+<p>交易员提出专业需求，程序员把需求转化为代码，两者通过多轮对话共同完成任务。</p>
+<p>这种方式把复杂的系统工程问题转化成了“两个专家之间的协作对话”。</p>
+<h2 id="6-3-Inception-Prompting"><a href="#6-3-Inception-Prompting" class="headerlink" title="6.3 Inception Prompting"></a>6.3 Inception Prompting</h2><p>仅仅设定角色还不够，还需要让两个智能体始终围绕共同目标推进任务。<br>这就是 CAMEL 的引导性提示，也叫 Inception Prompting。</p>
+<p>它通常包含：</p>
+<ul>
+<li>明确自身角色；</li>
+<li>告知协作者角色；</li>
+<li>定义共同目标；</li>
+<li>设定行为约束；</li>
+<li>规定沟通协议；</li>
+<li>定义终止标志。</li>
+</ul>
+<p>这些提示让智能体不会随意跑题，也不容易陷入无效循环。</p>
+<h2 id="6-4-CAMEL-案例：AI-科普电子书"><a href="#6-4-CAMEL-案例：AI-科普电子书" class="headerlink" title="6.4 CAMEL 案例：AI 科普电子书"></a>6.4 CAMEL 案例：AI 科普电子书</h2><p>本章使用 CAMEL 构建了一个创作案例：<br>让一位 AI 心理学家和一位 AI 作者共同创作一本关于“拖延症心理学”的科普电子书。</p>
+<p>两个角色分别是：</p>
+<h3 id="1-心理学家"><a href="#1-心理学家" class="headerlink" title="1. 心理学家"></a>1. 心理学家</h3><p>负责提供专业理论支持，例如：</p>
+<ul>
+<li>认知行为科学；</li>
+<li>神经科学；</li>
+<li>心理学研究；</li>
+<li>拖延症成因分析。</li>
+</ul>
+<h3 id="2-作者"><a href="#2-作者" class="headerlink" title="2. 作者"></a>2. 作者</h3><p>负责把专业内容转化成普通读者容易理解的文字，例如：</p>
+<ul>
+<li>组织章节结构；</li>
+<li>优化表达；</li>
+<li>提升可读性；</li>
+<li>设计故事化叙述。</li>
+</ul>
+<p>这个案例体现了 CAMEL 的优势：<br>通过两个互补专家的持续对话，完成单个智能体较难兼顾的复杂创作任务。</p>
+<h2 id="6-5-CAMEL-的优势"><a href="#6-5-CAMEL-的优势" class="headerlink" title="6.5 CAMEL 的优势"></a>6.5 CAMEL 的优势</h2><h3 id="1-轻量自然"><a href="#1-轻量自然" class="headerlink" title="1. 轻量自然"></a>1. 轻量自然</h3><p>不需要设计复杂状态机，也不需要搭建大型消息系统。</p>
+<h3 id="2-适合专家协作"><a href="#2-适合专家协作" class="headerlink" title="2. 适合专家协作"></a>2. 适合专家协作</h3><p>尤其适合两个互补角色合作，例如：</p>
+<ul>
+<li>研究员 + 程序员；</li>
+<li>心理学家 + 作者；</li>
+<li>产品经理 + 设计师；</li>
+<li>数据分析师 + 报告撰写者。</li>
+</ul>
+<h3 id="3-人类干预少"><a href="#3-人类干预少" class="headerlink" title="3. 人类干预少"></a>3. 人类干预少</h3><p>只要角色和任务目标设定清楚，两个智能体可以自主推进对话。</p>
+<h3 id="4-创造性强"><a href="#4-创造性强" class="headerlink" title="4. 创造性强"></a>4. 创造性强</h3><p>适合写作、方案生成、研究讨论、创意探索等开放式任务。</p>
+<h2 id="6-6-CAMEL-的局限"><a href="#6-6-CAMEL-的局限" class="headerlink" title="6.6 CAMEL 的局限"></a>6.6 CAMEL 的局限</h2><h3 id="1-流程控制能力弱"><a href="#1-流程控制能力弱" class="headerlink" title="1. 流程控制能力弱"></a>1. 流程控制能力弱</h3><p>如果任务需要严格步骤控制，LangGraph 更合适。</p>
+<h3 id="2-不适合大规模并发"><a href="#2-不适合大规模并发" class="headerlink" title="2. 不适合大规模并发"></a>2. 不适合大规模并发</h3><p>如果涉及大量智能体同时通信，AgentScope 更合适。</p>
+<h3 id="3-复杂多方决策不如群聊框架灵活"><a href="#3-复杂多方决策不如群聊框架灵活" class="headerlink" title="3. 复杂多方决策不如群聊框架灵活"></a>3. 复杂多方决策不如群聊框架灵活</h3><p>如果需要多个角色共同参与决策，AutoGen 的群聊模式可能更合适。</p>
+<h2 id="6-7-面试回答角度"><a href="#6-7-面试回答角度" class="headerlink" title="6.7 面试回答角度"></a>6.7 面试回答角度</h2><p>如果面试官问 CAMEL 的特点，可以这样回答：</p>
+<blockquote>
+<p>CAMEL 的核心是角色扮演和 Inception Prompting。它通常让两个智能体分别扮演互补角色，比如 AI 用户负责提出需求，AI 助手负责执行任务。通过在对话开始前注入结构化提示，明确双方角色、共同目标和沟通规则，两个智能体可以在较少人类干预下自主协作。它适合轻量级专家协作和创作型任务，但不适合强流程控制或大规模分布式场景。</p>
+</blockquote>
+<hr>
+<h1 id="7-框架四：LangGraph"><a href="#7-框架四：LangGraph" class="headerlink" title="7. 框架四：LangGraph"></a>7. 框架四：LangGraph</h1><h2 id="7-1-LangGraph-的核心思想"><a href="#7-1-LangGraph-的核心思想" class="headerlink" title="7.1 LangGraph 的核心思想"></a>7.1 LangGraph 的核心思想</h2><p>LangGraph 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用状态机和有向图控制 Agent 工作流</span><br></pre></td></tr></table></figure>
+
+<p>它不是把任务建模成对话，而是把智能体执行流程建模成一个图。</p>
+<p>在这个图中：</p>
+<ul>
+<li><strong>State</strong>：全局状态，保存任务过程中的上下文；</li>
+<li><strong>Node</strong>：节点，代表一个具体步骤；</li>
+<li><strong>Edge</strong>：边，定义节点之间的跳转关系；</li>
+<li><strong>Conditional Edge</strong>：条件边，根据状态决定下一步走向。</li>
+</ul>
+<h2 id="7-2-LangGraph-和对话式框架的区别"><a href="#7-2-LangGraph-和对话式框架的区别" class="headerlink" title="7.2 LangGraph 和对话式框架的区别"></a>7.2 LangGraph 和对话式框架的区别</h2><p>AutoGen 和 CAMEL 更强调“智能体之间如何对话”，而 LangGraph 更强调“流程如何被精确控制”。</p>
+<p>也就是说：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AutoGen / CAMEL：让协作从对话中自然涌现</span><br><span class="line">LangGraph：把每一步流程显式画出来</span><br></pre></td></tr></table></figure>
+
+<p>这种设计让 LangGraph 特别适合需要可靠性、可审计性和可控性的任务。</p>
+<h2 id="7-3-LangGraph-的基本组件"><a href="#7-3-LangGraph-的基本组件" class="headerlink" title="7.3 LangGraph 的基本组件"></a>7.3 LangGraph 的基本组件</h2><h3 id="1-State"><a href="#1-State" class="headerlink" title="1. State"></a>1. State</h3><p>State 是整个工作流共享的数据对象。<br>它可以保存：</p>
+<ul>
+<li>用户问题；</li>
+<li>对话历史；</li>
+<li>中间结果；</li>
+<li>搜索关键词；</li>
+<li>工具返回结果；</li>
+<li>最终答案；</li>
+<li>当前步骤。</li>
+</ul>
+<p>所有节点都可以读取和更新 State。</p>
+<h3 id="2-Node"><a href="#2-Node" class="headerlink" title="2. Node"></a>2. Node</h3><p>Node 是具体执行步骤，通常是一个 Python 函数。<br>例如：</p>
+<ul>
+<li>理解用户问题；</li>
+<li>生成搜索关键词；</li>
+<li>调用搜索工具；</li>
+<li>汇总结果；</li>
+<li>生成最终回答。</li>
+</ul>
+<h3 id="3-Edge"><a href="#3-Edge" class="headerlink" title="3. Edge"></a>3. Edge</h3><p>Edge 定义节点之间的流转关系。<br>普通边是固定流程，条件边则可以根据状态判断下一步。</p>
+<h3 id="4-Cycle"><a href="#4-Cycle" class="headerlink" title="4. Cycle"></a>4. Cycle</h3><p>LangGraph 天然支持循环。<br>这使它非常适合构建反思、修正、重试、回退等流程。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">生成答案 -&gt; 检查质量 -&gt; 不合格则回到搜索或重写 -&gt; 再检查</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-4-LangGraph-案例：智能搜索助手"><a href="#7-4-LangGraph-案例：智能搜索助手" class="headerlink" title="7.4 LangGraph 案例：智能搜索助手"></a>7.4 LangGraph 案例：智能搜索助手</h2><p>本章用 LangGraph 实现了一个智能搜索助手，流程包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">理解 -&gt; 搜索 -&gt; 回答</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-理解阶段"><a href="#1-理解阶段" class="headerlink" title="1. 理解阶段"></a>1. 理解阶段</h3><p>模型先分析用户意图，把自然语言问题转化为更适合搜索的关键词。</p>
+<h3 id="2-搜索阶段"><a href="#2-搜索阶段" class="headerlink" title="2. 搜索阶段"></a>2. 搜索阶段</h3><p>系统调用搜索工具，例如 Tavily API，获取外部信息。</p>
+<h3 id="3-回答阶段"><a href="#3-回答阶段" class="headerlink" title="3. 回答阶段"></a>3. 回答阶段</h3><p>模型基于搜索结果生成最终答案。</p>
+<p>这个案例展示了 LangGraph 如何通过 State、Node 和 Edge 把一个任务拆成清晰可控的工作流。</p>
+<h2 id="7-5-LangGraph-的优势"><a href="#7-5-LangGraph-的优势" class="headerlink" title="7.5 LangGraph 的优势"></a>7.5 LangGraph 的优势</h2><h3 id="1-可控性强"><a href="#1-可控性强" class="headerlink" title="1. 可控性强"></a>1. 可控性强</h3><p>每一步做什么、下一步去哪，都由开发者明确设置。</p>
+<h3 id="2-适合复杂工作流"><a href="#2-适合复杂工作流" class="headerlink" title="2. 适合复杂工作流"></a>2. 适合复杂工作流</h3><p>尤其适合有条件分支、循环、反思、重试和回退的任务。</p>
+<h3 id="3-可审计性好"><a href="#3-可审计性好" class="headerlink" title="3. 可审计性好"></a>3. 可审计性好</h3><p>流程图结构清晰，方便追踪任务执行路径。</p>
+<h3 id="4-模块化强"><a href="#4-模块化强" class="headerlink" title="4. 模块化强"></a>4. 模块化强</h3><p>每个节点都是独立函数，方便替换、测试和复用。</p>
+<h3 id="5-适合人类在环"><a href="#5-适合人类在环" class="headerlink" title="5. 适合人类在环"></a>5. 适合人类在环</h3><p>可以很自然地在流程中插入人工审核节点。</p>
+<h2 id="7-6-LangGraph-的局限"><a href="#7-6-LangGraph-的局限" class="headerlink" title="7.6 LangGraph 的局限"></a>7.6 LangGraph 的局限</h2><h3 id="1-前期代码较多"><a href="#1-前期代码较多" class="headerlink" title="1. 前期代码较多"></a>1. 前期代码较多</h3><p>需要定义 State、Node、Edge、条件跳转等，对于简单任务会显得繁琐。</p>
+<h3 id="2-缺少开放式协作的灵活性"><a href="#2-缺少开放式协作的灵活性" class="headerlink" title="2. 缺少开放式协作的灵活性"></a>2. 缺少开放式协作的灵活性</h3><p>它更适合确定性流程，不太适合模拟自然、开放、多角色的社会性协作。</p>
+<h3 id="3-调试需要理解全局图结构"><a href="#3-调试需要理解全局图结构" class="headerlink" title="3. 调试需要理解全局图结构"></a>3. 调试需要理解全局图结构</h3><p>问题可能来自节点逻辑、状态传递或边的跳转条件，需要开发者具备整体流程视角。</p>
+<h2 id="7-7-面试回答角度"><a href="#7-7-面试回答角度" class="headerlink" title="7.7 面试回答角度"></a>7.7 面试回答角度</h2><p>如果面试官问 LangGraph 的特点，可以这样回答：</p>
+<blockquote>
+<p>LangGraph 的核心是把 Agent 工作流建模为状态机和有向图。State 保存全局上下文，Node 表示具体计算步骤，Edge 控制步骤之间的跳转。它和 AutoGen、CAMEL 这类对话式框架不同，更强调显式流程控制，因此非常适合需要稳定、可审计、可回退、可循环反思的复杂任务。缺点是前期代码量较大，对简单任务不够轻量。</p>
+</blockquote>
+<hr>
+<h1 id="8-四种框架的设计哲学对比"><a href="#8-四种框架的设计哲学对比" class="headerlink" title="8. 四种框架的设计哲学对比"></a>8. 四种框架的设计哲学对比</h1><h2 id="8-1-涌现式协作"><a href="#8-1-涌现式协作" class="headerlink" title="8.1 涌现式协作"></a>8.1 涌现式协作</h2><p>AutoGen 和 CAMEL 更偏向“涌现式协作”。</p>
+<p>所谓涌现式协作，就是开发者只定义：</p>
+<ul>
+<li>智能体角色；</li>
+<li>智能体目标；</li>
+<li>对话规则；</li>
+<li>基本终止条件。</li>
+</ul>
+<p>至于具体过程如何展开，则由智能体之间的自然语言对话自动产生。</p>
+<p>这种方式的优点是自然、灵活、接近人类协作。<br>缺点是不可预测性较强，调试难度较高。</p>
+<h2 id="8-2-显式控制"><a href="#8-2-显式控制" class="headerlink" title="8.2 显式控制"></a>8.2 显式控制</h2><p>LangGraph 更偏向“显式控制”。</p>
+<p>所谓显式控制，就是开发者明确规定：</p>
+<ul>
+<li>有哪些步骤；</li>
+<li>每一步输入输出是什么；</li>
+<li>每一步之后跳到哪里；</li>
+<li>条件满足时走哪条路径；</li>
+<li>失败后是否重试或回退。</li>
+</ul>
+<p>这种方式的优点是可靠、可控、可审计。<br>缺点是代码和设计成本更高，灵活性不如自然对话。</p>
+<h2 id="8-3-工程化平台"><a href="#8-3-工程化平台" class="headerlink" title="8.3 工程化平台"></a>8.3 工程化平台</h2><p>AgentScope 代表第三个维度：工程化。</p>
+<p>它关注的不只是智能体“能不能完成任务”，还包括：</p>
+<ul>
+<li>能不能高并发；</li>
+<li>能不能分布式部署；</li>
+<li>能不能恢复状态；</li>
+<li>能不能追踪消息；</li>
+<li>能不能长期稳定运行。</li>
+</ul>
+<p>这说明 Agent 从 Demo 走向生产应用时，工程能力非常关键。</p>
+<hr>
+<h1 id="9-如何选择框架？"><a href="#9-如何选择框架？" class="headerlink" title="9. 如何选择框架？"></a>9. 如何选择框架？</h1><h2 id="9-1-选择-AutoGen-的场景"><a href="#9-1-选择-AutoGen-的场景" class="headerlink" title="9.1 选择 AutoGen 的场景"></a>9.1 选择 AutoGen 的场景</h2><p>如果任务像一个小团队合作，比如产品经理、工程师、测试人员共同完成任务，可以选择 AutoGen。</p>
+<p>适合：</p>
+<ul>
+<li>软件开发团队模拟；</li>
+<li>需求分析与代码生成；</li>
+<li>多角色评审；</li>
+<li>自动化协作讨论；</li>
+<li>人类在环流程。</li>
+</ul>
+<h2 id="9-2-选择-AgentScope-的场景"><a href="#9-2-选择-AgentScope-的场景" class="headerlink" title="9.2 选择 AgentScope 的场景"></a>9.2 选择 AgentScope 的场景</h2><p>如果任务需要高并发、分布式、多智能体长期运行，可以选择 AgentScope。</p>
+<p>适合：</p>
+<ul>
+<li>多智能体仿真；</li>
+<li>游戏智能体；</li>
+<li>复杂群体协作；</li>
+<li>分布式 Agent 系统；</li>
+<li>生产级多智能体平台。</li>
+</ul>
+<h2 id="9-3-选择-CAMEL-的场景"><a href="#9-3-选择-CAMEL-的场景" class="headerlink" title="9.3 选择 CAMEL 的场景"></a>9.3 选择 CAMEL 的场景</h2><p>如果任务主要是两个专家角色之间的深度协作，可以选择 CAMEL。</p>
+<p>适合：</p>
+<ul>
+<li>创作型任务；</li>
+<li>研究员 + 程序员；</li>
+<li>专家对话；</li>
+<li>内容生成；</li>
+<li>低干预协作。</li>
+</ul>
+<h2 id="9-4-选择-LangGraph-的场景"><a href="#9-4-选择-LangGraph-的场景" class="headerlink" title="9.4 选择 LangGraph 的场景"></a>9.4 选择 LangGraph 的场景</h2><p>如果任务流程非常明确，而且需要循环、回退、验证和人工审核，可以选择 LangGraph。</p>
+<p>适合：</p>
+<ul>
+<li>智能搜索助手；</li>
+<li>RAG 工作流；</li>
+<li>多步骤工具调用；</li>
+<li>反思修正流程；</li>
+<li>生产级可控 Agent；</li>
+<li>审批流和人机协作。</li>
+</ul>
+<hr>
+<h1 id="10-面试高频问题"><a href="#10-面试高频问题" class="headerlink" title="10. 面试高频问题"></a>10. 面试高频问题</h1><h2 id="Q1：为什么从手写-Agent-走向框架开发？"><a href="#Q1：为什么从手写-Agent-走向框架开发？" class="headerlink" title="Q1：为什么从手写 Agent 走向框架开发？"></a>Q1：为什么从手写 Agent 走向框架开发？</h2><p>因为手写 Agent 适合理解原理，但在复杂应用中会遇到复用性差、状态难管理、工具调用混乱、调试困难、缺少可观测性等问题。框架可以封装通用能力，让开发者专注业务逻辑，并提升系统可维护性。</p>
+<h2 id="Q2：AutoGen-和-LangGraph-最大区别是什么？"><a href="#Q2：AutoGen-和-LangGraph-最大区别是什么？" class="headerlink" title="Q2：AutoGen 和 LangGraph 最大区别是什么？"></a>Q2：AutoGen 和 LangGraph 最大区别是什么？</h2><p>AutoGen 是对话式协作框架，把任务建模成多个角色之间的群聊；LangGraph 是图结构工作流框架，把任务建模成状态机和节点跳转。AutoGen 更自然灵活，LangGraph 更可控可靠。</p>
+<h2 id="Q3：AgentScope-为什么适合生产级多智能体系统？"><a href="#Q3：AgentScope-为什么适合生产级多智能体系统？" class="headerlink" title="Q3：AgentScope 为什么适合生产级多智能体系统？"></a>Q3：AgentScope 为什么适合生产级多智能体系统？</h2><p>因为它采用消息驱动架构，支持异步解耦、消息路由、持久化、分布式部署和可观测性，更适合高并发、长期运行、复杂协作的多智能体应用。</p>
+<h2 id="Q4：CAMEL-的-Inception-Prompting-是什么？"><a href="#Q4：CAMEL-的-Inception-Prompting-是什么？" class="headerlink" title="Q4：CAMEL 的 Inception Prompting 是什么？"></a>Q4：CAMEL 的 Inception Prompting 是什么？</h2><p>它是在对话开始前给两个智能体注入的结构化初始提示，用来明确双方角色、共同目标、沟通规则、行为约束和终止条件，保证两个智能体能围绕任务持续协作。</p>
+<h2 id="Q5：什么是涌现式协作和显式控制？"><a href="#Q5：什么是涌现式协作和显式控制？" class="headerlink" title="Q5：什么是涌现式协作和显式控制？"></a>Q5：什么是涌现式协作和显式控制？</h2><p>涌现式协作是通过角色和目标设定，让智能体在对话中自然产生协作行为，典型代表是 AutoGen 和 CAMEL。显式控制是开发者明确规定每一步流程和跳转条件，典型代表是 LangGraph。</p>
+<hr>
+<h1 id="11-本章对-Agent-项目开发的启发"><a href="#11-本章对-Agent-项目开发的启发" class="headerlink" title="11. 本章对 Agent 项目开发的启发"></a>11. 本章对 Agent 项目开发的启发</h1><h2 id="11-1-不要一开始就追求复杂框架"><a href="#11-1-不要一开始就追求复杂框架" class="headerlink" title="11.1 不要一开始就追求复杂框架"></a>11.1 不要一开始就追求复杂框架</h2><p>如果只是验证一个简单想法，可以先用原生 API 或轻量封装实现。框架适合在任务复杂、流程变长、状态难管理时引入。</p>
+<h2 id="11-2-框架选型要看任务结构"><a href="#11-2-框架选型要看任务结构" class="headerlink" title="11.2 框架选型要看任务结构"></a>11.2 框架选型要看任务结构</h2><p>不是越复杂的框架越好，而是要看任务更像哪种结构：</p>
+<ul>
+<li>像团队讨论：AutoGen；</li>
+<li>像工程系统：AgentScope；</li>
+<li>像专家对话：CAMEL；</li>
+<li>像流程图：LangGraph。</li>
+</ul>
+<h2 id="11-3-生产级-Agent-必须重视可观测性"><a href="#11-3-生产级-Agent-必须重视可观测性" class="headerlink" title="11.3 生产级 Agent 必须重视可观测性"></a>11.3 生产级 Agent 必须重视可观测性</h2><p>Agent 很容易出现“看似运行，实际跑偏”的问题。真实项目中必须记录：</p>
+<ul>
+<li>每次模型输入输出；</li>
+<li>工具调用参数；</li>
+<li>工具返回结果；</li>
+<li>状态变化；</li>
+<li>错误和重试；</li>
+<li>终止原因。</li>
+</ul>
+<h2 id="11-4-多智能体不是越多越好"><a href="#11-4-多智能体不是越多越好" class="headerlink" title="11.4 多智能体不是越多越好"></a>11.4 多智能体不是越多越好</h2><p>多智能体可以提升分工能力，但也会增加通信成本、调试难度和不确定性。只有当任务确实需要角色分工时，才有必要使用多智能体架构。</p>
+<h2 id="11-5-显式控制和涌现协作可以结合"><a href="#11-5-显式控制和涌现协作可以结合" class="headerlink" title="11.5 显式控制和涌现协作可以结合"></a>11.5 显式控制和涌现协作可以结合</h2><p>真实系统中可以混合使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LangGraph 负责主流程控制</span><br><span class="line">AutoGen / CAMEL 负责局部协作讨论</span><br><span class="line">AgentScope 负责分布式运行和消息管理</span><br></pre></td></tr></table></figure>
+
+<p>这种组合式思路比单独依赖某一个框架更接近生产环境。</p>
+<hr>
+<h1 id="12-结语"><a href="#12-结语" class="headerlink" title="12. 结语"></a>12. 结语</h1><p>第六章的核心价值在于帮助我们理解：<strong>智能体框架不是简单的代码库，而是不同 Agent 设计哲学的具体体现</strong>。</p>
+<p>AutoGen 让我们看到多角色对话协作的自然性；AgentScope 展示了多智能体系统走向生产环境所需的工程能力；CAMEL 用角色扮演说明了轻量级专家协作的可能性；LangGraph 则用图结构强调了复杂流程的可控性和可审计性。</p>
+<p>学习这些框架，不只是为了会调用 API，更重要的是理解它们背后的设计取舍。只有理解这些取舍，才能在真实项目中根据任务特点选择合适的框架，甚至设计自己的 Agent 系统。</p>
+<hr>
+<h1 id="13-参考来源"><a href="#13-参考来源" class="headerlink" title="13. 参考来源"></a>13. 参考来源</h1><ul>
+<li>Datawhale《Hello-Agents》第六章：框架开发实践</li>
+<li>AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation</li>
+<li>AgentScope: A Flexible Yet Robust Multi-Agent Platform</li>
+<li>CAMEL: Communicative Agents for “Mind” Exploration of Large Language Model Society</li>
+<li>LangGraph 官方项目与文档</li>
+</ul>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-05-13T11:09:31.824Z" itemprop="dateModified">最后编辑：2026-05-13</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Hello-Agents第四章智能体经典范式构建的阅读笔记" href="/2026/05/13/hello-agents-4-reading-notes/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                4
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                1
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/hello-agents/" style="font-size: 0.6em;">hello-agents</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/13/hello-agents-6-reading-notes/"><i class="fa fa-book"></i> Hello-Agents第六章框架开发实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/13/hello-agents-4-reading-notes/"><i class="fa fa-book"></i> Hello-Agents第四章智能体经典范式构建的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/hot100%E5%88%B7%E9%A2%98%E7%AC%94%E8%AE%B0/"><i class="fa fa-book"></i> Hot100 刷题笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/12/agentskills/"><i class="fa fa-book"></i> Agent Skills阅读笔记</a>
+            
+          
+        
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
