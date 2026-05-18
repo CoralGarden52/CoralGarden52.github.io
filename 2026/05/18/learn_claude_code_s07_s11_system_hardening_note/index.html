@@ -7,8 +7,8 @@
     <link rel="icon" href="/assets/favicon.png">
   
   
-  <title>关于我 | 珊瑚的花园</title>
-  <link rel="canonical" href="http://example.com/about/index.html">
+  <title>Learn Claude Code 系统加固阅读笔记：s07–s11 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/">
   <meta name="author" content="CoralGarden52" />
   <meta http-equiv="Cache-Control" content="no-transform" />
   <meta http-equiv="Cache-Control" content="no-siteapp" />
@@ -17,24 +17,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <meta name="format-detection" content="telphone=no, email=no" />
   
-    <meta name="keywords" content="" />
+    <meta name="keywords" content="Learn_Claude_Code" />
   
-  <meta name="description" content="这里是关于我的页面。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="关于我">
-<meta property="og:url" content="http://example.com/about/index.html">
+  <meta name="description" content="Learn Claude Code 系统加固阅读笔记：s07–s11一、总结s07–s11 的主线是：把一个能跑的 coding agent，加固成一个更安全、更可维护、更可恢复的系统。 如果说 s01–s06 解决的是核心闭环： 1模型推理 → 工具调用 → 工具结果 → 继续推理  那么 s07–s11 解决的是系统加固： 1权限控制 → Hook 扩展 → 长期记忆 → Prompt 组装">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Learn Claude Code 系统加固阅读笔记：s07–s11">
+<meta property="og:url" content="http://example.com/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/index.html">
 <meta property="og:site_name" content="珊瑚的花园">
-<meta property="og:description" content="这里是关于我的页面。">
+<meta property="og:description" content="Learn Claude Code 系统加固阅读笔记：s07–s11一、总结s07–s11 的主线是：把一个能跑的 coding agent，加固成一个更安全、更可维护、更可恢复的系统。 如果说 s01–s06 解决的是核心闭环： 1模型推理 → 工具调用 → 工具结果 → 继续推理  那么 s07–s11 解决的是系统加固： 1权限控制 → Hook 扩展 → 长期记忆 → Prompt 组装">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/assets/favicon.png">
-<meta property="article:published_time" content="2026-05-12T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-05-13T07:10:04.933Z">
+<meta property="og:image" content="http://example.com/assets/posts/Learn_Claude_Code/s07%E2%80%93s11.png">
+<meta property="article:published_time" content="2026-05-18T10:59:25.591Z">
+<meta property="article:modified_time" content="2026-05-18T10:59:13.757Z">
 <meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="Learn_Claude_Code">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/assets/favicon.png">
+<meta name="twitter:image" content="http://example.com/assets/posts/Learn_Claude_Code/s07%E2%80%93s11.png">
   
   <!-- JSON-LD 结构化数据 -->
   
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Learn Claude Code 系统加固阅读笔记：s07–s11","description":"","image":"http://example.com/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/assets/posts/Learn_Claude_Code/s07%E2%80%93s11.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-05-18T10:59:25.591Z","dateModified":"2026-05-18T10:59:13.757Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/"}}
+    </script>
   
   <!-- 关键 CSS 预加载 -->
   <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
@@ -307,15 +312,174 @@
         
 
             <article itemscope itemtype="https://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://example.com/about/index.html">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/">
     <div class="kratos-hentry kratos-page-inner clearfix">
         <header class="kratos-page-header">
             
-                <h1 class="kratos-page-title text-center" itemprop="name headline">关于我</h1>
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Learn Claude Code 系统加固阅读笔记：s07–s11</h1>
             
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-05-18T10:59:25.591Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-05-18</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~3.30K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
         </header>
-        <div class="kratos-page-content kr-page">
-            <div itemprop="articleBody"><p>这里是关于我的页面。</p>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="Learn-Claude-Code-系统加固阅读笔记：s07–s11"><a href="#Learn-Claude-Code-系统加固阅读笔记：s07–s11" class="headerlink" title="Learn Claude Code 系统加固阅读笔记：s07–s11"></a>Learn Claude Code 系统加固阅读笔记：s07–s11</h1><h2 id="一、总结"><a href="#一、总结" class="headerlink" title="一、总结"></a>一、总结</h2><p><code>s07–s11</code> 的主线是：<strong>把一个能跑的 coding agent，加固成一个更安全、更可维护、更可恢复的系统</strong>。</p>
+<p>如果说 <code>s01–s06</code> 解决的是核心闭环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">模型推理 → 工具调用 → 工具结果 → 继续推理</span><br></pre></td></tr></table></figure>
+
+<p>那么 <code>s07–s11</code> 解决的是系统加固：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">权限控制 → Hook 扩展 → 长期记忆 → Prompt 组装 → 错误恢复</span><br></pre></td></tr></table></figure>
+
+<p>一句话概括：</p>
+<blockquote>
+<p>系统加固的重点不是让 agent 做更多事，而是让 agent 在“能做事”的基础上，做得更安全、更可控、更稳定。</p>
+</blockquote>
+<hr>
+<h2 id="二、面试速记"><a href="#二、面试速记" class="headerlink" title="二、面试速记"></a>二、面试速记</h2><h3 id="1-s07-权限系统解决什么？"><a href="#1-s07-权限系统解决什么？" class="headerlink" title="1. s07 权限系统解决什么？"></a>1. s07 权限系统解决什么？</h3><p>解决“模型产生的工具调用不能直接执行”的问题。</p>
+<p>任何工具调用都应该先经过权限管道，再决定是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">allow / ask / deny</span><br></pre></td></tr></table></figure>
+
+<p>最小流程是：先检查 deny rules，再看当前模式，再看 allow rules，最后剩余灰区交给用户确认。</p>
+<h3 id="2-s08-Hook-系统解决什么？"><a href="#2-s08-Hook-系统解决什么？" class="headerlink" title="2. s08 Hook 系统解决什么？"></a>2. s08 Hook 系统解决什么？</h3><p>解决“不改主循环也能扩展系统行为”的问题。</p>
+<p>Hook 本质是主循环在固定时机暴露出来的扩展点，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SessionStart</span><br><span class="line">PreToolUse</span><br><span class="line">PostToolUse</span><br></pre></td></tr></table></figure>
+
+<p>主循环只负责发事件，具体附加逻辑交给 hook runner。</p>
+<h3 id="3-s09-记忆系统解决什么？"><a href="#3-s09-记忆系统解决什么？" class="headerlink" title="3. s09 记忆系统解决什么？"></a>3. s09 记忆系统解决什么？</h3><p>解决“哪些信息应该跨会话留下”的问题。</p>
+<p>Memory 不是把所有有用信息都存下来，而是只保存：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">跨会话仍然有价值</span><br><span class="line">且不能轻易从当前仓库重新推导的信息</span><br></pre></td></tr></table></figure>
+
+<p>用户偏好、用户纠错、项目隐含约定、外部资源指针适合保存；文件结构、当前任务进度、临时分支名、凭证不适合保存。</p>
+<h3 id="4-s10-系统提示词解决什么？"><a href="#4-s10-系统提示词解决什么？" class="headerlink" title="4. s10 系统提示词解决什么？"></a>4. s10 系统提示词解决什么？</h3><p>解决 system prompt 不可维护的问题。</p>
+<p>系统提示词不应该是一大段硬编码字符串，而应该是一条输入组装流水线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">core + tools + skills + memory + CLAUDE.md + dynamic_context</span><br></pre></td></tr></table></figure>
+
+<p>这样才能区分稳定规则、动态提醒、长期记忆和技能信息。</p>
+<h3 id="5-s11-错误恢复解决什么？"><a href="#5-s11-错误恢复解决什么？" class="headerlink" title="5. s11 错误恢复解决什么？"></a>5. s11 错误恢复解决什么？</h3><p>解决“报错就崩”的问题。</p>
+<p>错误恢复不是掩盖错误，而是先判断错误类型，再选择恢复路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输出被截断 → 续写</span><br><span class="line">上下文太长 → 压缩后重试</span><br><span class="line">网络或限流问题 → 退避重试</span><br></pre></td></tr></table></figure>
+
+<p>每条恢复路径都要有重试预算，防止无限循环。</p>
+<hr>
+<h2 id="三、s07：权限系统"><a href="#三、s07：权限系统" class="headerlink" title="三、s07：权限系统"></a>三、s07：权限系统</h2><p><code>s07</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">模型可以提出行动意图，但真正执行前必须经过权限检查。</span><br></pre></td></tr></table></figure>
+
+<p>最小权限系统不需要一开始就做得很复杂，只需要四步：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tool_call</span><br><span class="line">  → deny rules</span><br><span class="line">  → mode check</span><br><span class="line">  → allow rules</span><br><span class="line">  → ask user</span><br></pre></td></tr></table></figure>
+
+<p>推荐先实现三种模式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">default：未命中规则时问用户</span><br><span class="line">plan：只允许读，不允许写</span><br><span class="line">auto：简单安全操作自动放行，危险操作再问</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>bash</code> 要被特殊对待，因为它不是普通文本，而是可执行动作描述。</p>
+<p>至少要先拦截：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo</span><br><span class="line">rm -rf</span><br><span class="line">命令替换</span><br><span class="line">可疑重定向</span><br><span class="line">高风险网络命令</span><br></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>权限系统不是为了让 agent 更笨，而是为了让 agent 的行动先经过可靠的安全判断。</p>
+</blockquote>
+<hr>
+<h2 id="四、s08：Hook-系统"><a href="#四、s08：Hook-系统" class="headerlink" title="四、s08：Hook 系统"></a>四、s08：Hook 系统</h2><p><code>s08</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">主循环只负责暴露时机，额外行为交给 hook。</span><br></pre></td></tr></table></figure>
+
+<p>Hook 适合处理那些不应该硬塞进主循环的扩展逻辑，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">会话开始时做初始化</span><br><span class="line">工具执行前做额外检查</span><br><span class="line">工具执行后写审计日志</span><br><span class="line">工具失败后补充提示</span><br></pre></td></tr></table></figure>
+
+<p>教学版先掌握三个事件就够了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SessionStart</span><br><span class="line">PreToolUse</span><br><span class="line">PostToolUse</span><br></pre></td></tr></table></figure>
+
+<p>最小返回协议可以统一成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0：正常继续</span><br><span class="line">1：阻止当前动作</span><br><span class="line">2：注入一条补充消息，再继续</span><br></pre></td></tr></table></figure>
+
+<p>这套设计让系统具备三种扩展能力：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">观察</span><br><span class="line">拦截</span><br><span class="line">补充</span><br></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>Hook 不是主循环的替代品，而是主循环在固定时机对外发出的扩展调用。</p>
+</blockquote>
+<hr>
+<h2 id="五、s09：记忆系统"><a href="#五、s09：记忆系统" class="headerlink" title="五、s09：记忆系统"></a>五、s09：记忆系统</h2><p><code>s09</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">不是所有信息都该进入 memory。</span><br></pre></td></tr></table></figure>
+
+<p>Memory 只适合保存两类信息：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">跨会话仍然有价值</span><br><span class="line">不能轻易从当前代码或环境重新推导</span><br></pre></td></tr></table></figure>
+
+<p>适合保存的 memory 有四类：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">user：用户长期偏好</span><br><span class="line">feedback：用户明确纠正过的问题</span><br><span class="line">project：不容易从代码看出的项目约定</span><br><span class="line">reference：外部资源指针</span><br></pre></td></tr></table></figure>
+
+<p>不适合保存的内容包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">文件结构</span><br><span class="line">函数签名</span><br><span class="line">当前任务进度</span><br><span class="line">临时分支名</span><br><span class="line">当前 PR 号</span><br><span class="line">修 bug 的具体代码细节</span><br><span class="line">密钥、密码、凭证</span><br></pre></td></tr></table></figure>
+
+<p>最小实现可以用 <code>.memory/</code> 目录，每条 memory 一个文件，再用 <code>MEMORY.md</code> 做索引。</p>
+<p>记忆不是绝对真相。如果 memory 和当前代码状态冲突，应该优先相信当前真实观察。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>Memory 用来提供长期方向，不应该替代当前观察。</p>
+</blockquote>
+<hr>
+<h2 id="六、s10：系统提示词"><a href="#六、s10：系统提示词" class="headerlink" title="六、s10：系统提示词"></a>六、s10：系统提示词</h2><p><code>s10</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">system prompt 不是固定大字符串，而是逐段组装出来的输入流水线。</span><br></pre></td></tr></table></figure>
+
+<p>随着 agent 功能增加，输入来源会越来越多：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">工具列表会变</span><br><span class="line">skills 会变</span><br><span class="line">memory 会变</span><br><span class="line">当前目录、日期、模式会变</span><br><span class="line">CLAUDE.md 规则会变</span><br></pre></td></tr></table></figure>
+
+<p>因此应该用 <code>SystemPromptBuilder</code> 管理输入组装：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">core</span><br><span class="line">+ tools</span><br><span class="line">+ skills</span><br><span class="line">+ memory</span><br><span class="line">+ CLAUDE.md</span><br><span class="line">+ dynamic_context</span><br><span class="line">= final system prompt</span><br></pre></td></tr></table></figure>
+
+<p>这里最重要的边界是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">稳定说明 vs 动态提醒</span><br><span class="line">system prompt vs system reminder</span><br><span class="line">skills vs memory vs CLAUDE.md</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">skills：可选能力或知识包</span><br><span class="line">memory：跨会话记住的信息</span><br><span class="line">CLAUDE.md：长期规则说明</span><br><span class="line">dynamic_context：本轮动态状态，如日期、cwd、当前模式</span><br></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>Prompt 工程不是写一大段神秘文本，而是把不同来源的信息按职责拼成可维护的输入流水线。</p>
+</blockquote>
+<hr>
+<h2 id="七、s11：错误恢复"><a href="#七、s11：错误恢复" class="headerlink" title="七、s11：错误恢复"></a>七、s11：错误恢复</h2><p><code>s11</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">错误不是例外，而是主循环必须预留出来的一条正常分支。</span><br></pre></td></tr></table></figure>
+
+<p>最小错误恢复先区分三类问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输出被截断</span><br><span class="line">上下文太长</span><br><span class="line">临时连接失败</span><br></pre></td></tr></table></figure>
+
+<p>对应三条恢复路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">max_tokens</span><br><span class="line">  → 注入续写提示</span><br><span class="line">  → 再试一次</span><br><span class="line"></span><br><span class="line">prompt too long</span><br><span class="line">  → 压缩旧上下文</span><br><span class="line">  → 再试一次</span><br><span class="line"></span><br><span class="line">timeout / rate limit / transient API error</span><br><span class="line">  → 退避等待</span><br><span class="line">  → 再试一次</span><br></pre></td></tr></table></figure>
+
+<p>关键是要维护恢复状态，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">continuation_attempts</span><br><span class="line">compact_attempts</span><br><span class="line">transport_attempts</span><br></pre></td></tr></table></figure>
+
+<p>它的作用不是记录所有错误，而是防止无限重试，并让每种恢复路径都有自己的预算。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>稳定的 agent 不是不会出错，而是知道出错后该续写、该压缩、该退避，还是该明确失败。</p>
+</blockquote>
+<hr>
+<h2 id="八、系统加固总图"><a href="#八、系统加固总图" class="headerlink" title="八、系统加固总图"></a>八、系统加固总图</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">s07 权限系统</span><br><span class="line">  工具调用不能直接执行，必须先经过 allow / ask / deny 判断</span><br><span class="line"></span><br><span class="line">s08 Hook 系统</span><br><span class="line">  在固定时机插入扩展逻辑，避免主循环越写越重</span><br><span class="line"></span><br><span class="line">s09 记忆系统</span><br><span class="line">  只保存跨会话仍然有价值、且不易重新推导的信息</span><br><span class="line"></span><br><span class="line">s10 系统提示词</span><br><span class="line">  把 prompt 从固定大字符串升级成输入组装流水线</span><br><span class="line"></span><br><span class="line">s11 错误恢复</span><br><span class="line">  把报错就崩升级成分类恢复、有限重试、明确失败</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、一句话结论"><a href="#九、一句话结论" class="headerlink" title="九、一句话结论"></a>九、一句话结论</h2><p><code>Learn Claude Code s07–s11</code> 的重点不是继续堆工具，而是给 agent 加上安全边界、扩展点、长期记忆、输入组装和恢复机制。</p>
+<p>真正可用的 coding agent，不仅要能调用工具完成任务，还要能判断哪些动作能执行、哪些信息该保留、哪些输入该进入 prompt，以及失败后如何继续推进。</p>
 </div>
         </div>
         
@@ -337,14 +501,32 @@
                 </div>
             
             <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/Learn-Claude-Code/" rel="tag">Learn_Claude_Code</a>
+                </div>
                 <div class="pull-date">
-                    <time datetime="2026-05-13T07:10:04.933Z" itemprop="dateModified">最后编辑：2026-05-13</time>
+                    <time datetime="2026-05-18T10:59:13.757Z" itemprop="dateModified">最后编辑：2026-05-18</time>
                 </div>
             </div>
         </footer>
     </div>
     
-        <div class="comment-page">
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Learn Claude Code 核心闭环阅读笔记：s01–s06" href="/2026/05/18/learn_claude_code_s01_s06_reading_note/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" Learn Claude Code 系统加固阅读笔记：s12–s14" href="/2026/05/18/learn_claude_code_s12_s14_runtime_note/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
             
         </div>
     

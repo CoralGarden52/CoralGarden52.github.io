@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Learn Claude Code 系统加固阅读笔记：s15–s19 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="Learn_Claude_Code" />
+  
+  <meta name="description" content="Learn Claude Code 多 Agent 平台阅读笔记：s15–s19一、总结s15–s19 的主线是：把单个 coding agent 扩展成一个可协作、可自治、可隔离、可接入外部能力的多 Agent 平台。 如果说前面章节已经完成了： 1核心闭环 → 系统加固 → 任务运行时  那么 s15–s19 进一步补齐的是： 1长期队友 → 团队协议 → 自主认领 → Worktree 隔离">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Learn Claude Code 系统加固阅读笔记：s15–s19">
+<meta property="og:url" content="http://example.com/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="Learn Claude Code 多 Agent 平台阅读笔记：s15–s19一、总结s15–s19 的主线是：把单个 coding agent 扩展成一个可协作、可自治、可隔离、可接入外部能力的多 Agent 平台。 如果说前面章节已经完成了： 1核心闭环 → 系统加固 → 任务运行时  那么 s15–s19 进一步补齐的是： 1长期队友 → 团队协议 → 自主认领 → Worktree 隔离">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/Learn_Claude_Code/s15%E2%80%93s19.png">
+<meta property="article:published_time" content="2026-05-18T14:12:42.508Z">
+<meta property="article:modified_time" content="2026-05-18T14:14:18.833Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="Learn_Claude_Code">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/Learn_Claude_Code/s15%E2%80%93s19.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Learn Claude Code 系统加固阅读笔记：s15–s19","description":"","image":"http://example.com/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/assets/posts/Learn_Claude_Code/s15%E2%80%93s19.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-05-18T14:12:42.508Z","dateModified":"2026-05-18T14:14:18.833Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Learn Claude Code 系统加固阅读笔记：s15–s19</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-05-18T14:12:42.508Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-05-18</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~5.21K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="Learn-Claude-Code-多-Agent-平台阅读笔记：s15–s19"><a href="#Learn-Claude-Code-多-Agent-平台阅读笔记：s15–s19" class="headerlink" title="Learn Claude Code 多 Agent 平台阅读笔记：s15–s19"></a>Learn Claude Code 多 Agent 平台阅读笔记：s15–s19</h1><h2 id="一、总结"><a href="#一、总结" class="headerlink" title="一、总结"></a>一、总结</h2><p><code>s15–s19</code> 的主线是：<strong>把单个 coding agent 扩展成一个可协作、可自治、可隔离、可接入外部能力的多 Agent 平台</strong>。</p>
+<p>如果说前面章节已经完成了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">核心闭环 → 系统加固 → 任务运行时</span><br></pre></td></tr></table></figure>
+
+<p>那么 <code>s15–s19</code> 进一步补齐的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">长期队友 → 团队协议 → 自主认领 → Worktree 隔离 → MCP 插件</span><br></pre></td></tr></table></figure>
+
+<p>一句话概括：</p>
+<blockquote>
+<p>多 Agent 平台的重点不是“多开几个模型”，而是让多个 agent 有身份、有协议、有任务边界、有独立工作区，并且能接入外部工具生态。</p>
+</blockquote>
+<hr>
+<h2 id="二、面试速记"><a href="#二、面试速记" class="headerlink" title="二、面试速记"></a>二、面试速记</h2><h3 id="1-s15-Agent-团队解决什么？"><a href="#1-s15-Agent-团队解决什么？" class="headerlink" title="1. s15 Agent 团队解决什么？"></a>1. s15 Agent 团队解决什么？</h3><p><code>s15</code> 解决的是“长期队友”问题。</p>
+<p><code>s04</code> 的 subagent 是一次性委派，执行完就消失；而 teammate 是有名字、角色、邮箱和独立循环的持久 agent。</p>
+<p>团队系统至少需要三件事：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">名册</span><br><span class="line">邮箱</span><br><span class="line">独立循环</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-s16-团队协议解决什么？"><a href="#2-s16-团队协议解决什么？" class="headerlink" title="2. s16 团队协议解决什么？"></a>2. s16 团队协议解决什么？</h3><p><code>s16</code> 解决自由文本协作不可追踪的问题。</p>
+<p>多个 agent 之间不能只靠“随便说一句”，而要用 <code>request_id</code> 把请求、批准、拒绝、超时对齐。</p>
+<p>核心是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">协议消息 + 请求追踪表 + 状态机</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-s17-自主代理解决什么？"><a href="#3-s17-自主代理解决什么？" class="headerlink" title="3. s17 自主代理解决什么？"></a>3. s17 自主代理解决什么？</h3><p><code>s17</code> 解决 lead 手动分配任务的瓶颈。</p>
+<p>空闲队友可以扫描任务板，按角色、任务状态、阻塞关系判断是否可认领，然后把任务标记为 <code>in_progress</code>。</p>
+<p>自治不是乱抢任务，而是在规则内自动找活。</p>
+<h3 id="4-s18-Worktree-隔离解决什么？"><a href="#4-s18-Worktree-隔离解决什么？" class="headerlink" title="4. s18 Worktree 隔离解决什么？"></a>4. s18 Worktree 隔离解决什么？</h3><p><code>s18</code> 解决多个 agent 并行改代码时互相污染的问题。</p>
+<p>任务板回答“做什么”，worktree 回答“在哪做”。</p>
+<p>每个任务绑定独立工作目录和分支，方便并行开发、回看变更和收尾清理。</p>
+<h3 id="5-s19-MCP-与插件解决什么？"><a href="#5-s19-MCP-与插件解决什么？" class="headerlink" title="5. s19 MCP 与插件解决什么？"></a>5. s19 MCP 与插件解决什么？</h3><p><code>s19</code> 解决工具不能都写死在主程序里的问题。</p>
+<p>MCP 把工具来源从“本地硬编码”升级为“外部可插拔”。</p>
+<p>但外部工具仍然必须进入同一个工具路由、权限管道和结果格式，不能绕过主控制面。</p>
+<hr>
+<h2 id="三、s15：Agent-团队"><a href="#三、s15：Agent-团队" class="headerlink" title="三、s15：Agent 团队"></a>三、s15：Agent 团队</h2><p><code>s15</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subagent 是一次性执行单元，teammate 是长期存在的协作成员。</span><br></pre></td></tr></table></figure>
+
+<p><code>s04</code> 的 subagent 适合临时探索：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">创建 → 执行 → 返回摘要 → 消失</span><br></pre></td></tr></table></figure>
+
+<p>但多 Agent 平台需要的是长期队友：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">有名字</span><br><span class="line">有角色</span><br><span class="line">有邮箱</span><br><span class="line">有自己的 messages</span><br><span class="line">有自己的 agent loop</span><br></pre></td></tr></table></figure>
+
+<p>最小团队系统包含三层：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 名册：记录团队里有谁</span><br><span class="line">2. 邮箱：队友之间如何发消息</span><br><span class="line">3. 独立循环：每个队友有自己的上下文和工作循环</span><br></pre></td></tr></table></figure>
+
+<p>最小数据结构：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;role&quot;</span><span class="punctuation">:</span> <span class="string">&quot;coder&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;working&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>邮箱可以先用 JSONL 文件实现：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.team/inbox/alice.jsonl</span><br><span class="line">.team/inbox/bob.jsonl</span><br></pre></td></tr></table></figure>
+
+<p>队友每一轮先读取 inbox，再进入自己的 agent loop。这样它不是靠“重新创建”获得新任务，而是通过“下一轮检查邮箱”持续接收工作。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>teammate 的关键不是多一次模型调用，而是多一个长期存在、可反复接活的执行者。</p>
+</blockquote>
+<hr>
+<h2 id="四、s16：团队协议"><a href="#四、s16：团队协议" class="headerlink" title="四、s16：团队协议"></a>四、s16：团队协议</h2><p><code>s16</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">有了邮箱，团队能说话；有了协议，团队才会按规矩协作。</span><br></pre></td></tr></table></figure>
+
+<p>如果所有协作都靠自由文本，会有两个问题：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">某些动作必须明确批准或拒绝</span><br><span class="line">多个请求并发时，很难知道回复对应哪件事</span><br></pre></td></tr></table></figure>
+
+<p>所以需要结构化协议。</p>
+<p>最小协议消息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;shutdown_request&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="string">&quot;lead&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;request_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;req_001&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;payload&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;timestamp&quot;</span><span class="punctuation">:</span> <span class="number">1710000000.0</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>同时还要有请求追踪表：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;request_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;req_001&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;kind&quot;</span><span class="punctuation">:</span> <span class="string">&quot;shutdown&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;from&quot;</span><span class="punctuation">:</span> <span class="string">&quot;lead&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;to&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pending&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>最小状态机：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pending → approved</span><br><span class="line">pending → rejected</span><br><span class="line">pending → expired</span><br></pre></td></tr></table></figure>
+
+<p>它可以用于优雅关机，也可以用于高风险计划审批。本质都是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">发起请求 → 等待响应 → 更新状态 → 继续流程</span><br></pre></td></tr></table></figure>
+
+<p>核心结论：</p>
+<blockquote>
+<p>团队协议不是增加聊天格式，而是让协作流程可追踪、可恢复、可调试。</p>
+</blockquote>
+<hr>
+<h2 id="五、s17：自主代理"><a href="#五、s17：自主代理" class="headerlink" title="五、s17：自主代理"></a>五、s17：自主代理</h2><p><code>s17</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">一个团队真正开始自己运转，不是因为 agent 数量变多，而是因为空闲队友会自己找下一份工作。</span><br></pre></td></tr></table></figure>
+
+<p>到 <code>s16</code> 为止，团队已经有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">持久队友</span><br><span class="line">邮箱</span><br><span class="line">协议</span><br><span class="line">任务板</span><br></pre></td></tr></table></figure>
+
+<p>但如果所有任务仍然要 lead 手动分配，lead 就会成为瓶颈。因此 <code>s17</code> 增加自主认领。</p>
+<p>最重要的是 <code>is_claimable_task</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">is_claimable_task</span>(<span class="params">task: <span class="built_in">dict</span>, role: <span class="built_in">str</span> | <span class="literal">None</span> = <span class="literal">None</span></span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        task.get(<span class="string">&quot;status&quot;</span>) == <span class="string">&quot;pending&quot;</span></span><br><span class="line">        <span class="keyword">and</span> <span class="keyword">not</span> task.get(<span class="string">&quot;owner&quot;</span>)</span><br><span class="line">        <span class="keyword">and</span> <span class="keyword">not</span> task.get(<span class="string">&quot;blockedBy&quot;</span>)</span><br><span class="line">        <span class="keyword">and</span> _task_allows_role(task, role)</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，一条任务能被认领，必须满足：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">任务还没开始</span><br><span class="line">还没人认领</span><br><span class="line">没有前置阻塞</span><br><span class="line">当前队友角色满足要求</span><br></pre></td></tr></table></figure>
+
+<p>认领后任务会变成：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">7</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;owner&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;in_progress&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;claimed_at&quot;</span><span class="punctuation">:</span> <span class="number">1710000000.0</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;claim_source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;auto&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里 <code>claim_source=&quot;auto&quot;</code> 很重要，它说明任务是自治认领，而不是人工分配。</p>
+<p>系统还会写入 <code>claim_events.jsonl</code>，方便回看自治系统做过什么。</p>
+<p>自主认领必须是原子操作。否则两个队友可能同时看到同一个空任务，然后都把自己写成 owner。最小实现也要加锁。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>自治不是让 agent 随便行动，而是让它在角色、状态、依赖和锁的约束下安全认领任务。</p>
+</blockquote>
+<hr>
+<h2 id="六、s18：Worktree-隔离"><a href="#六、s18：Worktree-隔离" class="headerlink" title="六、s18：Worktree 隔离"></a>六、s18：Worktree 隔离</h2><p><code>s18</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">任务板解决“做什么”，worktree 解决“在哪做而不互相踩到”。</span><br></pre></td></tr></table></figure>
+
+<p>当多个 agent 并行做代码任务时，如果都在同一个目录里修改文件，很容易出现：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">两个任务同时改同一个文件</span><br><span class="line">未完成修改污染其他任务</span><br><span class="line">难以单独回看某个任务的改动范围</span><br></pre></td></tr></table></figure>
+
+<p>因此需要给任务绑定独立 worktree。</p>
+<p>任务记录示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;subject&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Refactor auth flow&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;in_progress&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;owner&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;worktree&quot;</span><span class="punctuation">:</span> <span class="string">&quot;auth-refactor&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;worktree_state&quot;</span><span class="punctuation">:</span> <span class="string">&quot;active&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;last_worktree&quot;</span><span class="punctuation">:</span> <span class="string">&quot;auth-refactor&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;closeout&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>worktree 注册表示例：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;auth-refactor&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;.worktrees/auth-refactor&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;branch&quot;</span><span class="punctuation">:</span> <span class="string">&quot;wt/auth-refactor&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;task_id&quot;</span><span class="punctuation">:</span> <span class="number">12</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;active&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里要分清：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TaskRecord：记录任务目标、负责人和状态</span><br><span class="line">WorktreeRecord：记录执行车道、目录、分支和生命周期</span><br></pre></td></tr></table></figure>
+
+<p>Worktree 不只是“多开一个目录”，还要记录进入时间、最近命令、收尾动作和事件日志。这样任务结束后可以选择保留目录、回收目录，或者记录删除失败。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>多 Agent 并行开发时，隔离目录不是可选优化，而是避免互相污染的基础设施。</p>
+</blockquote>
+<hr>
+<h2 id="七、s19：MCP-与插件"><a href="#七、s19：MCP-与插件" class="headerlink" title="七、s19：MCP 与插件"></a>七、s19：MCP 与插件</h2><p><code>s19</code> 的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">工具不必都写死在主程序里，外部进程也可以把能力接进 agent。</span><br></pre></td></tr></table></figure>
+
+<p>MCP 可以理解成一套让 agent 和外部工具程序对话的统一协议。</p>
+<p>最小流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">启动外部工具服务进程</span><br><span class="line">查询它有哪些工具</span><br><span class="line">模型需要时转发工具调用</span><br><span class="line">把结果带回 agent 主循环</span><br></pre></td></tr></table></figure>
+
+<p>工具路由变成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LLM</span><br><span class="line">  → tool_use</span><br><span class="line">  → Agent tool router</span><br><span class="line">      → native tool：本地 Python handler</span><br><span class="line">      → MCP tool：外部 MCP server</span><br><span class="line">  → tool_result</span><br><span class="line">  → 回到主循环</span><br></pre></td></tr></table></figure>
+
+<p>为了避免命名冲突，MCP 工具通常使用前缀：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mcp__&#123;server&#125;__&#123;tool&#125;</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mcp__postgres__query</span><br><span class="line">mcp__browser__open_tab</span><br></pre></td></tr></table></figure>
+
+<p>Plugin 则解决“外部工具配置怎么被发现”的问题。最小插件配置可以是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.claude-plugin/</span><br><span class="line">  plugin.json</span><br></pre></td></tr></table></figure>
+
+<p>其中记录插件名、版本、MCP server 以及启动命令。</p>
+<p>但最关键的一点是：<strong>MCP 工具不能绕开权限系统</strong>。</p>
+<p>无论工具来自本地还是外部，都必须走同一个权限闸门、同一个工具路由、同一个结果标准化流程。</p>
+<p>核心结论：</p>
+<blockquote>
+<p>MCP 不是外挂，而是把外部能力接入同一条控制面和执行面。</p>
+</blockquote>
+<hr>
+<h2 id="八、多-Agent-平台总图"><a href="#八、多-Agent-平台总图" class="headerlink" title="八、多 Agent 平台总图"></a>八、多 Agent 平台总图</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">s15 Agent 团队</span><br><span class="line">  建立长期队友：名册 + 邮箱 + 独立循环</span><br><span class="line"></span><br><span class="line">s16 团队协议</span><br><span class="line">  用 request_id 和状态机，让协作可追踪、可审批、可恢复</span><br><span class="line"></span><br><span class="line">s17 自主代理</span><br><span class="line">  空闲队友按角色和任务状态自动认领 ready task</span><br><span class="line"></span><br><span class="line">s18 Worktree 隔离</span><br><span class="line">  每个任务绑定独立执行车道，避免并行修改互相污染</span><br><span class="line"></span><br><span class="line">s19 MCP 与插件</span><br><span class="line">  外部工具通过统一协议接入，同样走权限和路由</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="九、一句话结论"><a href="#九、一句话结论" class="headerlink" title="九、一句话结论"></a>九、一句话结论</h2><p><code>Learn Claude Code s15–s19</code> 的重点不是简单做“多智能体”，而是把多 agent 拆成五个工程问题：<strong>谁长期存在、怎么协作、怎么自己找活、在哪里隔离执行、如何接入外部能力</strong>。</p>
+<p>真正可用的多 Agent 平台，必须让身份、协议、任务、worktree 和工具路由都进入同一套可观察、可恢复、可控制的系统。</p>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/Learn-Claude-Code/" rel="tag">Learn_Claude_Code</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-05-18T14:14:18.833Z" itemprop="dateModified">最后编辑：2026-05-18</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Learn Claude Code 系统加固阅读笔记：s12–s14" href="/2026/05/18/learn_claude_code_s12_s14_runtime_note/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                9
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.8em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/hello-agents/" style="font-size: 0.7em;">hello-agents</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/"><i class="fa fa-book"></i> Learn Claude Code 系统加固阅读笔记：s15–s19</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s12_s14_runtime_note/"><i class="fa fa-book"></i> Learn Claude Code 系统加固阅读笔记：s12–s14</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s07_s11_system_hardening_note/"><i class="fa fa-book"></i> Learn Claude Code 系统加固阅读笔记：s07–s11</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s01_s06_reading_note/"><i class="fa fa-book"></i> Learn Claude Code 核心闭环阅读笔记：s01–s06</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/scaling_managed_agents_reading_note/"><i class="fa fa-book"></i> Scaling Managed Agents: Decoupling the brain from the hands 阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
