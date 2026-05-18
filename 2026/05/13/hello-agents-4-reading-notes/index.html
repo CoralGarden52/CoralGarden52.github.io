@@ -96,6 +96,43 @@
 
   <!-- 额外的追加注入项 -->
   
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+
+  
 <meta name="generator" content="Hexo 7.3.0"></head>
 
     <body class="custom-background">
@@ -162,6 +199,24 @@
                                                                 <i class="fa fa-bookmark"></i>
                                                             
                                                             hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
                                                         </a>
                                                     </li>
                                                 
@@ -696,7 +751,7 @@
                 文章
             </span>
             <span class="count">
-                4
+                5
             </span>
         </a>
         <a class="meta-item" href="/categories/">
@@ -712,7 +767,7 @@
                 标签
             </span>
             <span class="count">
-                1
+                2
             </span>
         </a>
     </div>
@@ -723,7 +778,7 @@
                 
   <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
     <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
   </aside>
 
 
@@ -732,7 +787,7 @@
   <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
     <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
       <div class="tag-clouds">
-        <a href="/tags/hello-agents/" style="font-size: 0.6em;">hello-agents</a>
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.6em;">Learn_Claude_Code</a> <a href="/tags/hello-agents/" style="font-size: 0.8em;">hello-agents</a>
       </div>
   </aside>
 
@@ -743,6 +798,12 @@
   <div class="tab-content">
       <ul class="list-group">
         
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s01_s06_reading_note/"><i class="fa fa-book"></i> Learn Claude Code 核心闭环阅读笔记：s01–s06</a>
+            
+          
         
           
           
