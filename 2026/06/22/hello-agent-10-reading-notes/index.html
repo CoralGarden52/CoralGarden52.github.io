@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Hello-Agent第十章智能体通信协议的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/06/22/hello-agent-10-reading-notes/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="hello-agents" />
+  
+  <meta name="description" content="面试速记一句话概括第十章主要讲 智能体通信协议：当 Agent 不再只是单体问答系统，而是需要连接外部工具、调用其他 Agent、加入大规模智能体网络时，就需要标准化通信协议。本章重点介绍了 MCP、A2A、ANP 三类协议，其中 MCP 是最重要、生态最成熟、最适合当前项目落地的部分。 背诵版总结本章的核心是从“单体智能体”走向“可连接、可协作、可扩展的智能体系统”。前面章节中的 ReAct A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hello-Agent第十章智能体通信协议的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/06/22/hello-agent-10-reading-notes/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记一句话概括第十章主要讲 智能体通信协议：当 Agent 不再只是单体问答系统，而是需要连接外部工具、调用其他 Agent、加入大规模智能体网络时，就需要标准化通信协议。本章重点介绍了 MCP、A2A、ANP 三类协议，其中 MCP 是最重要、生态最成熟、最适合当前项目落地的部分。 背诵版总结本章的核心是从“单体智能体”走向“可连接、可协作、可扩展的智能体系统”。前面章节中的 ReAct A">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/hello-agents/hello-agent-10.png">
+<meta property="article:published_time" content="2026-06-22T12:30:35.768Z">
+<meta property="article:modified_time" content="2026-06-22T12:33:18.054Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="hello-agents">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/hello-agents/hello-agent-10.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Hello-Agent第十章智能体通信协议的阅读笔记","description":"面试速记一句话...","image":"http://example.com/2026/06/22/hello-agent-10-reading-notes/assets/posts/hello-agents/hello-agent-10.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-06-22T12:30:35.768Z","dateModified":"2026-06-22T12:33:18.054Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/06/22/hello-agent-10-reading-notes/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/06/22/hello-agent-10-reading-notes/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Hello-Agent第十章智能体通信协议的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-06-22T12:30:35.768Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-06-22</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~14.35K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p>第十章主要讲 <strong>智能体通信协议</strong>：当 Agent 不再只是单体问答系统，而是需要连接外部工具、调用其他 Agent、加入大规模智能体网络时，就需要标准化通信协议。本章重点介绍了 <strong>MCP、A2A、ANP</strong> 三类协议，其中 <strong>MCP 是最重要、生态最成熟、最适合当前项目落地的部分</strong>。</p>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>本章的核心是从“单体智能体”走向“可连接、可协作、可扩展的智能体系统”。前面章节中的 ReAct Agent 已经可以推理、调用工具和使用记忆，但它的问题是工具接入成本高、服务之间难复用、多个智能体之间缺少标准协作方式。因此，智能体通信协议的价值在于把 Agent 与外部世界的交互标准化。</p>
+<p>本章介绍了三种协议：<strong>MCP、A2A 和 ANP</strong>。MCP，即 Model Context Protocol，主要解决“智能体如何标准化访问工具和资源”的问题，可以把文件系统、数据库、GitHub、Slack、本地脚本等外部能力封装成统一的 MCP Server，让 Agent 通过 MCP Client 动态发现工具并调用。A2A，即 Agent-to-Agent Protocol，主要解决“智能体之间如何点对点通信和协作”的问题，适合研究员、撰写员、编辑等多个 Agent 分工协作。ANP，即 Agent Network Protocol，主要面向大规模智能体网络，解决服务发现、智能路由、身份认证和网络扩展问题。</p>
+<p>其中 MCP 是当前最值得重点掌握的协议。它可以理解为 Agent 工具生态的 “USB-C”：不同工具不再需要重复手写适配器，而是通过统一协议提供 Tools、Resources 和 Prompts。HelloAgents 中基于 FastMCP 实现 MCPClient 和 MCPServer，并通过 MCPTool 把 MCP Server 自动展开成普通 Agent 工具，使 Agent 能像调用普通工具一样调用外部能力。MCP 和 Function Calling 不是竞争关系，Function Calling 是模型判断“何时调用工具、生成什么参数”的能力，而 MCP 是工程层面连接工具、发现工具和标准化调用工具的协议基础设施。</p>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><p>如果面试官问“你怎么理解 MCP”，可以这样回答：</p>
+<blockquote>
+<p>MCP 是 Model Context Protocol，可以理解为连接大模型智能体和外部工具的标准协议。传统做法中，如果 Agent 要访问 GitHub、数据库、文件系统或企业内部 API，开发者通常要为每个服务单独写 Tool 类、处理认证、参数格式、错误处理和返回格式，这会导致工具难复用、难维护。MCP 把这些外部能力封装成标准化的 MCP Server，Agent 侧通过 MCP Client 连接服务器，先通过 list_tools 发现工具，再通过 call_tool 按统一格式调用工具。MCP 的核心能力包括 Tools、Resources 和 Prompts，其中 Tools 负责执行操作，Resources 负责提供数据，Prompts 负责提供可复用提示模板。它和 Function Calling 是互补关系：Function Calling 是模型的能力，负责判断是否需要调用工具并生成参数；MCP 是工程协议，负责让工具以统一方式被发现、描述和调用。</p>
+</blockquote>
+<p>如果面试官问“第十章三种协议怎么区分”，可以这样回答：</p>
+<blockquote>
+<p>MCP 解决的是 Agent 和工具之间的通信，适合文件系统、数据库、GitHub、API 等外部服务接入；A2A 解决的是 Agent 和 Agent 之间的点对点协作，适合多智能体分工、委托任务和协商；ANP 解决的是大规模智能体网络中的服务发现、路由和身份信任问题，适合开放网络和分布式 Agent 生态。因此可以概括为：MCP 连接工具，A2A 连接智能体，ANP 连接智能体网络。</p>
+</blockquote>
+<hr>
+<h1 id="Hello-Agent-第十章：智能体通信协议阅读笔记"><a href="#Hello-Agent-第十章：智能体通信协议阅读笔记" class="headerlink" title="Hello-Agent 第十章：智能体通信协议阅读笔记"></a>Hello-Agent 第十章：智能体通信协议阅读笔记</h1><h2 id="1-本章核心内容"><a href="#1-本章核心内容" class="headerlink" title="1. 本章核心内容"></a>1. 本章核心内容</h2><p>第十章《智能体通信协议》关注的是智能体系统从“单体运行”走向“外部连接”和“多智能体协作”时遇到的问题。</p>
+<p>前面的章节已经构建了具备推理、工具调用、记忆和上下文管理能力的 Agent，但这些 Agent 仍然面临三个限制：</p>
+<ol>
+<li><strong>工具集成成本高</strong>：每接入一个新服务，都要手写一个 Tool 类。</li>
+<li><strong>能力扩展受限</strong>：Agent 只能使用预先写好的工具，无法动态发现新工具。</li>
+<li><strong>协作能力不足</strong>：多个 Agent 之间缺少标准通信方式，通常只能手动编排。</li>
+</ol>
+<p>智能体通信协议要解决的就是：</p>
+<blockquote>
+<p>如何让 Agent 以标准化方式访问工具、调用其他 Agent，并在更大的智能体网络中完成服务发现和协作？</p>
+</blockquote>
+<p>本章介绍三种协议：</p>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>全称</th>
+<th>主要解决问题</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MCP</td>
+<td>Model Context Protocol</td>
+<td>Agent 与工具 &#x2F; 资源通信</td>
+<td>让 Agent 标准化调用外部工具</td>
+</tr>
+<tr>
+<td>A2A</td>
+<td>Agent-to-Agent Protocol</td>
+<td>Agent 与 Agent 协作</td>
+<td>让多个 Agent 点对点通信</td>
+</tr>
+<tr>
+<td>ANP</td>
+<td>Agent Network Protocol</td>
+<td>大规模 Agent 网络发现与路由</td>
+<td>让 Agent 在网络中发现和连接服务</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="2-为什么需要智能体通信协议？"><a href="#2-为什么需要智能体通信协议？" class="headerlink" title="2. 为什么需要智能体通信协议？"></a>2. 为什么需要智能体通信协议？</h1><h2 id="2-1-传统工具接入方式的问题"><a href="#2-1-传统工具接入方式的问题" class="headerlink" title="2.1 传统工具接入方式的问题"></a>2.1 传统工具接入方式的问题</h2><p>在传统 Agent 开发中，如果要让 Agent 使用外部服务，通常需要手写工具适配器。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">GitHubTool</span>(<span class="title class_ inherited__">BaseTool</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, repo_url</span>):</span><br><span class="line">        <span class="comment"># GitHub API 调用逻辑</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DatabaseTool</span>(<span class="title class_ inherited__">BaseTool</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, query</span>):</span><br><span class="line">        <span class="comment"># 数据库连接和查询逻辑</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">WeatherTool</span>(<span class="title class_ inherited__">BaseTool</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, location</span>):</span><br><span class="line">        <span class="comment"># 天气 API 调用逻辑</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<p>这种方式的问题很明显：</p>
+<ul>
+<li>每个服务都要重复写 HTTP 请求、认证、错误处理；</li>
+<li>不同开发者写的工具接口不统一；</li>
+<li>工具难复用；</li>
+<li>API 变更后维护成本高；</li>
+<li>Agent 无法自动发现新工具。</li>
+</ul>
+<h2 id="2-2-通信协议的价值"><a href="#2-2-通信协议的价值" class="headerlink" title="2.2 通信协议的价值"></a>2.2 通信协议的价值</h2><p>通信协议的价值是把工具、Agent、服务之间的交互方式标准化。</p>
+<p>这类似互联网中的 TCP&#x2F;IP 协议。不同设备只要遵循同一协议，就可以互相通信。<br>在 Agent 系统中，不同工具或智能体只要遵循同一协议，就可以被 Agent 统一调用。</p>
+<p>通信协议带来的变化包括：</p>
+<ul>
+<li><strong>标准化接口</strong>：不同服务使用统一访问方式；</li>
+<li><strong>互操作性</strong>：不同开发者的工具可以被复用；</li>
+<li><strong>动态发现</strong>：Agent 可以在运行时发现工具和能力；</li>
+<li><strong>可扩展性</strong>：系统可以更容易添加新功能；</li>
+<li><strong>工程解耦</strong>：Agent 不需要关心底层服务细节。</li>
+</ul>
+<hr>
+<h1 id="3-三种协议设计理念"><a href="#3-三种协议设计理念" class="headerlink" title="3. 三种协议设计理念"></a>3. 三种协议设计理念</h1><h2 id="3-1-MCP：智能体与工具的桥梁"><a href="#3-1-MCP：智能体与工具的桥梁" class="headerlink" title="3.1 MCP：智能体与工具的桥梁"></a>3.1 MCP：智能体与工具的桥梁</h2><p>MCP 的核心目标是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标准化 Agent 与外部工具 / 资源之间的通信</span><br></pre></td></tr></table></figure>
+
+<p>它适合解决：</p>
+<ul>
+<li>访问文件系统；</li>
+<li>访问数据库；</li>
+<li>查询 GitHub；</li>
+<li>调用企业内部 API；</li>
+<li>读取知识库；</li>
+<li>连接 Slack、Google Drive 等外部服务。</li>
+</ul>
+<p>MCP 的设计哲学是“上下文共享”。<br>它不仅仅是简单的远程过程调用，还强调让 Agent 和工具之间共享丰富的上下文信息。例如访问代码仓库时，MCP Server 不只返回文件内容，还可以提供目录结构、依赖关系、提交历史等上下文。</p>
+<p>一句话理解：</p>
+<blockquote>
+<p>MCP 是 Agent 工具生态的 USB-C。</p>
+</blockquote>
+<h2 id="3-2-A2A：智能体之间的对话"><a href="#3-2-A2A：智能体之间的对话" class="headerlink" title="3.2 A2A：智能体之间的对话"></a>3.2 A2A：智能体之间的对话</h2><p>A2A 的核心目标是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">实现 Agent 与 Agent 之间的点对点通信</span><br></pre></td></tr></table></figure>
+
+<p>它关注的是多个智能体如何协作，例如：</p>
+<ul>
+<li>研究员 Agent 搜集资料；</li>
+<li>撰写员 Agent 生成文章；</li>
+<li>编辑 Agent 审查质量；</li>
+<li>协调员 Agent 分派任务。</li>
+</ul>
+<p>A2A 的设计哲学是“对等通信”。<br>每个 Agent 既可以是服务提供者，也可以是服务消费者。它们可以互相请求、响应、协商任务，而不一定依赖中央协调器。</p>
+<p>一句话理解：</p>
+<blockquote>
+<p>A2A 让 Agent 像团队成员一样互相委托和协商。</p>
+</blockquote>
+<h2 id="3-3-ANP：智能体网络基础设施"><a href="#3-3-ANP：智能体网络基础设施" class="headerlink" title="3.3 ANP：智能体网络基础设施"></a>3.3 ANP：智能体网络基础设施</h2><p>ANP 的核心目标是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">构建大规模、开放式智能体网络中的服务发现和路由机制</span><br></pre></td></tr></table></figure>
+
+<p>它要解决的问题包括：</p>
+<ul>
+<li>新 Agent 如何加入网络；</li>
+<li>一个 Agent 如何发现其他 Agent；</li>
+<li>多个 Agent 都能完成任务时，如何选择最佳服务；</li>
+<li>如何建立可信身份；</li>
+<li>如何进行动态路由。</li>
+</ul>
+<p>ANP 的设计哲学是“去中心化服务发现”。<br>它更适合未来大规模 Agent 网络，而不是普通单体应用。</p>
+<p>一句话理解：</p>
+<blockquote>
+<p>ANP 让 Agent 在网络中自动发现和连接其他服务。</p>
+</blockquote>
+<hr>
+<h1 id="4-HelloAgents-中的通信协议架构"><a href="#4-HelloAgents-中的通信协议架构" class="headerlink" title="4. HelloAgents 中的通信协议架构"></a>4. HelloAgents 中的通信协议架构</h1><p>HelloAgents 将通信协议设计为三层：</p>
+<h2 id="4-1-协议实现层"><a href="#4-1-协议实现层" class="headerlink" title="4.1 协议实现层"></a>4.1 协议实现层</h2><p>这一层实现具体协议：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hello_agents/protocols/</span><br><span class="line">├── mcp/</span><br><span class="line">├── a2a/</span><br><span class="line">└── anp/</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>MCP 基于 FastMCP 实现；</li>
+<li>A2A 基于 Google A2A SDK 的部分能力；</li>
+<li>ANP 是轻量级概念实现，用于模拟服务发现和网络管理。</li>
+</ul>
+<h2 id="4-2-工具封装层"><a href="#4-2-工具封装层" class="headerlink" title="4.2 工具封装层"></a>4.2 工具封装层</h2><p>这一层把协议封装成统一 Tool 接口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MCPTool</span><br><span class="line">A2ATool</span><br><span class="line">ANPTool</span><br></pre></td></tr></table></figure>
+
+<p>它们都继承自 BaseTool，并提供一致的 <code>run()</code> 方法。</p>
+<p>这样 Agent 不需要关心底层是 MCP、A2A 还是 ANP，只需要像调用普通工具一样调用它们。</p>
+<h2 id="4-3-智能体集成层"><a href="#4-3-智能体集成层" class="headerlink" title="4.3 智能体集成层"></a>4.3 智能体集成层</h2><p>这一层是 Agent 和工具系统的结合点。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">agent.add_tool(MCPTool(...))</span><br><span class="line">agent.add_tool(A2ATool(...))</span><br><span class="line">agent.add_tool(ANPTool(...))</span><br></pre></td></tr></table></figure>
+
+<p>Agent 通过工具系统使用不同协议，实现外部能力扩展。</p>
+<hr>
+<h1 id="5-MCP-协议重点详解"><a href="#5-MCP-协议重点详解" class="headerlink" title="5. MCP 协议重点详解"></a>5. MCP 协议重点详解</h1><h2 id="5-1-MCP-是什么？"><a href="#5-1-MCP-是什么？" class="headerlink" title="5.1 MCP 是什么？"></a>5.1 MCP 是什么？</h2><p>MCP 是 <strong>Model Context Protocol</strong>，即模型上下文协议。</p>
+<p>它的目标是：</p>
+<blockquote>
+<p>用统一协议连接大模型智能体和外部工具、数据源、资源系统。</p>
+</blockquote>
+<p>传统方式下，每接入一个工具都要写适配器；MCP 则让工具服务以标准 MCP Server 的形式存在，Agent 通过 MCP Client 统一访问。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">github_mcp = MCPTool(</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-github&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">fs_mcp = MCPTool(</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-filesystem&quot;</span>, <span class="string">&quot;.&quot;</span>]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>Agent 不需要自己实现 GitHub API 或文件系统 API，只需要连接对应 MCP Server。</p>
+<h2 id="5-2-MCP-的三层架构"><a href="#5-2-MCP-的三层架构" class="headerlink" title="5.2 MCP 的三层架构"></a>5.2 MCP 的三层架构</h2><p>MCP 采用三层架构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Host -&gt; Client -&gt; Server</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Host"><a href="#1-Host" class="headerlink" title="1. Host"></a>1. Host</h3><p>Host 是用户直接交互的应用，例如 Claude Desktop、IDE、Agent 平台等。</p>
+<p>它负责：</p>
+<ul>
+<li>接收用户输入；</li>
+<li>调用模型；</li>
+<li>管理对话；</li>
+<li>决定何时使用 MCP Client。</li>
+</ul>
+<h3 id="2-Client"><a href="#2-Client" class="headerlink" title="2. Client"></a>2. Client</h3><p>Client 是协议通信层。</p>
+<p>它负责：</p>
+<ul>
+<li>连接 MCP Server；</li>
+<li>发现可用工具；</li>
+<li>发送工具调用请求；</li>
+<li>接收工具返回结果。</li>
+</ul>
+<h3 id="3-Server"><a href="#3-Server" class="headerlink" title="3. Server"></a>3. Server</h3><p>Server 是具体能力提供者。</p>
+<p>它负责：</p>
+<ul>
+<li>封装工具；</li>
+<li>访问文件、数据库、API；</li>
+<li>返回结果；</li>
+<li>提供资源和提示模板。</li>
+</ul>
+<p>一个典型流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">用户提问</span><br><span class="line">-&gt; Host 接收问题</span><br><span class="line">-&gt; 模型判断需要工具</span><br><span class="line">-&gt; MCP Client 连接 MCP Server</span><br><span class="line">-&gt; Server 执行具体操作</span><br><span class="line">-&gt; 返回结果</span><br><span class="line">-&gt; 模型整合结果生成回答</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-3-MCP-的三类核心能力"><a href="#5-3-MCP-的三类核心能力" class="headerlink" title="5.3 MCP 的三类核心能力"></a>5.3 MCP 的三类核心能力</h2><p>MCP 提供三类核心能力：</p>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>含义</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tools</td>
+<td>工具</td>
+<td>主动执行操作</td>
+</tr>
+<tr>
+<td>Resources</td>
+<td>资源</td>
+<td>被动提供数据</td>
+</tr>
+<tr>
+<td>Prompts</td>
+<td>提示模板</td>
+<td>提供可复用提示词</td>
+</tr>
+</tbody></table>
+<h3 id="Tools"><a href="#Tools" class="headerlink" title="Tools"></a>Tools</h3><p>Tools 用来执行动作，例如：</p>
+<ul>
+<li>读取文件；</li>
+<li>写入文件；</li>
+<li>搜索 GitHub；</li>
+<li>查询数据库；</li>
+<li>发送消息；</li>
+<li>调用企业 API。</li>
+</ul>
+<p>Tools 是 MCP 中最常用的能力。</p>
+<h3 id="Resources"><a href="#Resources" class="headerlink" title="Resources"></a>Resources</h3><p>Resources 用来提供数据，例如：</p>
+<ul>
+<li>文件内容；</li>
+<li>数据库表；</li>
+<li>文档片段；</li>
+<li>配置文件；</li>
+<li>日志资源。</li>
+</ul>
+<p>它更像“可读取的数据源”。</p>
+<h3 id="Prompts"><a href="#Prompts" class="headerlink" title="Prompts"></a>Prompts</h3><p>Prompts 用来提供可复用提示模板，例如：</p>
+<ul>
+<li>代码审查模板；</li>
+<li>总结模板；</li>
+<li>调研报告模板；</li>
+<li>SQL 分析模板。</li>
+</ul>
+<p>它让工具服务器不仅能提供能力，还能提供“如何使用能力”的提示结构。</p>
+<h2 id="5-4-MCP-的工具调用流程"><a href="#5-4-MCP-的工具调用流程" class="headerlink" title="5.4 MCP 的工具调用流程"></a>5.4 MCP 的工具调用流程</h2><p>MCP 的工具调用通常包含五步：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">连接服务器 -&gt; 发现工具 -&gt; 构建上下文 -&gt; 模型决策 -&gt; 工具执行 -&gt; 结果整合</span><br></pre></td></tr></table></figure>
+
+<p>具体来说：</p>
+<ol>
+<li><strong>工具发现</strong>：Client 调用 <code>list_tools()</code> 获取工具名称、描述、参数 schema。</li>
+<li><strong>上下文构建</strong>：把工具描述转成模型能理解的形式，加入系统提示或工具列表。</li>
+<li><strong>模型推理</strong>：LLM 根据用户问题判断是否需要调用工具。</li>
+<li><strong>工具执行</strong>：Client 调用 <code>call_tool(tool_name, arguments)</code>。</li>
+<li><strong>结果整合</strong>：工具结果返回模型，模型生成最终回答。</li>
+</ol>
+<p>这里有一个关键点：</p>
+<blockquote>
+<p>工具描述写得好不好，会直接影响模型会不会正确调用工具。</p>
+</blockquote>
+<p>所以 MCP 工具的 <code>name</code>、<code>description</code> 和 <code>inputSchema</code> 非常重要。</p>
+<h2 id="5-5-MCP-与-Function-Calling-的区别"><a href="#5-5-MCP-与-Function-Calling-的区别" class="headerlink" title="5.5 MCP 与 Function Calling 的区别"></a>5.5 MCP 与 Function Calling 的区别</h2><p>很多人会把 MCP 和 Function Calling 混在一起。实际上它们不是竞争关系，而是互补关系。</p>
+<table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>Function Calling</th>
+<th>MCP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本质</td>
+<td>模型能力</td>
+<td>工程协议</td>
+</tr>
+<tr>
+<td>解决问题</td>
+<td>模型如何判断调用函数并生成参数</td>
+<td>工具如何被发现、描述、连接和调用</td>
+</tr>
+<tr>
+<td>关注层面</td>
+<td>LLM 推理与参数生成</td>
+<td>工具生态和系统集成</td>
+</tr>
+<tr>
+<td>是否跨模型统一</td>
+<td>不同模型格式不同</td>
+<td>协议统一</td>
+</tr>
+<tr>
+<td>是否提供工具服务生态</td>
+<td>不提供</td>
+<td>可以连接社区 MCP Server</td>
+</tr>
+<tr>
+<td>类比</td>
+<td>会打电话</td>
+<td>电话通信标准</td>
+</tr>
+</tbody></table>
+<p>简洁理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Function Calling：模型知道什么时候该调用工具</span><br><span class="line">MCP：工具能以统一标准被模型连接和调用</span><br></pre></td></tr></table></figure>
+
+<p>因此，一个完整系统通常是两者结合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LLM 用 Function Calling 判断调用哪个工具</span><br><span class="line">MCP 负责把工具标准化接入和执行</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-6-HelloAgents-中使用-MCPClient"><a href="#5-6-HelloAgents-中使用-MCPClient" class="headerlink" title="5.6 HelloAgents 中使用 MCPClient"></a>5.6 HelloAgents 中使用 MCPClient</h2><p>HelloAgents 基于 FastMCP 实现 MCPClient，支持异步和同步两种 API。</p>
+<p>常见流程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> hello_agents.protocols <span class="keyword">import</span> MCPClient</span><br><span class="line"></span><br><span class="line">client = MCPClient([</span><br><span class="line">    <span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-filesystem&quot;</span>, <span class="string">&quot;.&quot;</span></span><br><span class="line">])</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">with</span> client:</span><br><span class="line">    tools = <span class="keyword">await</span> client.list_tools()</span><br><span class="line">    result = <span class="keyword">await</span> client.call_tool(<span class="string">&quot;read_file&quot;</span>, &#123;<span class="string">&quot;path&quot;</span>: <span class="string">&quot;README.md&quot;</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>使用 MCPClient 时，常见步骤是：</p>
+<ol>
+<li>连接 MCP Server；</li>
+<li><code>list_tools()</code> 查看工具；</li>
+<li><code>call_tool()</code> 调用工具；</li>
+<li>处理异常；</li>
+<li>读取资源或使用 prompt 模板。</li>
+</ol>
+<h2 id="5-7-MCP-的传输方式"><a href="#5-7-MCP-的传输方式" class="headerlink" title="5.7 MCP 的传输方式"></a>5.7 MCP 的传输方式</h2><p>MCP 协议的一个重要特性是 <strong>传输层无关</strong>。</p>
+<p>HelloAgents 中提到的传输方式包括：</p>
+<table>
+<thead>
+<tr>
+<th>传输方式</th>
+<th>适合场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Memory Transport</td>
+<td>单元测试、快速原型</td>
+</tr>
+<tr>
+<td>Stdio Transport</td>
+<td>本地开发、本地脚本、社区服务器</td>
+</tr>
+<tr>
+<td>HTTP Transport</td>
+<td>远程服务、生产环境、微服务</td>
+</tr>
+<tr>
+<td>SSE Transport</td>
+<td>实时通信、长连接</td>
+</tr>
+<tr>
+<td>StreamableHTTP</td>
+<td>双向流式通信</td>
+</tr>
+</tbody></table>
+<p>最常见的是 Stdio：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MCPTool(</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-filesystem&quot;</span>, <span class="string">&quot;.&quot;</span>]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>它通过标准输入输出和本地 MCP Server 进程通信，适合本地开发和工具接入。</p>
+<h2 id="5-8-MCPTool-自动展开机制"><a href="#5-8-MCPTool-自动展开机制" class="headerlink" title="5.8 MCPTool 自动展开机制"></a>5.8 MCPTool 自动展开机制</h2><p>HelloAgents 中非常重要的设计是 <strong>MCPTool 自动展开</strong>。</p>
+<p>当你把一个 MCPTool 添加到 Agent 时，它会：</p>
+<ol>
+<li>连接 MCP Server；</li>
+<li>调用 <code>list_tools()</code> 获取所有工具；</li>
+<li>为每个 MCP 工具创建包装器；</li>
+<li>注册成 Agent 可直接调用的普通工具；</li>
+<li>自动处理参数类型转换；</li>
+<li>调用 MCP Server 执行真正操作。</li>
+</ol>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">fs_tool = MCPTool(</span><br><span class="line">    name=<span class="string">&quot;fs&quot;</span>,</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-filesystem&quot;</span>, <span class="string">&quot;.&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">agent.add_tool(fs_tool)</span><br></pre></td></tr></table></figure>
+
+<p>如果文件系统 MCP Server 提供 <code>read_file</code>、<code>write_file</code> 等工具，那么它们会自动展开为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fs_read_file</span><br><span class="line">fs_write_file</span><br></pre></td></tr></table></figure>
+
+<p>这样 Agent 可以直接调用展开后的工具。</p>
+<h2 id="5-9-多-MCP-Server-命名冲突问题"><a href="#5-9-多-MCP-Server-命名冲突问题" class="headerlink" title="5.9 多 MCP Server 命名冲突问题"></a>5.9 多 MCP Server 命名冲突问题</h2><p>如果一个 Agent 同时连接多个 MCP Server，就必须给每个 MCPTool 设置不同的 <code>name</code>。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">github_tool = MCPTool(name=<span class="string">&quot;gh&quot;</span>, ...)</span><br><span class="line">filesystem_tool = MCPTool(name=<span class="string">&quot;fs&quot;</span>, ...)</span><br></pre></td></tr></table></figure>
+
+<p>这样工具会展开为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gh_search_repositories</span><br><span class="line">fs_read_file</span><br></pre></td></tr></table></figure>
+
+<p>避免不同服务器中同名工具冲突。</p>
+<h2 id="5-10-MCP-社区生态"><a href="#5-10-MCP-社区生态" class="headerlink" title="5.10 MCP 社区生态"></a>5.10 MCP 社区生态</h2><p>MCP 的优势之一是社区生态丰富。</p>
+<p>本章提到的 MCP 资源包括：</p>
+<ol>
+<li><strong>Awesome MCP Servers</strong>：社区维护的 MCP 服务器列表；</li>
+<li><strong>MCP Servers Website</strong>：MCP 服务器目录网站；</li>
+<li><strong>Official MCP Servers</strong>：官方维护的 MCP 服务器集合。</li>
+</ol>
+<p>常见 MCP Server 类型包括：</p>
+<ul>
+<li>文件系统；</li>
+<li>GitHub；</li>
+<li>数据库；</li>
+<li>Playwright；</li>
+<li>Notion；</li>
+<li>Slack；</li>
+<li>Obsidian；</li>
+<li>Jira；</li>
+<li>浏览器自动化工具。</li>
+</ul>
+<p>这说明 MCP 的真正价值不只是协议本身，而是它能形成可复用的工具生态。</p>
+<hr>
+<h1 id="6-MCP-实战案例：智能文档助手"><a href="#6-MCP-实战案例：智能文档助手" class="headerlink" title="6. MCP 实战案例：智能文档助手"></a>6. MCP 实战案例：智能文档助手</h1><p>本章中 MCP 实战案例是一个多 Agent 智能文档助手。</p>
+<p>它包含两个 Agent：</p>
+<h2 id="6-1-GitHub-搜索专家"><a href="#6-1-GitHub-搜索专家" class="headerlink" title="6.1 GitHub 搜索专家"></a>6.1 GitHub 搜索专家</h2><p>负责使用 GitHub MCP Server 搜索仓库。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">github_tool = MCPTool(</span><br><span class="line">    name=<span class="string">&quot;gh&quot;</span>,</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-github&quot;</span>]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>它的任务是搜索与 “AI agent” 相关的 GitHub 仓库，并返回结构化结果。</p>
+<h2 id="6-2-文档生成专家"><a href="#6-2-文档生成专家" class="headerlink" title="6.2 文档生成专家"></a>6.2 文档生成专家</h2><p>负责根据搜索结果生成 Markdown 报告。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fs_tool = MCPTool(</span><br><span class="line">    name=<span class="string">&quot;fs&quot;</span>,</span><br><span class="line">    server_command=[<span class="string">&quot;npx&quot;</span>, <span class="string">&quot;-y&quot;</span>, <span class="string">&quot;@modelcontextprotocol/server-filesystem&quot;</span>, <span class="string">&quot;.&quot;</span>]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>它可以结合文件系统工具生成和保存报告。</p>
+<h2 id="6-3-案例体现的意义"><a href="#6-3-案例体现的意义" class="headerlink" title="6.3 案例体现的意义"></a>6.3 案例体现的意义</h2><p>这个案例展示了 MCP 在复杂任务中的价值：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GitHub MCP Server 负责外部搜索</span><br><span class="line">文件系统 MCP Server 负责本地文件操作</span><br><span class="line">Agent 负责理解任务、组织结果和生成文档</span><br></pre></td></tr></table></figure>
+
+<p>开发者不用重复写 GitHub API 或文件读写适配器，只需要把 MCP Server 接入 Agent 工具链。</p>
+<hr>
+<h1 id="7-构建自定义-MCP-Server"><a href="#7-构建自定义-MCP-Server" class="headerlink" title="7. 构建自定义 MCP Server"></a>7. 构建自定义 MCP Server</h1><h2 id="7-1-为什么要自定义-MCP-Server？"><a href="#7-1-为什么要自定义-MCP-Server？" class="headerlink" title="7.1 为什么要自定义 MCP Server？"></a>7.1 为什么要自定义 MCP Server？</h2><p>虽然社区已经有很多 MCP Server，但真实项目中仍然需要自定义 MCP Server。</p>
+<p>原因包括：</p>
+<ol>
+<li><strong>封装业务逻辑</strong>：把企业内部流程包装成标准工具；</li>
+<li><strong>访问私有数据</strong>：安全访问内部数据库和私有 API；</li>
+<li><strong>性能优化</strong>：针对高频调用做缓存、限流和优化；</li>
+<li><strong>功能定制</strong>：接入企业内部模型、算法或硬件。</li>
+</ol>
+<h2 id="7-2-自定义-MCP-Server-的基本结构"><a href="#7-2-自定义-MCP-Server-的基本结构" class="headerlink" title="7.2 自定义 MCP Server 的基本结构"></a>7.2 自定义 MCP Server 的基本结构</h2><p>本章以天气查询 MCP Server 为例。</p>
+<p>基本步骤是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">创建 MCPServer</span><br><span class="line">定义工具函数</span><br><span class="line">注册工具</span><br><span class="line">运行服务器</span><br></pre></td></tr></table></figure>
+
+<p>示例结构：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> hello_agents.protocols <span class="keyword">import</span> MCPServer</span><br><span class="line"></span><br><span class="line">weather_server = MCPServer(</span><br><span class="line">    name=<span class="string">&quot;weather-server&quot;</span>,</span><br><span class="line">    description=<span class="string">&quot;真实天气查询服务&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_weather</span>(<span class="params">city: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="comment"># 查询天气并返回 JSON</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">list_supported_cities</span>() -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="comment"># 返回支持城市列表</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">weather_server.add_tool(get_weather)</span><br><span class="line">weather_server.add_tool(list_supported_cities)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    weather_server.run()</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-3-在-Agent-中使用自定义-MCP-Server"><a href="#7-3-在-Agent-中使用自定义-MCP-Server" class="headerlink" title="7.3 在 Agent 中使用自定义 MCP Server"></a>7.3 在 Agent 中使用自定义 MCP Server</h2><p>创建好 MCP Server 后，可以通过 MCPTool 接入 Agent：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">weather_tool = MCPTool(</span><br><span class="line">    server_command=[<span class="string">&quot;python&quot;</span>, <span class="string">&quot;weather_mcp_server.py&quot;</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">assistant.add_tool(weather_tool)</span><br></pre></td></tr></table></figure>
+
+<p>这样 Agent 就可以通过自然语言调用天气工具，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">北京今天天气怎么样？</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-4-发布-MCP-Server"><a href="#7-4-发布-MCP-Server" class="headerlink" title="7.4 发布 MCP Server"></a>7.4 发布 MCP Server</h2><p>本章还介绍了将自定义 MCP Server 发布到 Smithery 的思路。</p>
+<p>基本文件结构包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">weather-mcp-server/</span><br><span class="line">├── README.md</span><br><span class="line">├── LICENSE</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── pyproject.toml</span><br><span class="line">├── requirements.txt</span><br><span class="line">├── smithery.yaml</span><br><span class="line">└── server.py</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>pyproject.toml</code> 描述 Python 项目依赖；</li>
+<li><code>Dockerfile</code> 负责容器化部署；</li>
+<li><code>smithery.yaml</code> 描述 MCP Server 元信息、工具列表和运行方式。</li>
+</ul>
+<p>发布后，其他开发者就可以发现并安装这个 MCP Server。</p>
+<hr>
+<h1 id="8-A2A-协议详解"><a href="#8-A2A-协议详解" class="headerlink" title="8. A2A 协议详解"></a>8. A2A 协议详解</h1><h2 id="8-1-A2A-解决什么问题？"><a href="#8-1-A2A-解决什么问题？" class="headerlink" title="8.1 A2A 解决什么问题？"></a>8.1 A2A 解决什么问题？</h2><p>A2A 解决的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Agent 与 Agent 之间如何直接通信和协作</span><br></pre></td></tr></table></figure>
+
+<p>在多智能体任务中，常见角色包括：</p>
+<ul>
+<li>研究员；</li>
+<li>撰写员；</li>
+<li>编辑；</li>
+<li>技术专家；</li>
+<li>销售顾问；</li>
+<li>协调者。</li>
+</ul>
+<p>如果所有通信都经过中央协调器，会有：</p>
+<ul>
+<li>单点故障；</li>
+<li>性能瓶颈；</li>
+<li>扩展困难。</li>
+</ul>
+<p>A2A 采用点对点通信，让 Agent 之间可以直接交互。</p>
+<h2 id="8-2-A2A-的核心概念"><a href="#8-2-A2A-的核心概念" class="headerlink" title="8.2 A2A 的核心概念"></a>8.2 A2A 的核心概念</h2><p>A2A 的核心抽象包括：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent</td>
+<td>能提供服务或请求服务的智能体</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>Agent 对外暴露的能力</td>
+</tr>
+<tr>
+<td>Task</td>
+<td>一个可跟踪的协作任务</td>
+</tr>
+<tr>
+<td>Artifact</td>
+<td>任务执行产生的结果或中间产物</td>
+</tr>
+</tbody></table>
+<p>A2A 还定义了任务生命周期，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">创建 -&gt; 协商 -&gt; 代理 -&gt; 执行中 -&gt; 完成 / 失败</span><br></pre></td></tr></table></figure>
+
+<p>这让智能体之间的协作不只是聊天，而是可以进行任务委托、进度跟踪和异常处理。</p>
+<h2 id="8-3-A2A-实战案例"><a href="#8-3-A2A-实战案例" class="headerlink" title="8.3 A2A 实战案例"></a>8.3 A2A 实战案例</h2><p>本章展示了多个案例：</p>
+<h3 id="1-计算器-Agent"><a href="#1-计算器-Agent" class="headerlink" title="1. 计算器 Agent"></a>1. 计算器 Agent</h3><p>创建一个 A2A Server，暴露加法、乘法和信息查询技能。</p>
+<h3 id="2-研究员、撰写员、编辑网络"><a href="#2-研究员、撰写员、编辑网络" class="headerlink" title="2. 研究员、撰写员、编辑网络"></a>2. 研究员、撰写员、编辑网络</h3><p>三个 Agent 分别负责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">研究 -&gt; 写作 -&gt; 编辑</span><br></pre></td></tr></table></figure>
+
+<p>通过 A2A Client 依次调用，完成内容生产流程。</p>
+<h3 id="3-智能客服系统"><a href="#3-智能客服系统" class="headerlink" title="3. 智能客服系统"></a>3. 智能客服系统</h3><p>由接待员 Agent 判断问题类型，再把问题转发给：</p>
+<ul>
+<li>技术专家 Agent；</li>
+<li>销售顾问 Agent。</li>
+</ul>
+<p>这体现了 A2A 在多 Agent 分工中的价值。</p>
+<h2 id="8-4-A2A-与-MCP-的区别"><a href="#8-4-A2A-与-MCP-的区别" class="headerlink" title="8.4 A2A 与 MCP 的区别"></a>8.4 A2A 与 MCP 的区别</h2><table>
+<thead>
+<tr>
+<th>对比点</th>
+<th>MCP</th>
+<th>A2A</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通信对象</td>
+<td>Agent 与工具 &#x2F; 资源</td>
+<td>Agent 与 Agent</td>
+</tr>
+<tr>
+<td>核心能力</td>
+<td>工具发现和调用</td>
+<td>任务委托和协作</td>
+</tr>
+<tr>
+<td>典型场景</td>
+<td>文件、数据库、GitHub、API</td>
+<td>研究员、写作者、编辑、专家系统</td>
+</tr>
+<tr>
+<td>抽象重点</td>
+<td>Tools、Resources、Prompts</td>
+<td>Task、Artifact、Skill</td>
+</tr>
+<tr>
+<td>主要目标</td>
+<td>扩展工具能力</td>
+<td>扩展协作能力</td>
+</tr>
+</tbody></table>
+<p>一句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MCP 让 Agent 会用工具，A2A 让 Agent 会找其他 Agent 合作。</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="9-ANP-协议详解"><a href="#9-ANP-协议详解" class="headerlink" title="9. ANP 协议详解"></a>9. ANP 协议详解</h1><h2 id="9-1-ANP-解决什么问题？"><a href="#9-1-ANP-解决什么问题？" class="headerlink" title="9.1 ANP 解决什么问题？"></a>9.1 ANP 解决什么问题？</h2><p>ANP 解决的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">大规模开放 Agent 网络中的服务发现、路由和身份信任</span><br></pre></td></tr></table></figure>
+
+<p>当网络中有大量 Agent 时，系统要面对：</p>
+<ul>
+<li>如何发现能完成任务的 Agent；</li>
+<li>如何选择负载最低、成本最低或能力最强的 Agent；</li>
+<li>如何让新 Agent 动态加入网络；</li>
+<li>如何验证通信双方身份；</li>
+<li>如何跨平台互操作。</li>
+</ul>
+<h2 id="9-2-ANP-的核心流程"><a href="#9-2-ANP-的核心流程" class="headerlink" title="9.2 ANP 的核心流程"></a>9.2 ANP 的核心流程</h2><p>本章介绍的 ANP 流程包括：</p>
+<ol>
+<li><p><strong>服务发现与匹配</strong><br>Agent 通过公开发现服务，根据语义或能力描述找到目标 Agent。</p>
+</li>
+<li><p><strong>基于 DID 的身份验证</strong><br>请求方用私钥签名，服务方通过 DID 获取公钥并验证请求真实性。</p>
+</li>
+<li><p><strong>标准化服务执行</strong><br>验证通过后，双方按标准接口和数据格式交换数据。</p>
+</li>
+</ol>
+<h2 id="9-3-ANP-实战案例"><a href="#9-3-ANP-实战案例" class="headerlink" title="9.3 ANP 实战案例"></a>9.3 ANP 实战案例</h2><p>本章用 ANP 构建了分布式任务调度系统。</p>
+<p>流程包括：</p>
+<ol>
+<li>创建服务发现中心；</li>
+<li>注册多个计算节点；</li>
+<li>为每个节点记录负载、CPU、内存、GPU 等元数据；</li>
+<li>创建任务调度 Agent；</li>
+<li>根据任务需求选择最佳节点。</li>
+</ol>
+<p>例如：</p>
+<ul>
+<li>大型深度学习训练任务优先选择有 GPU 的节点；</li>
+<li>大量文本处理任务优先选择高内存节点；</li>
+<li>轻量分析任务可以选择低负载普通节点。</li>
+</ul>
+<h2 id="9-4-ANP-的定位"><a href="#9-4-ANP-的定位" class="headerlink" title="9.4 ANP 的定位"></a>9.4 ANP 的定位</h2><p>ANP 更偏未来大规模智能体网络基础设施，目前生态还不如 MCP 成熟。</p>
+<p>因此在实际项目中：</p>
+<ul>
+<li>短期优先掌握 MCP；</li>
+<li>多智能体协作时了解 A2A；</li>
+<li>构建开放式智能体网络时再考虑 ANP。</li>
+</ul>
+<hr>
+<h1 id="10-三种协议如何选择？"><a href="#10-三种协议如何选择？" class="headerlink" title="10. 三种协议如何选择？"></a>10. 三种协议如何选择？</h1><h2 id="10-1-按需求选择"><a href="#10-1-按需求选择" class="headerlink" title="10.1 按需求选择"></a>10.1 按需求选择</h2><table>
+<thead>
+<tr>
+<th>需求</th>
+<th>推荐协议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>访问文件、数据库、GitHub、API</td>
+<td>MCP</td>
+</tr>
+<tr>
+<td>封装企业内部工具</td>
+<td>MCP</td>
+</tr>
+<tr>
+<td>多个 Agent 分工协作</td>
+<td>A2A</td>
+</tr>
+<tr>
+<td>Agent 之间任务委托和协商</td>
+<td>A2A</td>
+</tr>
+<tr>
+<td>大规模 Agent 服务发现</td>
+<td>ANP</td>
+</tr>
+<tr>
+<td>去中心化 Agent 网络</td>
+<td>ANP</td>
+</tr>
+</tbody></table>
+<h2 id="10-2-按成熟度选择"><a href="#10-2-按成熟度选择" class="headerlink" title="10.2 按成熟度选择"></a>10.2 按成熟度选择</h2><p>当前更推荐优先学习和使用 MCP，因为：</p>
+<ul>
+<li>生态更成熟；</li>
+<li>官方和社区服务器更多；</li>
+<li>工具接入价值直接；</li>
+<li>在真实项目中更容易落地；</li>
+<li>与 RAG、代码助手、文档助手、自动化工作流结合紧密。</li>
+</ul>
+<p>A2A 和 ANP 更适合在理解多智能体系统架构时学习。</p>
+<hr>
+<h1 id="11-本章对项目开发的启发"><a href="#11-本章对项目开发的启发" class="headerlink" title="11. 本章对项目开发的启发"></a>11. 本章对项目开发的启发</h1><h2 id="11-1-MCP-是-Agent-工具生态的关键入口"><a href="#11-1-MCP-是-Agent-工具生态的关键入口" class="headerlink" title="11.1 MCP 是 Agent 工具生态的关键入口"></a>11.1 MCP 是 Agent 工具生态的关键入口</h2><p>如果你要做 Agent 项目，不应该每次都从零写工具适配器。<br>更好的方式是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">优先查找是否已有 MCP Server</span><br><span class="line">如果没有，再封装自定义 MCP Server</span><br><span class="line">最后通过 MCPTool 接入 Agent</span><br></pre></td></tr></table></figure>
+
+<p>这可以显著降低工具接入成本。</p>
+<h2 id="11-2-工具描述质量决定-Agent-调用效果"><a href="#11-2-工具描述质量决定-Agent-调用效果" class="headerlink" title="11.2 工具描述质量决定 Agent 调用效果"></a>11.2 工具描述质量决定 Agent 调用效果</h2><p>MCP 虽然提供标准接口，但 Agent 是否会正确调用工具，仍然依赖工具描述质量。</p>
+<p>因此要写清楚：</p>
+<ul>
+<li>工具做什么；</li>
+<li>什么时候使用；</li>
+<li>参数含义；</li>
+<li>返回结果格式；</li>
+<li>错误情况。</li>
+</ul>
+<h2 id="11-3-MCP-Server-适合封装企业内部能力"><a href="#11-3-MCP-Server-适合封装企业内部能力" class="headerlink" title="11.3 MCP Server 适合封装企业内部能力"></a>11.3 MCP Server 适合封装企业内部能力</h2><p>例如：</p>
+<ul>
+<li>私有知识库查询；</li>
+<li>内部数据库查询；</li>
+<li>项目管理系统；</li>
+<li>日志分析服务；</li>
+<li>模型推理服务；</li>
+<li>文件存储系统。</li>
+</ul>
+<p>这些能力通过 MCP Server 封装后，可以被多个 Agent 和多个模型复用。</p>
+<h2 id="11-4-A2A-适合多-Agent-分工系统"><a href="#11-4-A2A-适合多-Agent-分工系统" class="headerlink" title="11.4 A2A 适合多 Agent 分工系统"></a>11.4 A2A 适合多 Agent 分工系统</h2><p>如果系统中存在多个专业 Agent，例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">规划 Agent</span><br><span class="line">检索 Agent</span><br><span class="line">代码 Agent</span><br><span class="line">审查 Agent</span><br><span class="line">报告 Agent</span><br></pre></td></tr></table></figure>
+
+<p>A2A 可以作为它们之间通信和任务委托的协议基础。</p>
+<h2 id="11-5-ANP-更适合开放网络和分布式调度"><a href="#11-5-ANP-更适合开放网络和分布式调度" class="headerlink" title="11.5 ANP 更适合开放网络和分布式调度"></a>11.5 ANP 更适合开放网络和分布式调度</h2><p>如果未来要做“Agent 市场”或“Agent 网络”，ANP 的服务发现、身份认证和动态路由思想会更重要。</p>
+<hr>
+<h1 id="12-面试高频问题"><a href="#12-面试高频问题" class="headerlink" title="12. 面试高频问题"></a>12. 面试高频问题</h1><h2 id="Q1：MCP-是什么？"><a href="#Q1：MCP-是什么？" class="headerlink" title="Q1：MCP 是什么？"></a>Q1：MCP 是什么？</h2><p>MCP 是 Model Context Protocol，是一种用于标准化连接大模型智能体和外部工具、资源、提示模板的通信协议。它让 Agent 可以通过统一方式发现工具、调用工具、读取资源，而不需要为每个外部服务单独写适配器。</p>
+<h2 id="Q2：MCP-的-Host、Client、Server-分别是什么？"><a href="#Q2：MCP-的-Host、Client、Server-分别是什么？" class="headerlink" title="Q2：MCP 的 Host、Client、Server 分别是什么？"></a>Q2：MCP 的 Host、Client、Server 分别是什么？</h2><p>Host 是用户交互入口和模型运行环境，例如桌面应用或 Agent 平台；Client 负责与 MCP Server 进行协议通信；Server 负责提供具体工具、资源和提示模板，例如文件系统、GitHub 或数据库服务。</p>
+<h2 id="Q3：MCP-的-Tools、Resources、Prompts-有什么区别？"><a href="#Q3：MCP-的-Tools、Resources、Prompts-有什么区别？" class="headerlink" title="Q3：MCP 的 Tools、Resources、Prompts 有什么区别？"></a>Q3：MCP 的 Tools、Resources、Prompts 有什么区别？</h2><p>Tools 是主动操作，用来执行任务；Resources 是被动数据源，用来提供信息；Prompts 是提示模板，用来提供可复用的任务指令或上下文模板。</p>
+<h2 id="Q4：MCP-和-Function-Calling-有什么区别？"><a href="#Q4：MCP-和-Function-Calling-有什么区别？" class="headerlink" title="Q4：MCP 和 Function Calling 有什么区别？"></a>Q4：MCP 和 Function Calling 有什么区别？</h2><p>Function Calling 是模型能力，负责判断是否调用工具以及生成工具参数；MCP 是工程协议，负责让外部工具以标准方式被发现、描述、连接和执行。两者是互补关系。</p>
+<h2 id="Q5：为什么说-MCP-像-USB-C？"><a href="#Q5：为什么说-MCP-像-USB-C？" class="headerlink" title="Q5：为什么说 MCP 像 USB-C？"></a>Q5：为什么说 MCP 像 USB-C？</h2><p>因为 MCP 统一了 Agent 与外部工具的连接方式。不同工具只要封装成 MCP Server，就可以被支持 MCP 的 Agent 或模型系统统一访问，就像 USB-C 统一了设备连接接口。</p>
+<h2 id="Q6：A2A-和-MCP-最大区别是什么？"><a href="#Q6：A2A-和-MCP-最大区别是什么？" class="headerlink" title="Q6：A2A 和 MCP 最大区别是什么？"></a>Q6：A2A 和 MCP 最大区别是什么？</h2><p>MCP 面向 Agent 与工具通信，核心是工具发现和调用；A2A 面向 Agent 与 Agent 通信，核心是任务委托、协商和协作。</p>
+<h2 id="Q7：ANP-适合什么场景？"><a href="#Q7：ANP-适合什么场景？" class="headerlink" title="Q7：ANP 适合什么场景？"></a>Q7：ANP 适合什么场景？</h2><p>ANP 适合大规模开放 Agent 网络中的服务发现、动态路由和身份验证。例如很多计算节点、专家 Agent 或服务 Agent 组成一个网络，需要根据任务动态选择最合适的服务。</p>
+<h2 id="Q8：实际项目中应该优先学哪个协议？"><a href="#Q8：实际项目中应该优先学哪个协议？" class="headerlink" title="Q8：实际项目中应该优先学哪个协议？"></a>Q8：实际项目中应该优先学哪个协议？</h2><p>优先学 MCP。因为它生态更成熟，能直接解决工具接入问题，并且可以用于文件系统、GitHub、数据库、浏览器自动化、企业 API 等真实场景。A2A 和 ANP 更适合多智能体协作和开放网络架构设计。</p>
+<hr>
+<h1 id="13-可用于项目表述的一句话"><a href="#13-可用于项目表述的一句话" class="headerlink" title="13. 可用于项目表述的一句话"></a>13. 可用于项目表述的一句话</h1><blockquote>
+<p>在 Agent 系统中引入 MCP 协议，将文件系统、GitHub、数据库和业务 API 封装为标准 MCP Server，并通过 MCPTool 自动展开为 Agent 可调用工具，从而降低工具集成成本，提升工具复用性和系统扩展性。</p>
+</blockquote>
+<hr>
+<h1 id="14-总结"><a href="#14-总结" class="headerlink" title="14. 总结"></a>14. 总结</h1><p>第十章的核心是：<strong>Agent 要从单体智能应用走向复杂系统，就必须具备标准化通信能力。</strong></p>
+<p>MCP、A2A 和 ANP 分别对应三个层次：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MCP：Agent 与工具通信</span><br><span class="line">A2A：Agent 与 Agent 通信</span><br><span class="line">ANP：Agent 与智能体网络通信</span><br></pre></td></tr></table></figure>
+
+<p>其中 MCP 是当前最值得重点掌握的协议。它通过 Host、Client、Server 架构，把外部工具和资源封装为标准 MCP Server，并提供 Tools、Resources、Prompts 三类能力。HelloAgents 进一步通过 MCPTool 自动展开机制，让 Agent 可以像调用普通工具一样调用 MCP Server 中的能力。</p>
+<p>从工程角度看，MCP 的意义不只是“多一种工具调用方式”，而是把工具生态从“手写适配器”推进到“协议化、可发现、可复用”的阶段。它为 Agent 工具生态、企业内部 Agent 平台、代码助手、知识库助手、自动化工作流等场景提供了重要基础。</p>
+<hr>
+<h1 id="15-参考来源"><a href="#15-参考来源" class="headerlink" title="15. 参考来源"></a>15. 参考来源</h1><ul>
+<li>Datawhale《Hello-Agents》第十章：智能体通信协议</li>
+<li>Model Context Protocol 官方资料</li>
+<li>A2A Protocol 相关资料</li>
+<li>Agent Network Protocol 相关资料</li>
+</ul>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-06-22T12:33:18.054Z" itemprop="dateModified">最后编辑：2026-06-22</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Hello-Agent第九章上下文工程的阅读笔记" href="/2026/06/22/hello-agent-9-reading-notes/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                12
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.7em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/hello-agents/" style="font-size: 0.8em;">hello-agents</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/06/22/hello-agent-10-reading-notes/"><i class="fa fa-book"></i> Hello-Agent第十章智能体通信协议的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/06/22/hello-agent-9-reading-notes/"><i class="fa fa-book"></i> Hello-Agent第九章上下文工程的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/06/22/hello-agent-8-reading-notes/"><i class="fa fa-book"></i> Hello-Agent第八章记忆与检索的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s15_s19_multi_agent_platform_note/"><i class="fa fa-book"></i> Learn Claude Code 系统加固阅读笔记：s15–s19</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/05/18/learn_claude_code_s12_s14_runtime_note/"><i class="fa fa-book"></i> Learn Claude Code 系统加固阅读笔记：s12–s14</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
