@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
     <head>
   <!-- 元数据 -->
   <meta charset="utf-8">
@@ -7,9 +7,9 @@
     <link rel="icon" href="/assets/favicon.png">
   
   
-  <title>这个页面走丢了呢… | Hexo</title>
+  <title>这个页面走丢了呢… | 珊瑚的花园</title>
   <link rel="canonical" href="http://example.com/404.html">
-  <meta name="author" content="John Doe" />
+  <meta name="author" content="CoralGarden52" />
   <meta http-equiv="Cache-Control" content="no-transform" />
   <meta http-equiv="Cache-Control" content="no-siteapp" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -22,10 +22,10 @@
   <meta property="og:type" content="website">
 <meta property="og:title" content="这个页面走丢了呢…">
 <meta property="og:url" content="http://example.com/404.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/assets/favicon.png">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="CoralGarden52">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/assets/favicon.png">
   
@@ -57,33 +57,70 @@
   <style>
     
       .kratos-cover.kratos-cover-2 {
-        background-image: url('https://dev.krt.moe/demo-assets/banner.webp');
+        background-image: url('/assets/banner.webp');
       }
       html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
-        background-image: url('https://dev.krt.moe/demo-assets/banner_dark.webp');
+        background-image: url('/assets/banner.webp');
       }
     
     
       @media(min-width:768px) {
         body.custom-background {
-          background-image: url('https://dev.krt.moe/demo-assets/bg.webp');
+          background-image: url('/assets/background.webp');
         }
         html[data-theme="dark"] body.custom-background {
-          background-image: url('https://dev.krt.moe/demo-assets/bg.webp');
+          background-image: url('/assets/background.webp');
         }
       }
     
     
       .widget-kratos-about .photo-background {
-        background-image: url('/images/default.webp');
+        background-image: url('/assets/about.webp');
       }
       html[data-theme="dark"] .widget-kratos-about .photo-background {
-        background-image: url('/images/default.webp');
+        background-image: url('/assets/about.webp');
       }
     
   </style>
 
   <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+
   
 <meta name="generator" content="Hexo 7.3.0"></head>
 
@@ -123,6 +160,91 @@
                                 
                                     <li>
                                         
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
                                             <a>
                                         
                                             
@@ -155,18 +277,6 @@
                                         
                                     </li>
                                 
-                                    <li>
-                                        
-                                            <a href="/linklist-example/">
-                                        
-                                            
-                                                <i class="fa fa-link"></i>
-                                            
-                                            链接列表
-                                        </a>
-                                        
-                                    </li>
-                                
                             </ul>
                         </nav>
                     </div>
@@ -174,7 +284,7 @@
             </header>
             <header id="kratos-mobile-topnav" class="kratos-topnav">
                 <div class="container">
-                    <div class="color-logo"><a href="/">Hexo</a></div>
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
                     <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
                         <a id="kratos-nav-toggle" class="kratos-nav-toggle">
                             <i></i>
@@ -188,7 +298,7 @@
             <div class="kratos-cover kratos-cover-2 text-center">
                 <div class="desc desc2 animate-box">
                     <a href="/">
-                        <h2>Hexo</h2> <br />
+                        <h2>珊瑚的花园</h2> <br />
                         <span></span>
                     </a>
                 </div>
@@ -291,12 +401,12 @@
                     </ul>
                     <ul class="kratos-copyright">
                         <div>
-                            <li>&copy; 2026 Hexo 版权所有.</li>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
                             <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
                         </div>
                         <div>
                             <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
-                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">John Doe</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
                         </div>
                         <!-- 额外的追加注入项 -->
                         

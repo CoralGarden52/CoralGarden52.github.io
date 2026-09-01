@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Hello-Agent第八章记忆与检索的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/01/hello-agent-8-reading-notes/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="hello-agents" />
+  
+  <meta name="description" content="面试速记背诵版总结第八章的核心是给 HelloAgents 框架补上两个关键能力：记忆系统 Memory 和 检索增强生成 RAG。前面的章节已经实现了 Agent 的基础架构、范式和工具调用，但如果智能体没有记忆，就无法记住用户偏好、历史交互和长期经验；如果没有检索，就只能依赖模型训练时的静态知识，容易出现知识过时、专业知识不足和幻觉问题。因此，本章从认知科学中的人类记忆系统出发，将智能体记忆划">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hello-Agent第八章记忆与检索的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/09/01/hello-agent-8-reading-notes/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记背诵版总结第八章的核心是给 HelloAgents 框架补上两个关键能力：记忆系统 Memory 和 检索增强生成 RAG。前面的章节已经实现了 Agent 的基础架构、范式和工具调用，但如果智能体没有记忆，就无法记住用户偏好、历史交互和长期经验；如果没有检索，就只能依赖模型训练时的静态知识，容易出现知识过时、专业知识不足和幻觉问题。因此，本章从认知科学中的人类记忆系统出发，将智能体记忆划">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/hello-agents/hello-agent-8.png">
+<meta property="article:published_time" content="2026-09-01T10:45:17.563Z">
+<meta property="article:modified_time" content="2026-09-01T10:45:17.563Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="hello-agents">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/hello-agents/hello-agent-8.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Hello-Agent第八章记忆与检索的阅读笔记","description":"面试速记背诵版...","image":"http://example.com/2026/09/01/hello-agent-8-reading-notes/assets/posts/hello-agents/hello-agent-8.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-01T10:45:17.563Z","dateModified":"2026-09-01T10:45:17.563Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/01/hello-agent-8-reading-notes/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/01/hello-agent-8-reading-notes/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Hello-Agent第八章记忆与检索的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-01T10:45:17.563Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-01</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~9.70K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>第八章的核心是给 HelloAgents 框架补上两个关键能力：<strong>记忆系统 Memory</strong> 和 <strong>检索增强生成 RAG</strong>。前面的章节已经实现了 Agent 的基础架构、范式和工具调用，但如果智能体没有记忆，就无法记住用户偏好、历史交互和长期经验；如果没有检索，就只能依赖模型训练时的静态知识，容易出现知识过时、专业知识不足和幻觉问题。因此，本章从认知科学中的人类记忆系统出发，将智能体记忆划分为工作记忆、情景记忆、语义记忆和感知记忆，并通过 MemoryTool 与 MemoryManager 实现记忆的添加、搜索、整合、遗忘和统计。同时，本章还实现了 RAGTool，把外部文档通过 MarkItDown 转成 Markdown，再进行结构化分块、嵌入向量化、向量数据库存储和高级检索，最终让 Agent 能基于外部知识生成更可靠的答案。最后，本章通过智能文档问答助手案例，把 MemoryTool 和 RAGTool 结合起来，实现 PDF 加载、文档问答、学习笔记、学习回顾和报告生成，展示了记忆与检索如何让智能体从“单轮问答工具”升级为“能长期学习和利用知识的助手”。</p>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><p>如果面试官问“Agent 为什么需要记忆和检索”，可以这样回答：</p>
+<blockquote>
+<p>我理解记忆和检索是 Agent 从简单问答走向长期任务执行的关键能力。LLM 本身通常是无状态的，每次调用之间不会自动记住用户信息，所以需要 Memory 系统保存当前对话、历史事件、用户偏好和抽象知识。第八章中把记忆分成工作记忆、情景记忆、语义记忆和感知记忆，分别对应短期上下文、具体交互事件、长期知识规则和多模态信息。另一方面，LLM 的内置知识是静态的，存在时效性和专业领域不足的问题，所以需要 RAG 系统从外部知识库检索相关内容，再注入 Prompt 生成答案。HelloAgents 通过 MemoryTool 管理记忆生命周期，通过 RAGTool 完成文档解析、分块、向量化、检索和问答。二者结合后，Agent 不仅能回答当前问题，还能记住用户历史、积累学习经验，并基于外部文档生成更可靠的回答。</p>
+</blockquote>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="1-Memory-和-RAG-的区别是什么？"><a href="#1-Memory-和-RAG-的区别是什么？" class="headerlink" title="1. Memory 和 RAG 的区别是什么？"></a>1. Memory 和 RAG 的区别是什么？</h3><p>Memory 主要解决的是“智能体能不能记住过去”的问题，保存用户偏好、历史交互、学习经历和长期知识；RAG 主要解决的是“智能体能不能利用外部知识”的问题，通过检索外部文档或知识库来增强回答。简单说，Memory 偏个体经验和长期状态，RAG 偏外部知识和事实依据。</p>
+<h3 id="2-为什么-LLM-本身不等于有记忆？"><a href="#2-为什么-LLM-本身不等于有记忆？" class="headerlink" title="2. 为什么 LLM 本身不等于有记忆？"></a>2. 为什么 LLM 本身不等于有记忆？</h3><p>因为大多数 LLM API 调用是无状态的。模型每次只根据当前输入和传入的上下文生成答案，不会自动保存上一次对话内容。即使上下文窗口里有历史消息，窗口也有长度限制，早期信息可能被截断。因此，Agent 需要额外的记忆模块来持久化重要信息。</p>
+<h3 id="3-四种记忆类型分别是什么？"><a href="#3-四种记忆类型分别是什么？" class="headerlink" title="3. 四种记忆类型分别是什么？"></a>3. 四种记忆类型分别是什么？</h3><ul>
+<li><strong>工作记忆</strong>：保存当前会话的临时上下文，访问快、容量小、生命周期短。</li>
+<li><strong>情景记忆</strong>：保存具体事件和交互经历，适合学习历程回顾和经验复盘。</li>
+<li><strong>语义记忆</strong>：保存抽象知识、概念、规则和用户长期偏好，适合长期推理。</li>
+<li><strong>感知记忆</strong>：保存图像、音频等多模态信息，支持跨模态检索。</li>
+</ul>
+<h3 id="4-MemoryTool-的核心操作有哪些？"><a href="#4-MemoryTool-的核心操作有哪些？" class="headerlink" title="4. MemoryTool 的核心操作有哪些？"></a>4. MemoryTool 的核心操作有哪些？</h3><p>MemoryTool 提供统一接口，常见操作包括：<code>add</code> 添加记忆、<code>search</code> 搜索记忆、<code>summary</code> 获取摘要、<code>forget</code> 选择性遗忘、<code>consolidate</code> 记忆整合、<code>update</code> 更新记忆、<code>remove</code> 删除记忆、<code>stats</code> 查看统计信息。</p>
+<h3 id="5-RAG-的基本流程是什么？"><a href="#5-RAG-的基本流程是什么？" class="headerlink" title="5. RAG 的基本流程是什么？"></a>5. RAG 的基本流程是什么？</h3><p>RAG 一般分为两个阶段：数据准备阶段和应用问答阶段。数据准备阶段包括文档解析、文本分块、向量化和存储；应用阶段包括用户提问、查询向量化、检索相关片段、构建上下文、调用 LLM 生成答案。</p>
+<h3 id="6-MQE-和-HyDE-分别解决什么问题？"><a href="#6-MQE-和-HyDE-分别解决什么问题？" class="headerlink" title="6. MQE 和 HyDE 分别解决什么问题？"></a>6. MQE 和 HyDE 分别解决什么问题？</h3><p>MQE 多查询扩展解决的是“用户表述和文档表述不一致”的问题，它用多个等价查询提高召回率。HyDE 解决的是“问题和答案在语义空间中不匹配”的问题，它先生成一个假设答案，再用假设答案去检索真实文档。</p>
+<hr>
+<h1 id="Hello-Agents-第八章：记忆与检索阅读笔记"><a href="#Hello-Agents-第八章：记忆与检索阅读笔记" class="headerlink" title="Hello-Agents 第八章：记忆与检索阅读笔记"></a>Hello-Agents 第八章：记忆与检索阅读笔记</h1><h2 id="1-本章核心内容"><a href="#1-本章核心内容" class="headerlink" title="1. 本章核心内容"></a>1. 本章核心内容</h2><p>第八章《记忆与检索》的主题是：<strong>让智能体拥有长期记忆能力和外部知识检索能力</strong>。</p>
+<p>在前面的章节中，HelloAgents 已经具备了基础框架、工具系统和多种 Agent 范式，但它仍然缺少两个关键能力：</p>
+<ol>
+<li><strong>记忆系统 Memory System</strong>：让智能体记住历史交互、用户偏好和长期经验。</li>
+<li><strong>检索增强生成 RAG</strong>：让智能体从外部知识库中检索信息，辅助生成更准确的回答。</li>
+</ol>
+<p>这两个能力分别对应 Agent 的两类核心需求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Memory：记住过去</span><br><span class="line">RAG：查找外部知识</span><br></pre></td></tr></table></figure>
+
+<p>如果没有 Memory，Agent 每次对话都像第一次见到用户，无法保持连续性；如果没有 RAG，Agent 只能依赖模型训练时的静态知识，难以处理最新信息、私有文档和专业知识。</p>
+<hr>
+<h2 id="2-为什么-Agent-需要记忆与检索？"><a href="#2-为什么-Agent-需要记忆与检索？" class="headerlink" title="2. 为什么 Agent 需要记忆与检索？"></a>2. 为什么 Agent 需要记忆与检索？</h2><h2 id="2-1-LLM-的无状态问题"><a href="#2-1-LLM-的无状态问题" class="headerlink" title="2.1 LLM 的无状态问题"></a>2.1 LLM 的无状态问题</h2><p>大语言模型本身通常是无状态的。也就是说，每次 API 调用都是一次独立计算，模型不会自动保存上一次对话的信息。</p>
+<p>这会带来几个问题：</p>
+<ul>
+<li><strong>上下文丢失</strong>：长对话中，早期信息可能被上下文窗口截断；</li>
+<li><strong>个性化不足</strong>：模型无法稳定记住用户偏好、习惯和长期目标；</li>
+<li><strong>学习能力受限</strong>：无法从历史成功或失败中积累经验；</li>
+<li><strong>一致性问题</strong>：多轮对话中可能前后矛盾。</li>
+</ul>
+<p>因此，Agent 需要独立的 Memory 系统，将重要信息持久化保存，并在需要时检索出来。</p>
+<h2 id="2-2-LLM-的静态知识问题"><a href="#2-2-LLM-的静态知识问题" class="headerlink" title="2.2 LLM 的静态知识问题"></a>2.2 LLM 的静态知识问题</h2><p>LLM 的知识主要来自训练数据，存在天然局限：</p>
+<ul>
+<li>训练数据有时间截止点，知识可能过时；</li>
+<li>通用模型对专业领域知识掌握不够深入；</li>
+<li>容易生成看似合理但并不准确的幻觉内容；</li>
+<li>缺少可追溯的信息来源。</li>
+</ul>
+<p>RAG 的作用就是在生成回答前，先从外部知识库中检索相关内容，再把检索结果作为上下文提供给模型，从而提高回答的准确性、时效性和可解释性。</p>
+<hr>
+<h1 id="3-从认知科学理解智能体记忆"><a href="#3-从认知科学理解智能体记忆" class="headerlink" title="3. 从认知科学理解智能体记忆"></a>3. 从认知科学理解智能体记忆</h1><p>本章首先借鉴人类记忆系统，将智能体记忆设计成分层结构。</p>
+<p>人类记忆一般可以分为：</p>
+<table>
+<thead>
+<tr>
+<th>人类记忆类型</th>
+<th>特点</th>
+<th>Agent 中的对应设计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>感觉记忆</td>
+<td>时间极短，保存感官输入</td>
+<td>感知记忆</td>
+</tr>
+<tr>
+<td>工作记忆</td>
+<td>短期、容量有限，服务当前任务</td>
+<td>工作记忆</td>
+</tr>
+<tr>
+<td>长期记忆</td>
+<td>持久保存知识和经历</td>
+<td>情景记忆、语义记忆</td>
+</tr>
+</tbody></table>
+<p>这种设计思路说明：Agent 的记忆不应该只是简单保存聊天记录，而应该根据不同信息的生命周期、重要性和用途进行分层管理。</p>
+<hr>
+<h1 id="4-HelloAgents-的记忆系统设计"><a href="#4-HelloAgents-的记忆系统设计" class="headerlink" title="4. HelloAgents 的记忆系统设计"></a>4. HelloAgents 的记忆系统设计</h1><h2 id="4-1-整体架构"><a href="#4-1-整体架构" class="headerlink" title="4.1 整体架构"></a>4.1 整体架构</h2><p>HelloAgents 的记忆系统采用四层架构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">基础设施层：MemoryManager、MemoryItem、MemoryConfig、BaseMemory</span><br><span class="line">记忆类型层：WorkingMemory、EpisodicMemory、SemanticMemory、PerceptualMemory</span><br><span class="line">存储后端层：Qdrant、Neo4j、SQLite</span><br><span class="line">嵌入服务层：DashScopeEmbedding、LocalTransformerEmbedding、TFIDFEmbedding</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>MemoryManager</code> 负责统一调度不同记忆模块；</li>
+<li><code>MemoryItem</code> 是标准化记忆项；</li>
+<li><code>MemoryConfig</code> 负责配置容量、TTL、数据库等参数；</li>
+<li><code>BaseMemory</code> 定义不同记忆类型的统一接口。</li>
+</ul>
+<h2 id="4-2-四种记忆类型"><a href="#4-2-四种记忆类型" class="headerlink" title="4.2 四种记忆类型"></a>4.2 四种记忆类型</h2><h2 id="4-2-1-工作记忆-Working-Memory"><a href="#4-2-1-工作记忆-Working-Memory" class="headerlink" title="4.2.1 工作记忆 Working Memory"></a>4.2.1 工作记忆 Working Memory</h2><p>工作记忆类似智能体的短期记忆，用于保存当前会话中的临时信息。</p>
+<p>特点：</p>
+<ul>
+<li>生命周期短；</li>
+<li>容量有限，例如默认 50 条；</li>
+<li>访问速度快；</li>
+<li>通常使用纯内存存储；</li>
+<li>支持 TTL 自动清理。</li>
+</ul>
+<p>适合保存：</p>
+<ul>
+<li>当前问题；</li>
+<li>当前任务状态；</li>
+<li>最近几轮对话；</li>
+<li>临时推理结果。</li>
+</ul>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">工作记忆 = Agent 当前正在脑子里处理的信息</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-2-情景记忆-Episodic-Memory"><a href="#4-2-2-情景记忆-Episodic-Memory" class="headerlink" title="4.2.2 情景记忆 Episodic Memory"></a>4.2.2 情景记忆 Episodic Memory</h2><p>情景记忆用于保存具体事件和交互经历。</p>
+<p>特点：</p>
+<ul>
+<li>关注“什么时候发生了什么”；</li>
+<li>保留时间、会话、上下文等信息；</li>
+<li>支持时间序列检索和回顾式检索；</li>
+<li>适合用于复盘和学习历史。</li>
+</ul>
+<p>适合保存：</p>
+<ul>
+<li>用户某次提问；</li>
+<li>Agent 某次回答；</li>
+<li>用户完成了某个学习任务；</li>
+<li>某次加载了某篇文档。</li>
+</ul>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">情景记忆 = Agent 的经历和事件日志</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-3-语义记忆-Semantic-Memory"><a href="#4-2-3-语义记忆-Semantic-Memory" class="headerlink" title="4.2.3 语义记忆 Semantic Memory"></a>4.2.3 语义记忆 Semantic Memory</h2><p>语义记忆用于保存抽象知识、概念、规则和长期偏好。</p>
+<p>特点：</p>
+<ul>
+<li>关注“什么是什么”；</li>
+<li>更持久、更稳定；</li>
+<li>适合保存知识图谱和概念关系；</li>
+<li>可以结合 Qdrant 向量检索和 Neo4j 图检索。</li>
+</ul>
+<p>适合保存：</p>
+<ul>
+<li>用户长期偏好；</li>
+<li>领域知识；</li>
+<li>规则和约束；</li>
+<li>概念之间的关系。</li>
+</ul>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">语义记忆 = Agent 的知识体系</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-4-感知记忆-Perceptual-Memory"><a href="#4-2-4-感知记忆-Perceptual-Memory" class="headerlink" title="4.2.4 感知记忆 Perceptual Memory"></a>4.2.4 感知记忆 Perceptual Memory</h2><p>感知记忆用于处理图像、音频等多模态数据。</p>
+<p>特点：</p>
+<ul>
+<li>支持文本、图像、音频等不同模态；</li>
+<li>可以进行同模态或跨模态检索；</li>
+<li>不同模态可以使用不同向量集合，避免维度不匹配；</li>
+<li>适合多模态 Agent。</li>
+</ul>
+<p>适合保存：</p>
+<ul>
+<li>用户上传的图片；</li>
+<li>代码截图；</li>
+<li>音频片段；</li>
+<li>多模态文档特征。</li>
+</ul>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">感知记忆 = Agent 对多模态世界的记忆</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="5-MemoryTool：记忆系统的统一入口"><a href="#5-MemoryTool：记忆系统的统一入口" class="headerlink" title="5. MemoryTool：记忆系统的统一入口"></a>5. MemoryTool：记忆系统的统一入口</h1><p>MemoryTool 是 Agent 使用记忆系统的统一工具接口。</p>
+<p>它的核心设计思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">统一入口，分发处理</span><br></pre></td></tr></table></figure>
+
+<p>用户或 Agent 只需要调用 <code>memory_tool.execute(action, **kwargs)</code>，然后通过 <code>action</code> 指定具体操作。</p>
+<h2 id="5-1-add：添加记忆"><a href="#5-1-add：添加记忆" class="headerlink" title="5.1 add：添加记忆"></a>5.1 add：添加记忆</h2><p><code>add</code> 是记忆系统的基础操作，用来把新信息写入指定类型的记忆。</p>
+<p>常见参数包括：</p>
+<ul>
+<li><code>content</code>：记忆内容；</li>
+<li><code>memory_type</code>：记忆类型；</li>
+<li><code>importance</code>：重要性分数；</li>
+<li><code>metadata</code>：时间、会话、文件、模态等元数据。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">memory_tool.execute(</span><br><span class="line">    <span class="string">&quot;add&quot;</span>,</span><br><span class="line">    content=<span class="string">&quot;用户张三是一名 Python 开发者&quot;</span>,</span><br><span class="line">    memory_type=<span class="string">&quot;semantic&quot;</span>,</span><br><span class="line">    importance=<span class="number">0.8</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>这里的重要性分数非常关键，它会影响后续检索、整合和遗忘。</p>
+<h2 id="5-2-search：搜索记忆"><a href="#5-2-search：搜索记忆" class="headerlink" title="5.2 search：搜索记忆"></a>5.2 search：搜索记忆</h2><p><code>search</code> 用来从记忆系统中找出与查询最相关的信息。</p>
+<p>它可以支持：</p>
+<ul>
+<li>指定单一记忆类型；</li>
+<li>指定多个记忆类型；</li>
+<li>设置返回数量；</li>
+<li>设置最低重要性阈值。</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">memory_tool.execute(</span><br><span class="line">    <span class="string">&quot;search&quot;</span>,</span><br><span class="line">    query=<span class="string">&quot;Python 学习进度&quot;</span>,</span><br><span class="line">    memory_types=[<span class="string">&quot;semantic&quot;</span>, <span class="string">&quot;episodic&quot;</span>],</span><br><span class="line">    limit=<span class="number">5</span>,</span><br><span class="line">    min_importance=<span class="number">0.5</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-3-forget：选择性遗忘"><a href="#5-3-forget：选择性遗忘" class="headerlink" title="5.3 forget：选择性遗忘"></a>5.3 forget：选择性遗忘</h2><p>遗忘机制用于删除不重要、过期或超出容量的记忆。</p>
+<p>本章介绍了三种遗忘策略：</p>
+<table>
+<thead>
+<tr>
+<th>遗忘策略</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>importance_based</td>
+<td>删除重要性低于阈值的记忆</td>
+</tr>
+<tr>
+<td>time_based</td>
+<td>删除超过指定时间的记忆</td>
+</tr>
+<tr>
+<td>capacity_based</td>
+<td>容量超限时删除最不重要的记忆</td>
+</tr>
+</tbody></table>
+<p>这说明记忆系统不是越存越好，而是需要主动维护和清理。</p>
+<h2 id="5-4-consolidate：记忆整合"><a href="#5-4-consolidate：记忆整合" class="headerlink" title="5.4 consolidate：记忆整合"></a>5.4 consolidate：记忆整合</h2><p><code>consolidate</code> 模拟人类大脑中的记忆固化过程，把重要的短期记忆转化为长期记忆。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">memory_tool.execute(</span><br><span class="line">    <span class="string">&quot;consolidate&quot;</span>,</span><br><span class="line">    from_type=<span class="string">&quot;working&quot;</span>,</span><br><span class="line">    to_type=<span class="string">&quot;episodic&quot;</span>,</span><br><span class="line">    importance_threshold=<span class="number">0.7</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>这表示把重要性超过 0.7 的工作记忆转为情景记忆。</p>
+<p>进一步也可以把重要的情景记忆转为语义记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">工作记忆 → 情景记忆 → 语义记忆</span><br></pre></td></tr></table></figure>
+
+<p>这个过程让 Agent 能从具体经历中提炼长期知识。</p>
+<hr>
+<h1 id="6-MemoryManager：记忆系统的核心调度器"><a href="#6-MemoryManager：记忆系统的核心调度器" class="headerlink" title="6. MemoryManager：记忆系统的核心调度器"></a>6. MemoryManager：记忆系统的核心调度器</h1><p>MemoryTool 面向 Agent，MemoryManager 面向底层记忆模块。</p>
+<p>二者的关系可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MemoryTool：对外提供统一工具接口</span><br><span class="line">MemoryManager：对内管理不同记忆类型</span><br></pre></td></tr></table></figure>
+
+<p>MemoryManager 负责：</p>
+<ul>
+<li>初始化不同记忆模块；</li>
+<li>根据配置启用或关闭某类记忆；</li>
+<li>统一添加、检索、删除和整合记忆；</li>
+<li>管理用户隔离和会话信息；</li>
+<li>协调存储后端和嵌入服务。</li>
+</ul>
+<p>这种分层设计体现了软件工程中的关注点分离：</p>
+<ul>
+<li>上层工具负责易用性；</li>
+<li>中间管理器负责协调；</li>
+<li>底层记忆模块负责具体实现。</li>
+</ul>
+<hr>
+<h1 id="7-RAG-系统：知识检索增强"><a href="#7-RAG-系统：知识检索增强" class="headerlink" title="7. RAG 系统：知识检索增强"></a>7. RAG 系统：知识检索增强</h1><h2 id="7-1-什么是-RAG？"><a href="#7-1-什么是-RAG？" class="headerlink" title="7.1 什么是 RAG？"></a>7.1 什么是 RAG？</h2><p>RAG 是 Retrieval-Augmented Generation，即检索增强生成。</p>
+<p>它的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">先检索，再生成</span><br></pre></td></tr></table></figure>
+
+<p>也就是在 LLM 生成回答之前，先从外部知识库中找出相关内容，再把这些内容放进 Prompt 中，让模型基于真实资料回答。</p>
+<p>RAG 可以拆成三个部分：</p>
+<ul>
+<li><strong>Retrieval 检索</strong>：从知识库中找到相关内容；</li>
+<li><strong>Augmented 增强</strong>：把检索结果注入上下文；</li>
+<li><strong>Generation 生成</strong>：让 LLM 基于上下文回答问题。</li>
+</ul>
+<h2 id="7-2-RAG-的基本流程"><a href="#7-2-RAG-的基本流程" class="headerlink" title="7.2 RAG 的基本流程"></a>7.2 RAG 的基本流程</h2><p>一个完整 RAG 系统一般包含两个阶段。</p>
+<h3 id="第一阶段：数据准备"><a href="#第一阶段：数据准备" class="headerlink" title="第一阶段：数据准备"></a>第一阶段：数据准备</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">文档解析 → 文本分块 → 向量化 → 向量数据库存储</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二阶段：查询问答"><a href="#第二阶段：查询问答" class="headerlink" title="第二阶段：查询问答"></a>第二阶段：查询问答</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用户问题 → 查询向量化 → 检索相关片段 → 构建上下文 → LLM生成答案</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-3-RAG-的发展阶段"><a href="#7-3-RAG-的发展阶段" class="headerlink" title="7.3 RAG 的发展阶段"></a>7.3 RAG 的发展阶段</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>时间</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>朴素 RAG</td>
+<td>2020-2021</td>
+<td>关键词检索，直接拼接上下文</td>
+</tr>
+<tr>
+<td>高级 RAG</td>
+<td>2022-2023</td>
+<td>稠密向量检索，查询重写、重排序、分块优化</td>
+</tr>
+<tr>
+<td>模块化 RAG</td>
+<td>2023 至今</td>
+<td>混合检索、MQE、HyDE、自反思、可插拔组件</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="8-HelloAgents-的-RAGTool-设计"><a href="#8-HelloAgents-的-RAGTool-设计" class="headerlink" title="8. HelloAgents 的 RAGTool 设计"></a>8. HelloAgents 的 RAGTool 设计</h1><h2 id="8-1-五层架构"><a href="#8-1-五层架构" class="headerlink" title="8.1 五层架构"></a>8.1 五层架构</h2><p>本章将 RAGTool 设计为一条可复用的 Pipeline，可以概括为“五层”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户层：RAGTool统一接口</span><br><span class="line">应用层：智能问答、搜索、管理</span><br><span class="line">处理层：文档解析、分块、向量化</span><br><span class="line">存储层：向量数据库、文档存储</span><br><span class="line">基础层：嵌入模型、LLM、数据库</span><br></pre></td></tr></table></figure>
+
+<p>这种分层架构的好处是：每一层都可以单独替换和优化。例如，嵌入模型可以从本地模型换成 API，向量数据库也可以从本地 Qdrant 换成云端 Qdrant。</p>
+<h2 id="8-2-文档处理：统一转-Markdown"><a href="#8-2-文档处理：统一转-Markdown" class="headerlink" title="8.2 文档处理：统一转 Markdown"></a>8.2 文档处理：统一转 Markdown</h2><p>HelloAgents 使用 MarkItDown 将不同格式文档统一转换为 Markdown。</p>
+<p>支持的输入包括：</p>
+<ul>
+<li>PDF；</li>
+<li>Word；</li>
+<li>Excel；</li>
+<li>PowerPoint；</li>
+<li>图片；</li>
+<li>音频；</li>
+<li>TXT &#x2F; CSV &#x2F; JSON &#x2F; XML &#x2F; HTML；</li>
+<li>代码文件。</li>
+</ul>
+<p>统一转成 Markdown 的好处是：</p>
+<ul>
+<li>后续分块逻辑统一；</li>
+<li>可以利用 Markdown 标题层级；</li>
+<li>更容易保留文档结构；</li>
+<li>多格式文档可以进入同一条 RAG Pipeline。</li>
+</ul>
+<p>整体流程是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">任意格式文档 → MarkItDown转换 → Markdown文本 → 智能分块 → 向量化 → 存储检索</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-3-智能分块策略"><a href="#8-3-智能分块策略" class="headerlink" title="8.3 智能分块策略"></a>8.3 智能分块策略</h2><p>HelloAgents 针对 Markdown 文档设计了结构感知分块策略。</p>
+<p>它会利用：</p>
+<ul>
+<li><code>#</code>、<code>##</code>、<code>###</code> 标题层级；</li>
+<li>段落边界；</li>
+<li>Token 数量；</li>
+<li>分块重叠；</li>
+<li>中英文混合 Token 估算。</li>
+</ul>
+<p>分块目标不是简单按字数切，而是尽量保持语义完整性和上下文连续性。</p>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">好的分块 = 既适合向量检索，又不破坏语义结构</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-4-统一嵌入和向量存储"><a href="#8-4-统一嵌入和向量存储" class="headerlink" title="8.4 统一嵌入和向量存储"></a>8.4 统一嵌入和向量存储</h2><p>RAG 系统会把文本块转换为向量，然后存入 Qdrant 等向量数据库。</p>
+<p>本章设计了统一嵌入接口，支持：</p>
+<ul>
+<li>百炼 API；</li>
+<li>本地 sentence-transformers 模型；</li>
+<li>TF-IDF 兜底方案。</li>
+</ul>
+<p>这种设计提升了系统的灵活性：</p>
+<ul>
+<li>有 API 时可以用高质量嵌入模型；</li>
+<li>无 API 时可以切换本地模型；</li>
+<li>环境受限时可以用 TF-IDF 兜底。</li>
+</ul>
+<hr>
+<h1 id="9-高级检索策略"><a href="#9-高级检索策略" class="headerlink" title="9. 高级检索策略"></a>9. 高级检索策略</h1><h2 id="9-1-MQE：多查询扩展"><a href="#9-1-MQE：多查询扩展" class="headerlink" title="9.1 MQE：多查询扩展"></a>9.1 MQE：多查询扩展</h2><p>MQE 的全称是 Multi-Query Expansion，多查询扩展。</p>
+<p>它的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">一个问题可以有多种等价问法</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">原问题：如何学习 Python？</span><br><span class="line">扩展查询：Python 入门教程</span><br><span class="line">扩展查询：Python 学习方法</span><br><span class="line">扩展查询：Python 编程指南</span><br></pre></td></tr></table></figure>
+
+<p>这样可以减少“用户表达”和“文档表达”不一致造成的漏检问题。</p>
+<p>MQE 的优势是提升召回率，尤其适合模糊问题、专业术语问题和表达方式不确定的问题。</p>
+<h2 id="9-2-HyDE：假设文档嵌入"><a href="#9-2-HyDE：假设文档嵌入" class="headerlink" title="9.2 HyDE：假设文档嵌入"></a>9.2 HyDE：假设文档嵌入</h2><p>HyDE 的全称是 Hypothetical Document Embeddings。</p>
+<p>它的核心思想是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">用假设答案去检索真实答案</span><br></pre></td></tr></table></figure>
+
+<p>传统检索是用“问题”匹配“文档”，但问题通常是疑问句，文档通常是陈述句，二者在语义空间中可能不够接近。</p>
+<p>HyDE 会先让 LLM 写一段可能的答案，再用这段“假设答案”的向量去检索真实文档。即使假设答案不完全正确，它也可能包含关键术语和领域表达，从而提高检索效果。</p>
+<h2 id="9-3-扩展检索框架"><a href="#9-3-扩展检索框架" class="headerlink" title="9.3 扩展检索框架"></a>9.3 扩展检索框架</h2><p>HelloAgents 把 MQE 和 HyDE 组合进统一的扩展检索流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">原始查询 → 查询扩展 / 假设文档 → 多路检索 → 候选合并 → 去重排序 → Top-K 返回</span><br></pre></td></tr></table></figure>
+
+<p>实际使用建议：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>普通问答</td>
+<td>基础向量检索或 MQE</td>
+</tr>
+<tr>
+<td>召回率不足</td>
+<td>启用 MQE</td>
+</tr>
+<tr>
+<td>专业领域问答</td>
+<td>MQE + HyDE</td>
+</tr>
+<tr>
+<td>性能敏感场景</td>
+<td>只用基础检索或轻量 MQE</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="10-智能文档问答助手案例"><a href="#10-智能文档问答助手案例" class="headerlink" title="10. 智能文档问答助手案例"></a>10. 智能文档问答助手案例</h1><p>本章最后用一个完整案例展示 MemoryTool 和 RAGTool 的结合：<strong>智能文档问答助手</strong>。</p>
+<p>案例目标是构建一个基于 Gradio 的 Web 应用，支持用户上传 PDF 文档，然后进行问答、笔记记录、学习回顾和报告生成。</p>
+<h2 id="10-1-系统功能"><a href="#10-1-系统功能" class="headerlink" title="10.1 系统功能"></a>10.1 系统功能</h2><p>该助手主要实现四类功能：</p>
+<h3 id="1-智能文档处理"><a href="#1-智能文档处理" class="headerlink" title="1. 智能文档处理"></a>1. 智能文档处理</h3><p>系统使用 MarkItDown 将 PDF 转成 Markdown，再进行结构化分块、向量化和索引构建。</p>
+<h3 id="2-高级检索问答"><a href="#2-高级检索问答" class="headerlink" title="2. 高级检索问答"></a>2. 高级检索问答</h3><p>用户提问后，系统通过 RAGTool 检索相关片段，并可以启用 MQE 和 HyDE 提升检索效果。</p>
+<h3 id="3-多层次记忆管理"><a href="#3-多层次记忆管理" class="headerlink" title="3. 多层次记忆管理"></a>3. 多层次记忆管理</h3><p>系统使用 MemoryTool 记录：</p>
+<ul>
+<li>当前学习任务；</li>
+<li>用户提问历史；</li>
+<li>文档加载事件；</li>
+<li>学习笔记；</li>
+<li>概念知识。</li>
+</ul>
+<h3 id="4-个性化学习支持"><a href="#4-个性化学习支持" class="headerlink" title="4. 个性化学习支持"></a>4. 个性化学习支持</h3><p>系统可以基于用户历史生成学习报告，统计：</p>
+<ul>
+<li>加载文档数量；</li>
+<li>提问次数；</li>
+<li>笔记数量；</li>
+<li>当前学习文档；</li>
+<li>记忆摘要；</li>
+<li>RAG 知识库状态。</li>
+</ul>
+<h2 id="10-2-Memory-和-RAG-如何结合？"><a href="#10-2-Memory-和-RAG-如何结合？" class="headerlink" title="10.2 Memory 和 RAG 如何结合？"></a>10.2 Memory 和 RAG 如何结合？</h2><p>这个案例中，RAGTool 和 MemoryTool 各司其职：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RAGTool：负责从文档中找答案</span><br><span class="line">MemoryTool：负责记录用户学过什么、问过什么、记住什么</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<ul>
+<li>用户加载 PDF：RAGTool 负责解析和索引，MemoryTool 记录“加载了某文档”；</li>
+<li>用户提问：RAGTool 负责检索并回答，MemoryTool 记录提问事件；</li>
+<li>用户写笔记：MemoryTool 将笔记保存为语义记忆；</li>
+<li>用户查看回顾：MemoryTool 从历史记忆中检索学习经历；</li>
+<li>用户生成报告：系统整合 Memory 摘要和 RAG 统计。</li>
+</ul>
+<p>因此，这个案例不是单纯的 RAG 问答，而是一个带记忆能力的学习助手。</p>
+<hr>
+<h1 id="11-本章对-Agent-开发的启发"><a href="#11-本章对-Agent-开发的启发" class="headerlink" title="11. 本章对 Agent 开发的启发"></a>11. 本章对 Agent 开发的启发</h1><h2 id="11-1-Agent-不能只依赖上下文窗口"><a href="#11-1-Agent-不能只依赖上下文窗口" class="headerlink" title="11.1 Agent 不能只依赖上下文窗口"></a>11.1 Agent 不能只依赖上下文窗口</h2><p>上下文窗口只能暂时保存信息，不能替代长期记忆。真实 Agent 需要把重要信息写入外部存储，并在需要时检索回来。</p>
+<h2 id="11-2-记忆需要生命周期管理"><a href="#11-2-记忆需要生命周期管理" class="headerlink" title="11.2 记忆需要生命周期管理"></a>11.2 记忆需要生命周期管理</h2><p>记忆不是越多越好。如果不做遗忘和整合，系统会出现存储膨胀、检索噪声增加、隐私风险变高等问题。因此要设计：</p>
+<ul>
+<li>重要性评分；</li>
+<li>时间衰减；</li>
+<li>容量限制；</li>
+<li>选择性遗忘；</li>
+<li>记忆整合。</li>
+</ul>
+<h2 id="11-3-RAG-的关键不只是向量库"><a href="#11-3-RAG-的关键不只是向量库" class="headerlink" title="11.3 RAG 的关键不只是向量库"></a>11.3 RAG 的关键不只是向量库</h2><p>很多人把 RAG 简单理解为“向量数据库 + LLM”，但真正影响效果的是完整链路：</p>
+<ul>
+<li>文档解析质量；</li>
+<li>分块策略；</li>
+<li>嵌入模型；</li>
+<li>检索策略；</li>
+<li>重排序；</li>
+<li>上下文构建；</li>
+<li>生成提示词；</li>
+<li>引用和可解释性。</li>
+</ul>
+<h2 id="11-4-Memory-和-RAG-可以形成闭环"><a href="#11-4-Memory-和-RAG-可以形成闭环" class="headerlink" title="11.4 Memory 和 RAG 可以形成闭环"></a>11.4 Memory 和 RAG 可以形成闭环</h2><p>RAG 负责从外部知识库找资料，Memory 负责保存用户交互和学习过程。二者结合后，Agent 可以形成闭环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">检索外部知识 → 回答用户问题 → 记录交互过程 → 总结长期知识 → 下次更个性化回答</span><br></pre></td></tr></table></figure>
+
+<p>这也是智能体从“工具调用系统”走向“长期智能助手”的关键。</p>
+<hr>
+<h1 id="12-四类记忆对比表"><a href="#12-四类记忆对比表" class="headerlink" title="12. 四类记忆对比表"></a>12. 四类记忆对比表</h1><table>
+<thead>
+<tr>
+<th>记忆类型</th>
+<th>生命周期</th>
+<th>存储内容</th>
+<th>技术实现</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>工作记忆</td>
+<td>短期</td>
+<td>当前会话上下文</td>
+<td>内存 + TTL</td>
+<td>当前任务状态、多轮对话</td>
+</tr>
+<tr>
+<td>情景记忆</td>
+<td>中长期</td>
+<td>具体事件和经历</td>
+<td>SQLite + Qdrant</td>
+<td>学习历史、交互记录</td>
+</tr>
+<tr>
+<td>语义记忆</td>
+<td>长期</td>
+<td>抽象知识和规则</td>
+<td>Qdrant + Neo4j</td>
+<td>用户偏好、领域知识、概念关系</td>
+</tr>
+<tr>
+<td>感知记忆</td>
+<td>动态</td>
+<td>多模态信息</td>
+<td>多模态编码器 + 向量库</td>
+<td>图片、音频、截图、跨模态检索</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="13-Memory-与-RAG-对比表"><a href="#13-Memory-与-RAG-对比表" class="headerlink" title="13. Memory 与 RAG 对比表"></a>13. Memory 与 RAG 对比表</h1><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Memory</th>
+<th>RAG</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>解决问题</td>
+<td>记住历史和用户状态</td>
+<td>利用外部知识回答问题</td>
+</tr>
+<tr>
+<td>数据来源</td>
+<td>用户交互、Agent 经验、个人偏好</td>
+<td>文档、知识库、数据库、网页</td>
+</tr>
+<tr>
+<td>信息特点</td>
+<td>个性化、长期性、上下文相关</td>
+<td>外部性、事实性、可引用</td>
+</tr>
+<tr>
+<td>核心操作</td>
+<td>添加、搜索、整合、遗忘</td>
+<td>解析、分块、向量化、检索、生成</td>
+</tr>
+<tr>
+<td>典型工具</td>
+<td>MemoryTool</td>
+<td>RAGTool</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>个人助手、学习助手、长期任务</td>
+<td>文档问答、知识库问答、专业领域问答</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="14-结语"><a href="#14-结语" class="headerlink" title="14. 结语"></a>14. 结语</h1><p>第八章的核心价值在于说明：<strong>一个真正有用的 Agent，不应该只是会调用工具和生成回答，还应该能记住用户、积累经验，并从外部知识中获取依据。</strong></p>
+<p>Memory 让 Agent 具备连续性和个性化能力，RAG 让 Agent 具备知识更新和事实增强能力。二者结合后，Agent 才能从一次性问答系统升级为长期可用、可学习、可扩展的智能助手。</p>
+<p>对于实际项目来说，本章的启发是：</p>
+<ul>
+<li>做个人助手时，要重点设计记忆类型、用户隔离和遗忘机制；</li>
+<li>做知识库问答时，要重点优化文档解析、分块和检索策略；</li>
+<li>做学习助手或科研助手时，要把 Memory 和 RAG 结合起来，既能查资料，也能记录用户的学习轨迹。</li>
+</ul>
+<hr>
+<h1 id="15-参考来源"><a href="#15-参考来源" class="headerlink" title="15. 参考来源"></a>15. 参考来源</h1><ul>
+<li>Datawhale《Hello-Agents》第八章：记忆与检索</li>
+<li>Retrieval-Augmented Generation, RAG</li>
+<li>Multi-Query Expansion, MQE</li>
+<li>Hypothetical Document Embeddings, HyDE</li>
+<li>Qdrant、Neo4j、SQLite、MarkItDown 等相关工具与工程实践</li>
+</ul>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-01T10:45:17.563Z" itemprop="dateModified">最后编辑：2026-09-01</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Hello-Agent第十二章智能体性能评估的阅读笔记" href="/2026/09/01/hello-agent-12-reading-notes/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" Hello-Agent第九章上下文工程的阅读笔记" href="/2026/09/01/hello-agent-9-reading-notes/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                19
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                2
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                5
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.67em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/hello-agents/" style="font-size: 0.8em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.73em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/01/%E5%AD%A6%E4%B9%A0nanobot%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> 学习nanobot的项目实现</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/01/scaling_managed_agents_reading_note/"><i class="fa fa-book"></i> Scaling Managed Agents: Decoupling the brain from the hands 阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/01/pi-agent/"><i class="fa fa-book"></i> pi-agent</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/"><i class="fa fa-book"></i> nanobot的项目架构</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> nanobot的项目实现</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
