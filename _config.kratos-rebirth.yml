@@ -10,13 +10,16 @@ search:
 # 图片配置
 image:
   favicon: "/assets/favicon.png" # 站点图标
-  #avatar: "/assets/logo.webp" # 个人信息挂件上的头像
+  avatar: "/assets/user.webp" # 个人信息挂件上的头像
   banner:
-    light: "https://dev.krt.moe/demo-assets/banner.webp"
-    dark: "https://dev.krt.moe/demo-assets/banner_dark.webp"
+    light: "/assets/banner.webp"
+    dark: "/assets/banner.webp"
   background:
-    light: "https://dev.krt.moe/demo-assets/bg.webp"
-    dark: "https://dev.krt.moe/demo-assets/bg.webp"
+    light: "/assets/background.webp"
+    dark: "/assets/background.webp"
+  about:
+    light: "/assets/about.webp"
+    dark: "/assets/about.webp"
 
 # 顶部导航栏配置
 nav:
@@ -27,6 +30,30 @@ nav:
     - label: 档案馆
       icon: file
       url: /archives/
+    - label: 分类
+      icon: folder
+      url: /categories/
+    - label: 学习合集
+      icon: book
+      submenu:
+        - label: hello-agents
+          icon: bookmark
+          url: /tags/hello-agents/
+        - label: anthropic_engineering
+          icon: bookmark
+          url: /tags/anthropic-engineering/
+        - label: Learn_Claude_Code
+          icon: bookmark
+          url: /tags/Learn-Claude-Code/
+        - label: nanobot
+          icon: bookmark
+          url: /tags/nanobot/
+        - label: pi-agent
+          icon: bookmark
+          url: /tags/pi-agent/
+    - label: 关于我
+      icon: user
+      url: /about/
     - label: 链接
       icon: link
       submenu:
@@ -36,10 +63,6 @@ nav:
         - label: 项目文档
           icon: book
           url: https://wiki.krt.moe
-    - label: 链接列表
-      icon: link
-      url: /linklist-example/
-      # float_right: true
 
 # Footer 页脚配置
 footer:
@@ -133,7 +156,42 @@ visit_count:
 
 ################## 额外的注入代码 ##################
 additional_injections:
-  head: "" # 搜索引擎验证，或是追加的样式表
+  head: |
+    <style>
+      #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+        left: 50%;
+        width: max-content;
+        min-width: 220px;
+        max-width: min(320px, calc(100vw - 24px));
+        padding: 8px;
+        transform: translateX(-50%);
+      }
+
+      #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 36px;
+        border-radius: 4px;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+        flex: 0 0 1em;
+        margin-right: 0;
+        color: #9a9a9a;
+      }
+
+      #offcanvas-menu ul li a {
+        overflow-wrap: anywhere;
+      }
+    </style>
   footer: "" # 注入到页面主体的内容，例如额外的可见组件
   after_footer: "" # 站点分析，或是追加的脚本
   tools: "" # 注入到页面右下角浮动工具栏里的功能按钮
