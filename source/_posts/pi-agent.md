@@ -1,6 +1,6 @@
 ---
 title: pi-agent
-cover: /assets/posts/nanobot/项目架构.png
+cover: /assets/posts/pi-agent/pi-agent.png
 categories: agent
 tags:
   - pi-agent
