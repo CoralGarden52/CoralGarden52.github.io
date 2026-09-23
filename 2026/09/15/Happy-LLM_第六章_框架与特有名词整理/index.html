@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>happy-llm第六章：大模型训练流程实践——框架与特有名词整理 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理。 本文重点把第六章中出现的 框架、训练组件、分布式并行术语、数据处理概念、PEFT 方法和偏好对齐名词 集中解释清楚。 第六章主线： 12345678Transformers→ Pretrain→ Trainer→ DeepSpeed &#x2F; 多卡分布式→ SFT→ PEFT→ LoRA→ Preference Alig">
+<meta property="og:type" content="article">
+<meta property="og:title" content="happy-llm第六章：大模型训练流程实践——框架与特有名词整理">
+<meta property="og:url" content="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理。 本文重点把第六章中出现的 框架、训练组件、分布式并行术语、数据处理概念、PEFT 方法和偏好对齐名词 集中解释清楚。 第六章主线： 12345678Transformers→ Pretrain→ Trainer→ DeepSpeed &#x2F; 多卡分布式→ SFT→ PEFT→ LoRA→ Preference Alig">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-6.png">
+<meta property="article:published_time" content="2026-09-15T08:56:04.972Z">
+<meta property="article:modified_time" content="2026-09-15T14:00:45.669Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-6.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"happy-llm第六章：大模型训练流程实践——框架与特有名词整理","description":"\n基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理。\n本文重点把第六章中出现的 框架、训练组件、分布式并行术语、数据处理概念、PEFT 方法和偏好对齐名词 集中解释清...","image":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/assets/posts/happy-llm/happy-llm-6.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-15T08:56:04.972Z","dateModified":"2026-09-15T14:00:45.669Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">happy-llm第六章：大模型训练流程实践——框架与特有名词整理</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-15T08:56:04.972Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-15</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~15.70K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><blockquote>
+<p>基于 Datawhale《Happy-LLM》第六章 <strong>大模型训练流程实践</strong> 整理。
+本文重点把第六章中出现的 <strong>框架、训练组件、分布式并行术语、数据处理概念、PEFT 方法和偏好对齐名词</strong> 集中解释清楚。</p>
+<p>第六章主线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Transformers</span><br><span class="line">→ Pretrain</span><br><span class="line">→ Trainer</span><br><span class="line">→ DeepSpeed / 多卡分布式</span><br><span class="line">→ SFT</span><br><span class="line">→ PEFT</span><br><span class="line">→ LoRA</span><br><span class="line">→ Preference Alignment</span><br></pre></td></tr></table></figure>
+</blockquote>
+<hr>
+<h1 id="1-第六章整体内容"><a href="#1-第六章整体内容" class="headerlink" title="1. 第六章整体内容"></a>1. 第六章整体内容</h1><p>第五章主要是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">自己手写 LLaMA2</span><br><span class="line">自己写训练循环</span><br><span class="line">自己实现 Tokenizer / Pretrain / SFT</span><br></pre></td></tr></table></figure>
+
+<p>第六章则进入更接近工业实践的方式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">使用 Hugging Face Transformers</span><br><span class="line">        ↓</span><br><span class="line">加载成熟模型结构</span><br><span class="line">        ↓</span><br><span class="line">使用 datasets 处理数据</span><br><span class="line">        ↓</span><br><span class="line">使用 Trainer 管理训练</span><br><span class="line">        ↓</span><br><span class="line">使用 DeepSpeed 做分布式训练</span><br><span class="line">        ↓</span><br><span class="line">使用 PEFT / LoRA 做低成本微调</span><br><span class="line">        ↓</span><br><span class="line">进一步进入 RLHF / DPO / KTO 等偏好对齐</span><br></pre></td></tr></table></figure>
+
+<p>因此第六章最重要的意义是：</p>
+<blockquote>
+<p><strong>从“理解并手写大模型”过渡到“使用业界成熟框架训练和微调大模型”。</strong></p>
+</blockquote>
+<hr>
+<h1 id="2-核心框架总览"><a href="#2-核心框架总览" class="headerlink" title="2. 核心框架总览"></a>2. 核心框架总览</h1><table>
+<thead>
+<tr>
+<th>名词</th>
+<th>类型</th>
+<th>核心作用</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Transformers</td>
+<td>模型&#x2F;训练框架</td>
+<td>加载和训练 BERT、GPT、LLaMA、Qwen、T5 等模型</td>
+<td><strong>大模型开发主框架</strong></td>
+</tr>
+<tr>
+<td>Datasets</td>
+<td>数据处理框架</td>
+<td>加载、映射、缓存、处理训练数据</td>
+<td><strong>训练数据工具箱</strong></td>
+</tr>
+<tr>
+<td>Evaluate</td>
+<td>评估框架</td>
+<td>统一管理常见评估指标</td>
+<td><strong>模型指标工具箱</strong></td>
+</tr>
+<tr>
+<td>Trainer</td>
+<td>Transformers 训练器</td>
+<td>封装训练循环、保存、日志、分布式训练等</td>
+<td><strong>不用自己写完整训练循环</strong></td>
+</tr>
+<tr>
+<td>DeepSpeed</td>
+<td>分布式训练框架</td>
+<td>ZeRO、混合精度、多卡训练、显存优化</td>
+<td><strong>大模型训练加速器</strong></td>
+</tr>
+<tr>
+<td>PEFT</td>
+<td>参数高效微调框架</td>
+<td>LoRA、Prefix Tuning、P-Tuning 等</td>
+<td><strong>只训练少量参数</strong></td>
+</tr>
+<tr>
+<td>WandB</td>
+<td>实验跟踪平台</td>
+<td>Loss、LR、GPU、超参、实验对比</td>
+<td><strong>训练实验看板</strong></td>
+</tr>
+<tr>
+<td>SwanLab</td>
+<td>实验跟踪平台</td>
+<td>训练可视化、超参记录、实验管理</td>
+<td><strong>国产实验可视化平台</strong></td>
+</tr>
+<tr>
+<td>DDP</td>
+<td>数据并行策略</td>
+<td>多 GPU 各算一份数据，再同步梯度</td>
+<td><strong>切数据，不切模型</strong></td>
+</tr>
+<tr>
+<td>Megatron-LM</td>
+<td>大模型分布式框架</td>
+<td>张量并行、流水线并行等</td>
+<td><strong>超大 Transformer 模型并行</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="3-Transformers"><a href="#3-Transformers" class="headerlink" title="3. Transformers"></a>3. Transformers</h1><p><code>Transformers</code> 是 Hugging Face 开发的深度学习模型框架，已经实现大量主流模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BERT</span><br><span class="line">GPT</span><br><span class="line">LLaMA</span><br><span class="line">Qwen</span><br><span class="line">T5</span><br><span class="line">ViT</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>开发者不需要重复手写网络结构，只需使用 Auto 类即可加载模型、配置和 Tokenizer。</p>
+<p>Transformers 主要统一了：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">模型</span><br><span class="line">Tokenizer</span><br><span class="line">配置</span><br><span class="line">训练</span><br><span class="line">保存</span><br><span class="line">加载</span><br><span class="line">分布式训练</span><br></pre></td></tr></table></figure>
+
+<p>可以简单理解为：</p>
+<blockquote>
+<p><strong>Transformers &#x3D; LLM 训练与调用的主框架。</strong></p>
+</blockquote>
+<hr>
+<h1 id="4-AutoConfig"><a href="#4-AutoConfig" class="headerlink" title="4. AutoConfig"></a>4. AutoConfig</h1><p><code>AutoConfig</code> 用来加载模型的<strong>配置文件</strong>。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config = AutoConfig.from_pretrained(model_path)</span><br></pre></td></tr></table></figure>
+
+<p>配置通常来自：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config.json</span><br></pre></td></tr></table></figure>
+
+<p>里面会保存：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">hidden_size</span><br><span class="line">num_hidden_layers</span><br><span class="line">num_attention_heads</span><br><span class="line">num_key_value_heads</span><br><span class="line">vocab_size</span><br><span class="line">max_position_embeddings</span><br><span class="line">模型类型</span><br><span class="line">激活函数</span><br><span class="line">RoPE 配置</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<blockquote>
+<p><strong>AutoConfig 管“模型应该长什么样”，但本身不包含模型权重。</strong></p>
+</blockquote>
+<hr>
+<h1 id="5-AutoModelForCausalLM"><a href="#5-AutoModelForCausalLM" class="headerlink" title="5. AutoModelForCausalLM"></a>5. AutoModelForCausalLM</h1><p>这是专门用于 <strong>Causal Language Modeling</strong> 的模型自动加载类。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = AutoModelForCausalLM.from_config(config)</span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">按照 config 创建模型结构</span><br><span class="line">+</span><br><span class="line">随机初始化权重</span><br></pre></td></tr></table></figure>
+
+<p>而：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = AutoModelForCausalLM.from_pretrained(model_path)</span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">加载模型结构</span><br><span class="line">+</span><br><span class="line">加载已经训练好的权重</span><br></pre></td></tr></table></figure>
+
+<p>记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">from_config</span><br><span class="line">= 从零创建</span><br><span class="line"></span><br><span class="line">from_pretrained</span><br><span class="line">= 加载已有模型</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="6-AutoTokenizer"><a href="#6-AutoTokenizer" class="headerlink" title="6. AutoTokenizer"></a>6. AutoTokenizer</h1><p><code>AutoTokenizer</code> 用于自动加载模型配套 Tokenizer：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tokenizer = AutoTokenizer.from_pretrained(model_path)</span><br></pre></td></tr></table></figure>
+
+<p>负责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">文本</span><br><span class="line">→ Token</span><br><span class="line">→ Token ID</span><br></pre></td></tr></table></figure>
+
+<p>以及反向：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Token ID</span><br><span class="line">→ 文本</span><br></pre></td></tr></table></figure>
+
+<p>SFT 中还会结合：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Chat Template</span><br><span class="line">Special Tokens</span><br><span class="line">BOS / EOS / PAD</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-Hugging-Face-Datasets"><a href="#7-Hugging-Face-Datasets" class="headerlink" title="7. Hugging Face Datasets"></a>7. Hugging Face Datasets</h1><p><code>datasets</code> 是 Hugging Face 的数据处理库。</p>
+<p>常用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> datasets <span class="keyword">import</span> load_dataset</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ds = load_dataset(</span><br><span class="line">    <span class="string">&quot;json&quot;</span>,</span><br><span class="line">    data_files=<span class="string">&quot;train.jsonl&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>加载后常见对象：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DatasetDict</span><br></pre></td></tr></table></figure>
+
+<p>可理解为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;train&quot;</span>: Dataset(...),</span><br><span class="line">    <span class="string">&quot;validation&quot;</span>: Dataset(...),</span><br><span class="line">    <span class="string">&quot;test&quot;</span>: Dataset(...)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="8-Dataset-map"><a href="#8-Dataset-map" class="headerlink" title="8. Dataset.map()"></a>8. Dataset.map()</h1><p><code>map()</code> 是 Datasets 中非常重要的数据预处理接口。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tokenized_datasets = ds.<span class="built_in">map</span>(</span><br><span class="line">    tokenize_function,</span><br><span class="line">    batched=<span class="literal">True</span>,</span><br><span class="line">    num_proc=<span class="number">10</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>作用：</p>
+<blockquote>
+<p><strong>对整个 Dataset 批量执行数据处理函数。</strong></p>
+</blockquote>
+<p>常见用途：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Tokenizer</span><br><span class="line">删除无用列</span><br><span class="line">拼接文本</span><br><span class="line">构造 labels</span><br><span class="line">格式转换</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">batched=True</span><br></pre></td></tr></table></figure>
+
+<p>表示批量处理，</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">num_proc=10</span><br></pre></td></tr></table></figure>
+
+<p>表示使用多个进程加速预处理。</p>
+<hr>
+<h1 id="9-Packing-Grouping-Chunking"><a href="#9-Packing-Grouping-Chunking" class="headerlink" title="9. Packing &#x2F; Grouping &#x2F; Chunking"></a>9. Packing &#x2F; Grouping &#x2F; Chunking</h1><p>预训练数据中大量文本长度不一致。</p>
+<p>如果每条文本都单独 Padding，会浪费很多计算。</p>
+<p>因此常把多个 Token 序列：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">文本1</span><br><span class="line">+</span><br><span class="line">文本2</span><br><span class="line">+</span><br><span class="line">文本3</span><br><span class="line">+</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>拼成一个长 Token 流，再按固定长度切块：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2048 Token</span><br><span class="line">2048 Token</span><br><span class="line">2048 Token</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>这类操作通常叫：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Packing</span><br><span class="line">Grouping</span><br><span class="line">Chunking</span><br></pre></td></tr></table></figure>
+
+<p>第六章使用 <code>group_texts()</code> 完成这一过程。</p>
+<hr>
+<h1 id="10-CLM"><a href="#10-CLM" class="headerlink" title="10. CLM"></a>10. CLM</h1><p>CLM：</p>
+<blockquote>
+<p><strong>Causal Language Modeling，因果语言建模</strong></p>
+</blockquote>
+<p>训练目标：</p>
+<p>$$
+P(x_1,\dots,x_T) &#x3D;
+\prod_{t&#x3D;1}^{T}
+P(x_t|x_{&lt;t})
+$$</p>
+<p>即：</p>
+<blockquote>
+<p><strong>根据前面的 Token，预测下一个 Token。</strong></p>
+</blockquote>
+<p>GPT、LLaMA、Qwen 等 Decoder-Only LLM 的预训练核心任务都是 CLM。</p>
+<hr>
+<h1 id="11-Trainer"><a href="#11-Trainer" class="headerlink" title="11. Trainer"></a>11. Trainer</h1><p><code>Trainer</code> 是 Transformers 的高级训练器。</p>
+<p>它封装：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Forward</span><br><span class="line">Loss</span><br><span class="line">Backward</span><br><span class="line">Optimizer</span><br><span class="line">Learning Rate Scheduler</span><br><span class="line">Gradient Accumulation</span><br><span class="line">Checkpoint</span><br><span class="line">Logging</span><br><span class="line">Distributed Training</span><br><span class="line">Evaluation</span><br><span class="line">模型保存</span><br></pre></td></tr></table></figure>
+
+<p>因此无需自己完整手写训练循环，只需：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trainer.train()</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="12-TrainingArguments"><a href="#12-TrainingArguments" class="headerlink" title="12. TrainingArguments"></a>12. TrainingArguments</h1><p><code>TrainingArguments</code> 用于统一配置 Trainer 超参数。</p>
+<p>常见：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>output_dir</code></td>
+<td>模型&#x2F;Checkpoint 保存目录</td>
+</tr>
+<tr>
+<td><code>per_device_train_batch_size</code></td>
+<td>每张 GPU 的 Batch Size</td>
+</tr>
+<tr>
+<td><code>gradient_accumulation_steps</code></td>
+<td>梯度累积步数</td>
+</tr>
+<tr>
+<td><code>logging_steps</code></td>
+<td>日志记录间隔</td>
+</tr>
+<tr>
+<td><code>num_train_epochs</code></td>
+<td>Epoch 数</td>
+</tr>
+<tr>
+<td><code>save_steps</code></td>
+<td>Checkpoint 保存间隔</td>
+</tr>
+<tr>
+<td><code>learning_rate</code></td>
+<td>学习率</td>
+</tr>
+<tr>
+<td><code>gradient_checkpointing</code></td>
+<td>梯度检查点</td>
+</tr>
+<tr>
+<td><code>bf16</code></td>
+<td>BF16 训练</td>
+</tr>
+<tr>
+<td><code>deepspeed</code></td>
+<td>DeepSpeed 配置文件</td>
+</tr>
+<tr>
+<td><code>report_to</code></td>
+<td>日志输出到 SwanLab &#x2F; WandB 等</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="13-HfArgumentParser"><a href="#13-HfArgumentParser" class="headerlink" title="13. HfArgumentParser"></a>13. HfArgumentParser</h1><p><code>HfArgumentParser</code> 是 Transformers 的命令行参数解析工具。</p>
+<p>它可以将：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Shell 参数</span><br></pre></td></tr></table></figure>
+
+<p>自动解析成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Python dataclass</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">parser = HfArgumentParser(</span><br><span class="line">    (</span><br><span class="line">        ModelArguments,</span><br><span class="line">        DataTrainingArguments,</span><br><span class="line">        TrainingArguments</span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>适合大型训练脚本统一管理配置。</p>
+<hr>
+<h1 id="14-Data-Collator"><a href="#14-Data-Collator" class="headerlink" title="14. Data Collator"></a>14. Data Collator</h1><p><code>Data Collator</code> 可以理解为：</p>
+<blockquote>
+<p><strong>把 Dataset 中多个单样本整理成一个 Batch 的组件。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">default_data_collator</span><br></pre></td></tr></table></figure>
+
+<p>常负责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Tensor 堆叠</span><br><span class="line">Labels 整理</span><br><span class="line">Batch 格式统一</span><br></pre></td></tr></table></figure>
+
+<p>记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Dataset</span><br><span class="line">→ 单个样本</span><br><span class="line"></span><br><span class="line">Data Collator</span><br><span class="line">→ 多个样本组成 Batch</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="15-IterableWrapper"><a href="#15-IterableWrapper" class="headerlink" title="15. IterableWrapper"></a>15. IterableWrapper</h1><p>第六章使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IterableWrapper(train_dataset)</span><br></pre></td></tr></table></figure>
+
+<p>来自 TorchData。</p>
+<p>它的作用是：</p>
+<blockquote>
+<p><strong>把已有 Dataset 包装成可迭代数据流形式，便于 Trainer&#x2F;DataPipe 使用。</strong></p>
+</blockquote>
+<hr>
+<h1 id="16-Checkpoint"><a href="#16-Checkpoint" class="headerlink" title="16. Checkpoint"></a>16. Checkpoint</h1><p>Checkpoint：</p>
+<blockquote>
+<p><strong>训练过程中的阶段性快照。</strong></p>
+</blockquote>
+<p>通常包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">模型权重</span><br><span class="line">Optimizer 状态</span><br><span class="line">Scheduler 状态</span><br><span class="line">Global Step</span><br><span class="line">随机状态</span><br></pre></td></tr></table></figure>
+
+<p>如果训练中断，可以从最近 Checkpoint 继续，而无需重新开始。</p>
+<hr>
+<h1 id="17-resume-from-checkpoint"><a href="#17-resume-from-checkpoint" class="headerlink" title="17. resume_from_checkpoint"></a>17. resume_from_checkpoint</h1><p><code>resume_from_checkpoint</code> 表示：</p>
+<blockquote>
+<p><strong>从已有 Checkpoint 恢复训练。</strong></p>
+</blockquote>
+<p>第六章还使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">get_last_checkpoint()</span><br></pre></td></tr></table></figure>
+
+<p>自动找到输出目录中最近一次保存的 Checkpoint。</p>
+<hr>
+<h1 id="18-Logging"><a href="#18-Logging" class="headerlink" title="18. Logging"></a>18. Logging</h1><p>大型训练更推荐使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logging</span><br></pre></td></tr></table></figure>
+
+<p>而不是大量 <code>print()</code>。</p>
+<p>常见日志级别：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">DEBUG</span><br><span class="line">INFO</span><br><span class="line">WARNING</span><br><span class="line">ERROR</span><br><span class="line">CRITICAL</span><br></pre></td></tr></table></figure>
+
+<p>它便于：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">长期保存</span><br><span class="line">统一格式</span><br><span class="line">区分严重程度</span><br><span class="line">训练异常排查</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="19-SwanLab"><a href="#19-SwanLab" class="headerlink" title="19. SwanLab"></a>19. SwanLab</h1><p>SwanLab 是：</p>
+<blockquote>
+<p><strong>机器学习实验跟踪和可视化平台。</strong></p>
+</blockquote>
+<p>它不是用来运行训练代码的，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">训练代码在服务器运行</span><br><span class="line">        ↓</span><br><span class="line">脚本记录训练指标</span><br><span class="line">        ↓</span><br><span class="line">同步给 SwanLab</span><br><span class="line">        ↓</span><br><span class="line">浏览器查看 Dashboard</span><br></pre></td></tr></table></figure>
+
+<p>常记录：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">train_loss</span><br><span class="line">eval_loss</span><br><span class="line">learning_rate</span><br><span class="line">accuracy</span><br><span class="line">GPU 使用率</span><br><span class="line">超参数</span><br><span class="line">训练时间</span><br></pre></td></tr></table></figure>
+
+<p>第六章通过：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">swanlab.init(...)</span><br></pre></td></tr></table></figure>
+
+<p>以及：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--report_to swanlab</span><br></pre></td></tr></table></figure>
+
+<p>接入。</p>
+<hr>
+<h1 id="20-WandB"><a href="#20-WandB" class="headerlink" title="20. WandB"></a>20. WandB</h1><p>WandB 全称：</p>
+<blockquote>
+<p><strong>Weights &amp; Biases</strong></p>
+</blockquote>
+<p>也是实验跟踪平台。</p>
+<p>主要功能：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Loss 曲线</span><br><span class="line">超参数记录</span><br><span class="line">实验对比</span><br><span class="line">GPU 监控</span><br><span class="line">Sweeps</span><br><span class="line">Artifacts</span><br><span class="line">团队协作</span><br></pre></td></tr></table></figure>
+
+<p>简单理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">WandB</span><br><span class="line">→ 国际使用广泛</span><br><span class="line"></span><br><span class="line">SwanLab</span><br><span class="line">→ 国内访问和中文生态更友好</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="21-SavingPolicy"><a href="#21-SavingPolicy" class="headerlink" title="21. SavingPolicy"></a>21. SavingPolicy</h1><p>第六章正文提到 <code>SavingPolicy</code>，但未展开具体实现。</p>
+<p>可以理解为：</p>
+<blockquote>
+<p><strong>训练框架中管理“何时保存、保存什么、保留多少 Checkpoint”的策略组件。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">每 100 Step 保存</span><br><span class="line">每 Epoch 保存</span><br><span class="line">只保存 Best Model</span><br><span class="line">只保留最近 N 个 Checkpoint</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<blockquote>
+<p><code>SavingPolicy</code> 更像训练框架内部的策略概念，不是一个通用的独立 pip 包。</p>
+</blockquote>
+<hr>
+<h1 id="22-LoggingCallback"><a href="#22-LoggingCallback" class="headerlink" title="22. LoggingCallback"></a>22. LoggingCallback</h1><p><code>LoggingCallback</code> 属于训练过程中的回调组件。</p>
+<p>典型职责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">记录 Loss</span><br><span class="line">记录 Learning Rate</span><br><span class="line">记录梯度范数</span><br><span class="line">在固定 Step 执行日志逻辑</span><br><span class="line">发送数据到 SwanLab / WandB</span><br></pre></td></tr></table></figure>
+
+<p>简单记：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SavingPolicy</span><br><span class="line">→ 管保存</span><br><span class="line"></span><br><span class="line">LoggingCallback</span><br><span class="line">→ 管日志</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="23-DeepSpeed"><a href="#23-DeepSpeed" class="headerlink" title="23. DeepSpeed"></a>23. DeepSpeed</h1><p>DeepSpeed 是 Microsoft 开源的：</p>
+<blockquote>
+<p><strong>大规模深度学习训练优化和分布式训练框架。</strong></p>
+</blockquote>
+<p>主要解决：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">模型太大</span><br><span class="line">显存不足</span><br><span class="line">多卡训练复杂</span><br><span class="line">训练速度慢</span><br></pre></td></tr></table></figure>
+
+<p>第六章使用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">deepspeed pretrain.py ...</span><br></pre></td></tr></table></figure>
+
+<p>启动多卡训练。</p>
+<hr>
+<h1 id="24-ZeRO"><a href="#24-ZeRO" class="headerlink" title="24. ZeRO"></a>24. ZeRO</h1><p>ZeRO：</p>
+<blockquote>
+<p><strong>Zero Redundancy Optimizer</strong></p>
+</blockquote>
+<p>核心思想：</p>
+<blockquote>
+<p><strong>减少数据并行训练中模型状态在多张 GPU 上的重复存储。</strong></p>
+</blockquote>
+<p>标准 DDP 中，每张 GPU 通常保存：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">完整参数</span><br><span class="line">完整梯度</span><br><span class="line">完整 Optimizer State</span><br></pre></td></tr></table></figure>
+
+<p>ZeRO 将这些状态分片到不同 GPU，从而降低单卡显存。</p>
+<hr>
+<h1 id="25-ZeRO-三个阶段"><a href="#25-ZeRO-三个阶段" class="headerlink" title="25. ZeRO 三个阶段"></a>25. ZeRO 三个阶段</h1><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>分片内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ZeRO-1</td>
+<td>Optimizer States</td>
+</tr>
+<tr>
+<td>ZeRO-2</td>
+<td>Optimizer States + Gradients</td>
+</tr>
+<tr>
+<td>ZeRO-3</td>
+<td>Optimizer States + Gradients + Parameters</td>
+</tr>
+</tbody></table>
+<p>第六章使用：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;zero_optimization&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;stage&quot;</span><span class="punctuation">:</span> <span class="number">2</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>即 <strong>ZeRO-2</strong>。</p>
+<hr>
+<h1 id="26-ZeRO-是否需要多卡？"><a href="#26-ZeRO-是否需要多卡？" class="headerlink" title="26. ZeRO 是否需要多卡？"></a>26. ZeRO 是否需要多卡？</h1><p>需要。</p>
+<p>ZeRO 本质是：</p>
+<blockquote>
+<p><strong>分布式训练中的状态分片技术。</strong></p>
+</blockquote>
+<p>准确理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ZeRO</span><br><span class="line">✅ 需要多 GPU</span><br><span class="line"></span><br><span class="line">ZeRO</span><br><span class="line">❌ 不等于传统模型并行</span><br></pre></td></tr></table></figure>
+
+<p>它的优势是可以在数据并行体系中通过状态分片降低显存，而不一定需要手工按层或按矩阵拆模型。</p>
+<hr>
+<h1 id="27-DDP"><a href="#27-DDP" class="headerlink" title="27. DDP"></a>27. DDP</h1><p>DDP：</p>
+<blockquote>
+<p><strong>Distributed Data Parallel，分布式数据并行</strong></p>
+</blockquote>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GPU0 → Batch A → 完整模型</span><br><span class="line">GPU1 → Batch B → 完整模型</span><br><span class="line">GPU2 → Batch C → 完整模型</span><br></pre></td></tr></table></figure>
+
+<p>每张卡独立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Forward</span><br><span class="line">Backward</span><br></pre></td></tr></table></figure>
+
+<p>然后同步梯度，保证模型参数一致。</p>
+<hr>
+<h1 id="28-All-Reduce"><a href="#28-All-Reduce" class="headerlink" title="28. All-Reduce"></a>28. All-Reduce</h1><p>All-Reduce 是 DDP 中最重要的通信操作之一。</p>
+<p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GPU0 gradient = 1</span><br><span class="line">GPU1 gradient = 2</span><br><span class="line">GPU2 gradient = 3</span><br></pre></td></tr></table></figure>
+
+<p>执行：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">All-Reduce SUM</span><br></pre></td></tr></table></figure>
+
+<p>后：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GPU0 = 6</span><br><span class="line">GPU1 = 6</span><br><span class="line">GPU2 = 6</span><br></pre></td></tr></table></figure>
+
+<p>即：</p>
+<blockquote>
+<p><strong>所有 GPU 的数据先汇总，再让所有 GPU 都拿到汇总结果。</strong></p>
+</blockquote>
+<p>DDP 中通常用它进行梯度同步。</p>
+<hr>
+<h1 id="29-Reduce-Broadcast-All-Reduce"><a href="#29-Reduce-Broadcast-All-Reduce" class="headerlink" title="29. Reduce &#x2F; Broadcast &#x2F; All-Reduce"></a>29. Reduce &#x2F; Broadcast &#x2F; All-Reduce</h1><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Reduce</td>
+<td>多卡数据汇总到一张卡</td>
+</tr>
+<tr>
+<td>Broadcast</td>
+<td>一张卡的数据发送给所有卡</td>
+</tr>
+<tr>
+<td>All-Reduce</td>
+<td>多卡汇总后，每张卡都得到结果</td>
+</tr>
+<tr>
+<td>Reduce-Scatter</td>
+<td>Reduce 后，每张卡只保留一部分结果</td>
+</tr>
+<tr>
+<td>All-Gather</td>
+<td>收集各卡分片，使每张卡得到完整数据</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="30-Ring-All-Reduce"><a href="#30-Ring-All-Reduce" class="headerlink" title="30. Ring All-Reduce"></a>30. Ring All-Reduce</h1><p>Ring All-Reduce 是 All-Reduce 的高效实现之一。</p>
+<p>GPU 排成环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GPU0 → GPU1 → GPU2 → GPU3 → GPU0</span><br></pre></td></tr></table></figure>
+
+<p>一般包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Reduce-Scatter</span><br><span class="line">+</span><br><span class="line">All-Gather</span><br></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<blockquote>
+<p><strong>避免所有通信都集中到某一张主卡，提升带宽利用率。</strong></p>
+</blockquote>
+<hr>
+<h1 id="31-Reduce-Scatter"><a href="#31-Reduce-Scatter" class="headerlink" title="31. Reduce-Scatter"></a>31. Reduce-Scatter</h1><p>可以理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">先 Reduce</span><br><span class="line">↓</span><br><span class="line">把结果切开</span><br><span class="line">↓</span><br><span class="line">每张 GPU 只保留一部分</span><br></pre></td></tr></table></figure>
+
+<p>ZeRO-2 中梯度已分片，因此常使用 Reduce-Scatter。</p>
+<hr>
+<h1 id="32-All-Gather"><a href="#32-All-Gather" class="headerlink" title="32. All-Gather"></a>32. All-Gather</h1><p>All-Gather：</p>
+<blockquote>
+<p><strong>把各 GPU 上的不同分片收集起来，让每张 GPU 都得到完整数据。</strong></p>
+</blockquote>
+<p>ZeRO-3 中参数本身被分片，因此 Forward&#x2F;Backward 时常需要临时 All-Gather 参数。</p>
+<hr>
+<h1 id="33-overlap-comm"><a href="#33-overlap-comm" class="headerlink" title="33. overlap_comm"></a>33. overlap_comm</h1><p>DeepSpeed 配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;overlap_comm&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<blockquote>
+<p><strong>通信与计算尽量重叠。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">计算下一部分梯度</span><br><span class="line">同时</span><br><span class="line">同步上一部分梯度</span><br></pre></td></tr></table></figure>
+
+<p>用于隐藏通信延迟。</p>
+<hr>
+<h1 id="34-Gradient-Accumulation"><a href="#34-Gradient-Accumulation" class="headerlink" title="34. Gradient Accumulation"></a>34. Gradient Accumulation</h1><p>梯度累积：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Mini-batch 1 → Backward</span><br><span class="line">Mini-batch 2 → Backward</span><br><span class="line">Mini-batch 3 → Backward</span><br><span class="line">Mini-batch 4 → Backward</span><br><span class="line">↓</span><br><span class="line">Optimizer Step</span><br></pre></td></tr></table></figure>
+
+<p>有效 Batch Size：</p>
+<p>$$
+Batch_{effective} &#x3D;
+Batch_{per_device}
+\times
+GPU_{num}
+\times
+AccumulationSteps
+$$</p>
+<p>作用：</p>
+<blockquote>
+<p><strong>显存不足时，用多个小 Batch 模拟大 Batch。</strong></p>
+</blockquote>
+<hr>
+<h1 id="35-Gradient-Checkpointing"><a href="#35-Gradient-Checkpointing" class="headerlink" title="35. Gradient Checkpointing"></a>35. Gradient Checkpointing</h1><p>梯度检查点：</p>
+<blockquote>
+<p><strong>用计算换显存。</strong></p>
+</blockquote>
+<p>正常训练会保存大量 Forward 激活值供 Backward 使用。</p>
+<p>Gradient Checkpointing：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">只保存部分关键激活</span><br><span class="line">↓</span><br><span class="line">Backward 时重新计算其他激活</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">显存 ↓</span><br><span class="line">计算量 ↑</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="36-BF16-FP16"><a href="#36-BF16-FP16" class="headerlink" title="36. BF16 &#x2F; FP16"></a>36. BF16 &#x2F; FP16</h1><table>
+<thead>
+<tr>
+<th>类型</th>
+<th align="right">每元素大小</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FP32</td>
+<td align="right">4 Bytes</td>
+<td>稳定但显存高</td>
+</tr>
+<tr>
+<td>FP16</td>
+<td align="right">2 Bytes</td>
+<td>快，但数值范围较小</td>
+</tr>
+<tr>
+<td>BF16</td>
+<td align="right">2 Bytes</td>
+<td>指数范围接近 FP32，更适合 LLM 训练</td>
+</tr>
+</tbody></table>
+<p>第六章推荐使用 BF16。</p>
+<hr>
+<h1 id="37-torch-autocast"><a href="#37-torch-autocast" class="headerlink" title="37. torch.autocast"></a>37. torch.autocast</h1><p><code>torch.autocast</code> 是 PyTorch 的：</p>
+<blockquote>
+<p><strong>Automatic Mixed Precision（AMP）自动混合精度上下文管理器。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> torch.autocast(</span><br><span class="line">    device_type=<span class="string">&quot;cuda&quot;</span>,</span><br><span class="line">    dtype=torch.bfloat16</span><br><span class="line">):</span><br><span class="line">    output = model(<span class="built_in">input</span>)</span><br></pre></td></tr></table></figure>
+
+<p>作用：</p>
+<blockquote>
+<p><strong>根据算子类型自动选择适合的精度。</strong></p>
+</blockquote>
+<p>目的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">降低显存</span><br><span class="line">+</span><br><span class="line">提高速度</span><br><span class="line">+</span><br><span class="line">尽量保证数值稳定</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="38-DDP、ZeRO-与模型并行"><a href="#38-DDP、ZeRO-与模型并行" class="headerlink" title="38. DDP、ZeRO 与模型并行"></a>38. DDP、ZeRO 与模型并行</h1><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>切什么</th>
+<th>核心目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DDP</td>
+<td>数据</td>
+<td>提升训练吞吐</td>
+</tr>
+<tr>
+<td>ZeRO</td>
+<td>参数&#x2F;梯度&#x2F;优化器状态</td>
+<td>降低数据并行显存冗余</td>
+</tr>
+<tr>
+<td>Tensor Parallel</td>
+<td>单层矩阵</td>
+<td>单层太大</td>
+</tr>
+<tr>
+<td>Pipeline Parallel</td>
+<td>模型层</td>
+<td>模型整体太深&#x2F;太大</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="39-模型并行"><a href="#39-模型并行" class="headerlink" title="39. 模型并行"></a>39. 模型并行</h1><p>Model Parallelism：</p>
+<blockquote>
+<p><strong>把模型本身拆到多张 GPU 上。</strong></p>
+</blockquote>
+<p>广义模型并行主要包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Tensor Parallelism</span><br><span class="line">Pipeline Parallelism</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="40-Tensor-Parallelism"><a href="#40-Tensor-Parallelism" class="headerlink" title="40. Tensor Parallelism"></a>40. Tensor Parallelism</h1><p>张量并行：</p>
+<blockquote>
+<p><strong>把同一层中的大矩阵切到多张 GPU。</strong></p>
+</blockquote>
+<p>例如：</p>
+<p>$$
+W &#x3D;
+\begin{bmatrix}
+W_1 \
+W_2
+\end{bmatrix}
+$$</p>
+<p>可能：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GPU0 → W1</span><br><span class="line">GPU1 → W2</span><br></pre></td></tr></table></figure>
+
+<p>特点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">层内部通信频繁</span><br><span class="line">更适合 NVLink 等高速互联</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="41-Pipeline-Parallelism"><a href="#41-Pipeline-Parallelism" class="headerlink" title="41. Pipeline Parallelism"></a>41. Pipeline Parallelism</h1><p>流水线并行：</p>
+<blockquote>
+<p><strong>按模型层切分。</strong></p>
+</blockquote>
+<p>例如 24 层模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GPU0 → Layer 1~6</span><br><span class="line">GPU1 → Layer 7~12</span><br><span class="line">GPU2 → Layer 13~18</span><br><span class="line">GPU3 → Layer 19~24</span><br></pre></td></tr></table></figure>
+
+<p>数据依次经过每个 Stage。</p>
+<hr>
+<h1 id="42-Micro-Batch"><a href="#42-Micro-Batch" class="headerlink" title="42. Micro-Batch"></a>42. Micro-Batch</h1><p>流水线并行为了减少空闲，会把大 Batch 拆成多个：</p>
+<blockquote>
+<p><strong>Micro-Batch</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Batch</span><br><span class="line">↓</span><br><span class="line">M1</span><br><span class="line">M2</span><br><span class="line">M3</span><br><span class="line">M4</span><br></pre></td></tr></table></figure>
+
+<p>不同 Stage 可以同时处理不同 Micro-Batch，提高 GPU 利用率。</p>
+<hr>
+<h1 id="43-Pipeline-Bubble"><a href="#43-Pipeline-Bubble" class="headerlink" title="43. Pipeline Bubble"></a>43. Pipeline Bubble</h1><p>Pipeline Bubble：</p>
+<blockquote>
+<p><strong>流水线中某些 Stage 因等待而处于空闲的时间。</strong></p>
+</blockquote>
+<p>Micro-Batch 更多时，通常能更充分填满流水线，降低 Bubble 比例。</p>
+<hr>
+<h1 id="44-3D-Parallelism"><a href="#44-3D-Parallelism" class="headerlink" title="44. 3D Parallelism"></a>44. 3D Parallelism</h1><p>3D 并行通常指：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Data Parallelism</span><br><span class="line">+</span><br><span class="line">Tensor Parallelism</span><br><span class="line">+</span><br><span class="line">Pipeline Parallelism</span><br></pre></td></tr></table></figure>
+
+<p>也就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">切数据</span><br><span class="line">+</span><br><span class="line">切矩阵</span><br><span class="line">+</span><br><span class="line">切层</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<blockquote>
+<p><strong>Pipeline Parallelism 本身只是模型并行的一种，并不等于“模型并行 + 数据并行”。</strong></p>
+</blockquote>
+<hr>
+<h1 id="45-Megatron-LM"><a href="#45-Megatron-LM" class="headerlink" title="45. Megatron-LM"></a>45. Megatron-LM</h1><p>Megatron-LM 是 NVIDIA 面向超大 Transformer 的训练框架。</p>
+<p>核心能力包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Tensor Parallelism</span><br><span class="line">Pipeline Parallelism</span><br><span class="line">Sequence Parallelism</span><br><span class="line">Distributed Optimizer</span><br></pre></td></tr></table></figure>
+
+<p>适合：</p>
+<blockquote>
+<p><strong>模型本身已经大到单 GPU 放不下的场景。</strong></p>
+</blockquote>
+<hr>
+<h1 id="46-SFT"><a href="#46-SFT" class="headerlink" title="46. SFT"></a>46. SFT</h1><p>SFT：</p>
+<blockquote>
+<p><strong>Supervised Fine-Tuning，有监督微调</strong></p>
+</blockquote>
+<p>典型数据结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">System</span><br><span class="line">User</span><br><span class="line">Assistant</span><br></pre></td></tr></table></figure>
+
+<p>目标：</p>
+<blockquote>
+<p><strong>让模型学会根据输入指令生成正确回答。</strong></p>
+</blockquote>
+<hr>
+<h1 id="47-Chat-Template"><a href="#47-Chat-Template" class="headerlink" title="47. Chat Template"></a>47. Chat Template</h1><p>Chat Template：</p>
+<blockquote>
+<p><strong>规定结构化对话如何转换成模型真正看到的 Token 序列。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">System:</span><br><span class="line">You are a helpful assistant.</span><br><span class="line"></span><br><span class="line">User:</span><br><span class="line">介绍 Transformer</span><br><span class="line"></span><br><span class="line">Assistant:</span><br><span class="line">Transformer 是……</span><br></pre></td></tr></table></figure>
+
+<p>会转换成类似：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;|im_start|&gt;system</span><br><span class="line">You are a helpful assistant.</span><br><span class="line">&lt;|im_end|&gt;</span><br><span class="line"></span><br><span class="line">&lt;|im_start|&gt;user</span><br><span class="line">介绍 Transformer</span><br><span class="line">&lt;|im_end|&gt;</span><br><span class="line"></span><br><span class="line">&lt;|im_start|&gt;assistant</span><br><span class="line">Transformer 是……</span><br><span class="line">&lt;|im_end|&gt;</span><br></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<blockquote>
+<p><strong>SFT 和推理阶段最好使用一致的 Chat Template。</strong></p>
+</blockquote>
+<hr>
+<h1 id="48-System-User-Assistant"><a href="#48-System-User-Assistant" class="headerlink" title="48. System &#x2F; User &#x2F; Assistant"></a>48. System &#x2F; User &#x2F; Assistant</h1><table>
+<thead>
+<tr>
+<th>Role</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>System</td>
+<td>定义模型身份和规则</td>
+</tr>
+<tr>
+<td>User</td>
+<td>用户输入</td>
+</tr>
+<tr>
+<td>Assistant</td>
+<td>模型输出</td>
+</tr>
+</tbody></table>
+<p>SFT 中常见：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">System</span><br><span class="line">→ 条件</span><br><span class="line"></span><br><span class="line">User</span><br><span class="line">→ 条件</span><br><span class="line"></span><br><span class="line">Assistant</span><br><span class="line">→ 监督目标</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="49-BOS-EOS-PAD"><a href="#49-BOS-EOS-PAD" class="headerlink" title="49. BOS &#x2F; EOS &#x2F; PAD"></a>49. BOS &#x2F; EOS &#x2F; PAD</h1><table>
+<thead>
+<tr>
+<th>Token</th>
+<th>全称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BOS</td>
+<td>Beginning of Sequence</td>
+<td>序列开始</td>
+</tr>
+<tr>
+<td>EOS</td>
+<td>End of Sequence</td>
+<td>序列结束</td>
+</tr>
+<tr>
+<td>PAD</td>
+<td>Padding</td>
+<td>补齐长度</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="50-IGNORE-TOKEN-ID"><a href="#50-IGNORE-TOKEN-ID" class="headerlink" title="50. IGNORE_TOKEN_ID"></a>50. IGNORE_TOKEN_ID</h1><p>SFT 中常把：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">System</span><br><span class="line">User</span><br><span class="line">Padding</span><br></pre></td></tr></table></figure>
+
+<p>对应 Label 设置为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-100</span><br></pre></td></tr></table></figure>
+
+<p>因为 PyTorch CrossEntropyLoss 默认：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ignore_index = -100</span><br></pre></td></tr></table></figure>
+
+<p>所以这些位置不会计算 Loss。</p>
+<p>这使 SFT 主要学习 Assistant Response。</p>
+<hr>
+<h1 id="51-PEFT"><a href="#51-PEFT" class="headerlink" title="51. PEFT"></a>51. PEFT</h1><p>PEFT：</p>
+<blockquote>
+<p><strong>Parameter-Efficient Fine-Tuning，参数高效微调</strong></p>
+</blockquote>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">不更新全部模型参数</span><br><span class="line">只训练少量新增或选定参数</span><br></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">显存占用低</span><br><span class="line">训练成本低</span><br><span class="line">Adapter 文件小</span><br><span class="line">任务切换方便</span><br></pre></td></tr></table></figure>
+
+<p>常见方法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">LoRA</span><br><span class="line">Adapter Tuning</span><br><span class="line">Prefix Tuning</span><br><span class="line">P-Tuning</span><br><span class="line">QLoRA</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="52-Adapter-Tuning"><a href="#52-Adapter-Tuning" class="headerlink" title="52. Adapter Tuning"></a>52. Adapter Tuning</h1><p>Adapter Tuning：</p>
+<blockquote>
+<p><strong>在 Transformer 中插入小型 Adapter 模块，只训练 Adapter。</strong></p>
+</blockquote>
+<p>典型结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">d</span><br><span class="line">↓</span><br><span class="line">Down Projection</span><br><span class="line">↓</span><br><span class="line">m</span><br><span class="line">↓</span><br><span class="line">Nonlinear</span><br><span class="line">↓</span><br><span class="line">Up Projection</span><br><span class="line">↓</span><br><span class="line">d</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<p>$$
+m \ll d
+$$</p>
+<p>缺点：</p>
+<blockquote>
+<p><strong>增加额外网络结构，因此可能产生额外推理延迟。</strong></p>
+</blockquote>
+<hr>
+<h1 id="53-Prefix-Tuning"><a href="#53-Prefix-Tuning" class="headerlink" title="53. Prefix Tuning"></a>53. Prefix Tuning</h1><p>Prefix Tuning：</p>
+<blockquote>
+<p><strong>冻结基础模型，只训练一组连续的任务相关 Prefix。</strong></p>
+</blockquote>
+<p>可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Virtual Token</span><br><span class="line">Virtual Token</span><br><span class="line">Virtual Token</span><br><span class="line">+</span><br><span class="line">真实输入</span><br></pre></td></tr></table></figure>
+
+<p>缺点：</p>
+<blockquote>
+<p><strong>Prefix 会占用一定上下文长度。</strong></p>
+</blockquote>
+<hr>
+<h1 id="54-P-Tuning"><a href="#54-P-Tuning" class="headerlink" title="54. P-Tuning"></a>54. P-Tuning</h1><p>P-Tuning 属于 Prompt&#x2F;Prefix 参数高效微调路线。</p>
+<p>核心：</p>
+<blockquote>
+<p><strong>训练连续 Prompt Embedding，而不是更新全部模型权重。</strong></p>
+</blockquote>
+<hr>
+<h1 id="55-Intrinsic-Rank"><a href="#55-Intrinsic-Rank" class="headerlink" title="55. Intrinsic Rank"></a>55. Intrinsic Rank</h1><p>Intrinsic Rank：</p>
+<blockquote>
+<p><strong>本征秩</strong></p>
+</blockquote>
+<p>LoRA 的核心直觉是：</p>
+<blockquote>
+<p><strong>针对一个具体下游任务，真正需要发生变化的参数方向可能只位于低维子空间。</strong></p>
+</blockquote>
+<p>因此权重更新矩阵：</p>
+<p>$$
+\Delta W
+$$</p>
+<p>不一定需要满秩，可以用低秩矩阵近似。</p>
+<hr>
+<h1 id="56-LoRA"><a href="#56-LoRA" class="headerlink" title="56. LoRA"></a>56. LoRA</h1><p>LoRA：</p>
+<blockquote>
+<p><strong>Low-Rank Adaptation</strong></p>
+</blockquote>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">冻结 W0</span><br><span class="line">只训练低秩更新 ΔW</span><br></pre></td></tr></table></figure>
+
+<p>$$
+W &#x3D;
+W_0
++
+\Delta W
+$$</p>
+<p>其中：</p>
+<p>$$
+\Delta W &#x3D;
+BA
+$$</p>
+<p>$$
+B
+\in
+\mathbb{R}^{d\times r}
+$$</p>
+<p>$$
+A
+\in
+\mathbb{R}^{r\times k}
+$$</p>
+<p>且：</p>
+<p>$$
+r
+\ll
+\min(d,k)
+$$</p>
+<hr>
+<h1 id="57-LoRA-Forward"><a href="#57-LoRA-Forward" class="headerlink" title="57. LoRA Forward"></a>57. LoRA Forward</h1><p>原始层：</p>
+<p>$$
+h &#x3D;
+W_0x
+$$</p>
+<p>LoRA 后：</p>
+<p>$$
+h &#x3D;
+W_0x
++
+BAx
+$$</p>
+<p>训练时：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">W0 → Freeze</span><br><span class="line">A/B → Train</span><br></pre></td></tr></table></figure>
+
+<p>因此可训练参数显著减少。</p>
+<hr>
+<h1 id="58-LoRA-Rank：r"><a href="#58-LoRA-Rank：r" class="headerlink" title="58. LoRA Rank：r"></a>58. LoRA Rank：r</h1><p><code>r</code> 是 LoRA 的低秩维度。</p>
+<p>常见：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">4</span><br><span class="line">8</span><br><span class="line">16</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>通常：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">r 越大</span><br><span class="line">→ 参数更多</span><br><span class="line">→ 表达能力更强</span><br><span class="line">→ 显存和训练成本也更高</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="59-lora-alpha"><a href="#59-lora-alpha" class="headerlink" title="59. lora_alpha"></a>59. lora_alpha</h1><p><code>lora_alpha</code> 是 LoRA 更新缩放参数。</p>
+<p>通常：</p>
+<p>$$
+scaling &#x3D;
+\frac{\alpha}{r}
+$$</p>
+<p>LoRA 分支最终会乘该缩放系数。</p>
+<hr>
+<h1 id="60-lora-dropout"><a href="#60-lora-dropout" class="headerlink" title="60. lora_dropout"></a>60. lora_dropout</h1><p><code>lora_dropout</code>：</p>
+<blockquote>
+<p><strong>LoRA 分支上的 Dropout。</strong></p>
+</blockquote>
+<p>主要用于：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">降低过拟合</span><br><span class="line">提升泛化</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="61-target-modules"><a href="#61-target-modules" class="headerlink" title="61. target_modules"></a>61. target_modules</h1><p><code>target_modules</code> 指定：</p>
+<blockquote>
+<p><strong>哪些模型层需要插入 LoRA。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>对应 Attention 中的 Query 和 Value Projection。</p>
+<p>实际项目还常见：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">q_proj</span><br><span class="line">k_proj</span><br><span class="line">v_proj</span><br><span class="line">o_proj</span><br><span class="line">gate_proj</span><br><span class="line">up_proj</span><br><span class="line">down_proj</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="62-LoraConfig"><a href="#62-LoraConfig" class="headerlink" title="62. LoraConfig"></a>62. LoraConfig</h1><p>PEFT 中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">LoraConfig(</span><br><span class="line">    task_type=TaskType.CAUSAL_LM,</span><br><span class="line">    r=<span class="number">8</span>,</span><br><span class="line">    lora_alpha=<span class="number">32</span>,</span><br><span class="line">    lora_dropout=<span class="number">0.1</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>用来定义 LoRA 超参数。</p>
+<hr>
+<h1 id="63-get-peft-model"><a href="#63-get-peft-model" class="headerlink" title="63. get_peft_model"></a>63. get_peft_model</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">model = get_peft_model(</span><br><span class="line">    model,</span><br><span class="line">    peft_config</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>作用：</p>
+<blockquote>
+<p><strong>根据 PEFT 配置，把基础模型包装成带 LoRA Adapter 的可训练模型。</strong></p>
+</blockquote>
+<p>之后仍可以直接交给 Trainer 训练。</p>
+<hr>
+<h1 id="64-PeftModel"><a href="#64-PeftModel" class="headerlink" title="64. PeftModel"></a>64. PeftModel</h1><p><code>PeftModel</code>：</p>
+<blockquote>
+<p><strong>表示“基础模型 + PEFT Adapter”的模型封装。</strong></p>
+</blockquote>
+<p>便于：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">加载 Adapter</span><br><span class="line">保存 Adapter</span><br><span class="line">切换 Adapter</span><br><span class="line">合并 Adapter</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="65-QLoRA"><a href="#65-QLoRA" class="headerlink" title="65. QLoRA"></a>65. QLoRA</h1><p>第六章的章节说明和后文衔接提到 QLoRA，但正文主要详细展开 LoRA。</p>
+<p>QLoRA：</p>
+<blockquote>
+<p><strong>Quantized LoRA</strong></p>
+</blockquote>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Base Model</span><br><span class="line">→ 低比特量化</span><br><span class="line">→ Freeze</span><br><span class="line"></span><br><span class="line">LoRA Adapter</span><br><span class="line">→ 保持可训练</span><br></pre></td></tr></table></figure>
+
+<p>相比普通 LoRA，可以进一步降低显存。</p>
+<hr>
+<h1 id="66-Full-Fine-Tuning-LoRA-QLoRA"><a href="#66-Full-Fine-Tuning-LoRA-QLoRA" class="headerlink" title="66. Full Fine-Tuning &#x2F; LoRA &#x2F; QLoRA"></a>66. Full Fine-Tuning &#x2F; LoRA &#x2F; QLoRA</h1><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>Full Fine-Tuning</th>
+<th>LoRA</th>
+<th>QLoRA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>更新全部参数</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Base Model 冻结</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>使用 Adapter</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Base Model 量化</td>
+<td>通常否</td>
+<td>通常否</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>显存</td>
+<td>最高</td>
+<td>低</td>
+<td>更低</td>
+</tr>
+<tr>
+<td>适合资源受限</td>
+<td>较差</td>
+<td>✅</td>
+<td>✅✅</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="67-Post-Training"><a href="#67-Post-Training" class="headerlink" title="67. Post-Training"></a>67. Post-Training</h1><p>Post-Training：</p>
+<blockquote>
+<p><strong>基础预训练完成后的后训练阶段。</strong></p>
+</blockquote>
+<p>常见包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SFT</span><br><span class="line">Preference Alignment</span><br><span class="line">Domain Adaptation</span><br><span class="line">Reasoning Training</span><br><span class="line">RL</span><br></pre></td></tr></table></figure>
+
+<p>记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Pretrain</span><br><span class="line">→ 学知识和语言规律</span><br><span class="line"></span><br><span class="line">Post-Training</span><br><span class="line">→ 学任务、行为、偏好和能力</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="68-Preference-Alignment"><a href="#68-Preference-Alignment" class="headerlink" title="68. Preference Alignment"></a>68. Preference Alignment</h1><p>偏好对齐：</p>
+<blockquote>
+<p><strong>让模型在多个可能回答中，更倾向于人类认为更好的回答。</strong></p>
+</blockquote>
+<p>关注：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Helpful</span><br><span class="line">Safe</span><br><span class="line">Correct</span><br><span class="line">Clear</span><br><span class="line">Stable</span><br></pre></td></tr></table></figure>
+
+<p>通常在 SFT 之后进行。</p>
+<hr>
+<h1 id="69-RLHF"><a href="#69-RLHF" class="headerlink" title="69. RLHF"></a>69. RLHF</h1><p>RLHF：</p>
+<blockquote>
+<p><strong>Reinforcement Learning from Human Feedback</strong></p>
+</blockquote>
+<p>经典路线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SFT Model</span><br><span class="line">↓</span><br><span class="line">人类偏好数据</span><br><span class="line">↓</span><br><span class="line">Reward Model</span><br><span class="line">↓</span><br><span class="line">强化学习优化 Policy</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="70-DPO"><a href="#70-DPO" class="headerlink" title="70. DPO"></a>70. DPO</h1><p>DPO：</p>
+<blockquote>
+<p><strong>Direct Preference Optimization</strong></p>
+</blockquote>
+<p>直接使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Prompt</span><br><span class="line">Chosen</span><br><span class="line">Rejected</span><br></pre></td></tr></table></figure>
+
+<p>优化模型。</p>
+<p>相比经典 RLHF：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">不需要显式训练 Reward Model</span><br><span class="line">不需要完整 PPO 强化学习流程</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="71-KTO"><a href="#71-KTO" class="headerlink" title="71. KTO"></a>71. KTO</h1><p>KTO：</p>
+<blockquote>
+<p><strong>Kahneman-Tversky Optimization</strong></p>
+</blockquote>
+<p>属于直接偏好优化路线。</p>
+<p>它更强调：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Good Response</span><br><span class="line">Bad Response</span><br></pre></td></tr></table></figure>
+
+<p>之间的效用差异。</p>
+<p>第六章只做概览，没有展开算法细节。</p>
+<hr>
+<h1 id="72-框架和术语关系图"><a href="#72-框架和术语关系图" class="headerlink" title="72. 框架和术语关系图"></a>72. 框架和术语关系图</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">Hugging Face</span><br><span class="line">│</span><br><span class="line">├── Transformers</span><br><span class="line">│   ├── AutoConfig</span><br><span class="line">│   ├── AutoTokenizer</span><br><span class="line">│   ├── AutoModelForCausalLM</span><br><span class="line">│   ├── TrainingArguments</span><br><span class="line">│   ├── Trainer</span><br><span class="line">│   └── HfArgumentParser</span><br><span class="line">│</span><br><span class="line">├── Datasets</span><br><span class="line">│   ├── load_dataset</span><br><span class="line">│   └── map</span><br><span class="line">│</span><br><span class="line">└── PEFT</span><br><span class="line">    ├── LoRA</span><br><span class="line">    ├── Adapter Tuning</span><br><span class="line">    ├── Prefix / P-Tuning</span><br><span class="line">    └── QLoRA</span><br><span class="line"></span><br><span class="line">训练加速：</span><br><span class="line">DeepSpeed</span><br><span class="line">├── ZeRO-1</span><br><span class="line">├── ZeRO-2</span><br><span class="line">└── ZeRO-3</span><br><span class="line"></span><br><span class="line">分布式并行：</span><br><span class="line">├── DDP</span><br><span class="line">│   └── All-Reduce</span><br><span class="line">│</span><br><span class="line">└── Model Parallel</span><br><span class="line">    ├── Tensor Parallel</span><br><span class="line">    └── Pipeline Parallel</span><br><span class="line"></span><br><span class="line">实验跟踪：</span><br><span class="line">├── SwanLab</span><br><span class="line">└── WandB</span><br><span class="line"></span><br><span class="line">训练阶段：</span><br><span class="line">Pretrain</span><br><span class="line">↓</span><br><span class="line">SFT</span><br><span class="line">↓</span><br><span class="line">Preference Alignment</span><br><span class="line">├── RLHF</span><br><span class="line">├── DPO</span><br><span class="line">└── KTO</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="73-最值得记住的区别表"><a href="#73-最值得记住的区别表" class="headerlink" title="73. 最值得记住的区别表"></a>73. 最值得记住的区别表</h1><h2 id="Transformers-DeepSpeed-PEFT-SwanLab"><a href="#Transformers-DeepSpeed-PEFT-SwanLab" class="headerlink" title="Transformers &#x2F; DeepSpeed &#x2F; PEFT &#x2F; SwanLab"></a>Transformers &#x2F; DeepSpeed &#x2F; PEFT &#x2F; SwanLab</h2><table>
+<thead>
+<tr>
+<th>框架</th>
+<th>负责什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Transformers</td>
+<td>模型、Tokenizer、Trainer、训练流程</td>
+</tr>
+<tr>
+<td>DeepSpeed</td>
+<td>分布式、ZeRO、显存优化</td>
+</tr>
+<tr>
+<td>PEFT</td>
+<td>LoRA 等低成本微调</td>
+</tr>
+<tr>
+<td>SwanLab &#x2F; WandB</td>
+<td>训练实验记录与可视化</td>
+</tr>
+</tbody></table>
+<p>一句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Transformers</span><br><span class="line">→ 怎么训练模型</span><br><span class="line"></span><br><span class="line">DeepSpeed</span><br><span class="line">→ 怎么让大模型高效多卡训练</span><br><span class="line"></span><br><span class="line">PEFT</span><br><span class="line">→ 怎么少训练参数</span><br><span class="line"></span><br><span class="line">SwanLab / WandB</span><br><span class="line">→ 怎么观察训练过程</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="DDP-Tensor-Parallel-Pipeline-Parallel"><a href="#DDP-Tensor-Parallel-Pipeline-Parallel" class="headerlink" title="DDP &#x2F; Tensor Parallel &#x2F; Pipeline Parallel"></a>DDP &#x2F; Tensor Parallel &#x2F; Pipeline Parallel</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>切分对象</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DDP</td>
+<td>Batch &#x2F; Data</td>
+<td>提升吞吐</td>
+</tr>
+<tr>
+<td>Tensor Parallel</td>
+<td>单层矩阵</td>
+<td>单层太大</td>
+</tr>
+<tr>
+<td>Pipeline Parallel</td>
+<td>模型 Layer</td>
+<td>模型太深</td>
+</tr>
+<tr>
+<td>ZeRO</td>
+<td>参数&#x2F;梯度&#x2F;优化器状态</td>
+<td>降低数据并行显存冗余</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="Pretrain-SFT-PEFT-Preference-Alignment"><a href="#Pretrain-SFT-PEFT-Preference-Alignment" class="headerlink" title="Pretrain &#x2F; SFT &#x2F; PEFT &#x2F; Preference Alignment"></a>Pretrain &#x2F; SFT &#x2F; PEFT &#x2F; Preference Alignment</h2><table>
+<thead>
+<tr>
+<th>阶段&#x2F;方法</th>
+<th>目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pretrain</td>
+<td>学语言规律和知识</td>
+</tr>
+<tr>
+<td>SFT</td>
+<td>学会遵循指令</td>
+</tr>
+<tr>
+<td>PEFT</td>
+<td>用低成本完成微调</td>
+</tr>
+<tr>
+<td>Preference Alignment</td>
+<td>学会什么回答更符合人类偏好</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="74-一页速记"><a href="#74-一页速记" class="headerlink" title="74. 一页速记"></a>74. 一页速记</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line">第六章</span><br><span class="line">= 大模型工业训练实践</span><br><span class="line"></span><br><span class="line">Transformers</span><br><span class="line">= LLM 主训练框架</span><br><span class="line"></span><br><span class="line">Trainer</span><br><span class="line">= 自动训练循环</span><br><span class="line"></span><br><span class="line">Datasets</span><br><span class="line">= 数据加载和预处理</span><br><span class="line"></span><br><span class="line">DeepSpeed</span><br><span class="line">= 大模型分布式训练</span><br><span class="line">= ZeRO</span><br><span class="line"></span><br><span class="line">DDP</span><br><span class="line">= 数据并行</span><br><span class="line">= 多卡完整模型</span><br><span class="line">= All-Reduce 同步梯度</span><br><span class="line"></span><br><span class="line">ZeRO</span><br><span class="line">= 模型状态分片</span><br><span class="line">= ZeRO-1 优化器</span><br><span class="line">= ZeRO-2 + 梯度</span><br><span class="line">= ZeRO-3 + 参数</span><br><span class="line"></span><br><span class="line">Megatron-LM</span><br><span class="line">= 模型并行</span><br><span class="line">= Tensor Parallel</span><br><span class="line">+ Pipeline Parallel</span><br><span class="line"></span><br><span class="line">3D Parallel</span><br><span class="line">= Data</span><br><span class="line">+ Tensor</span><br><span class="line">+ Pipeline</span><br><span class="line"></span><br><span class="line">SwanLab / WandB</span><br><span class="line">= 实验跟踪和可视化</span><br><span class="line"></span><br><span class="line">SFT</span><br><span class="line">= 指令监督微调</span><br><span class="line"></span><br><span class="line">Chat Template</span><br><span class="line">= 对话转成模型输入格式</span><br><span class="line"></span><br><span class="line">IGNORE_TOKEN_ID = -100</span><br><span class="line">= 不计算这些位置 Loss</span><br><span class="line"></span><br><span class="line">PEFT</span><br><span class="line">= 参数高效微调</span><br><span class="line"></span><br><span class="line">Adapter</span><br><span class="line">= 加小模块</span><br><span class="line"></span><br><span class="line">Prefix Tuning</span><br><span class="line">= 加可训练虚拟 Token</span><br><span class="line"></span><br><span class="line">LoRA</span><br><span class="line">= 冻结 W0</span><br><span class="line">+ 训练 BA</span><br><span class="line"></span><br><span class="line">QLoRA</span><br><span class="line">= 量化 Base Model</span><br><span class="line">+ LoRA</span><br><span class="line"></span><br><span class="line">Post-Training</span><br><span class="line">= Pretrain 之后的训练</span><br><span class="line"></span><br><span class="line">Preference Alignment</span><br><span class="line">= 对齐人类偏好</span><br><span class="line"></span><br><span class="line">RLHF</span><br><span class="line">= Reward Model + RL</span><br><span class="line"></span><br><span class="line">DPO</span><br><span class="line">= 直接利用偏好对</span><br><span class="line"></span><br><span class="line">KTO</span><br><span class="line">= 直接偏好优化方法</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="75-最后总结"><a href="#75-最后总结" class="headerlink" title="75. 最后总结"></a>75. 最后总结</h1><p>Happy-LLM 第六章最重要的是建立一套完整的工业训练框架认知：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">模型层：</span><br><span class="line">Transformers</span><br><span class="line"></span><br><span class="line">数据层：</span><br><span class="line">Datasets</span><br><span class="line"></span><br><span class="line">训练管理：</span><br><span class="line">Trainer + TrainingArguments</span><br><span class="line"></span><br><span class="line">分布式加速：</span><br><span class="line">DeepSpeed / DDP / Megatron-LM</span><br><span class="line"></span><br><span class="line">显存优化：</span><br><span class="line">ZeRO</span><br><span class="line">Gradient Checkpointing</span><br><span class="line">BF16</span><br><span class="line"></span><br><span class="line">实验监控：</span><br><span class="line">SwanLab / WandB</span><br><span class="line"></span><br><span class="line">监督微调：</span><br><span class="line">SFT + Chat Template</span><br><span class="line"></span><br><span class="line">低成本微调：</span><br><span class="line">PEFT + LoRA / QLoRA</span><br><span class="line"></span><br><span class="line">进一步后训练：</span><br><span class="line">RLHF / DPO / KTO</span><br></pre></td></tr></table></figure>
+
+<p>最终一句话：</p>
+<blockquote>
+<p><strong>第五章教你“一个 LLM 内部是怎么写出来的”，第六章则教你“真正做项目时，如何借助成熟框架把 LLM 高效训练起来”。</strong></p>
+</blockquote>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-15T14:00:45.669Z" itemprop="dateModified">最后编辑：2026-09-15</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" happy-llm第五章动手搭建大模型的阅读笔记" href="/2026/09/15/Happy-LLM_第五章_动手搭建大模型/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第六章：大模型训练流程实践的阅读笔记" href="/2026/09/15/Happy-LLM_第六章_面试速记_PEFT_LoRA_PrefixTuning/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

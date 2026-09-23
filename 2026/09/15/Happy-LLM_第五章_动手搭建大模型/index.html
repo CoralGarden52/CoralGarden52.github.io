@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>happy-llm第五章动手搭建大模型的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="面试速记 基于 Datawhale《Happy-LLM》第五章 动手搭建大模型 整理。本章的核心是：手写 LLaMA2 → 训练 Tokenizer → 构造 Pretrain&#x2F;SFT Dataset → 训练模型 → 自回归生成文本。  背诵版总结第五章可以记成三条主线： 12345678910111213141516171819202122232425262728第一条：搭模型Mod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="happy-llm第五章动手搭建大模型的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记 基于 Datawhale《Happy-LLM》第五章 动手搭建大模型 整理。本章的核心是：手写 LLaMA2 → 训练 Tokenizer → 构造 Pretrain&#x2F;SFT Dataset → 训练模型 → 自回归生成文本。  背诵版总结第五章可以记成三条主线： 12345678910111213141516171819202122232425262728第一条：搭模型Mod">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-5.png">
+<meta property="article:published_time" content="2026-09-15T06:52:33.741Z">
+<meta property="article:modified_time" content="2026-09-15T08:56:15.239Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-5.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"happy-llm第五章动手搭建大模型的阅读笔记","description":"面试速记\n基于 Datawhale《Happy-LLM》第五章 动手搭建大模型 整理。本...","image":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/assets/posts/happy-llm/happy-llm-5.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-15T06:52:33.741Z","dateModified":"2026-09-15T08:56:15.239Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">happy-llm第五章动手搭建大模型的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-15T06:52:33.741Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-15</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~15.15K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><blockquote>
+<p>基于 Datawhale《Happy-LLM》第五章 <strong>动手搭建大模型</strong> 整理。本章的核心是：<strong>手写 LLaMA2 → 训练 Tokenizer → 构造 Pretrain&#x2F;SFT Dataset → 训练模型 → 自回归生成文本</strong>。</p>
+</blockquote>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>第五章可以记成三条主线：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">第一条：搭模型</span><br><span class="line">ModelConfig</span><br><span class="line">→ RMSNorm</span><br><span class="line">→ GQA Attention</span><br><span class="line">→ RoPE</span><br><span class="line">→ Causal Mask / Flash Attention</span><br><span class="line">→ SwiGLU 风格 MLP</span><br><span class="line">→ DecoderLayer</span><br><span class="line">→ Decoder-Only Transformer</span><br><span class="line"></span><br><span class="line">第二条：造 Tokenizer</span><br><span class="line">NFKC</span><br><span class="line">→ ByteLevel</span><br><span class="line">→ BPE</span><br><span class="line">→ Special Tokens</span><br><span class="line">→ tokenizer.json</span><br><span class="line">→ tokenizer_config.json</span><br><span class="line">→ special_tokens_map.json</span><br><span class="line"></span><br><span class="line">第三条：训练与生成</span><br><span class="line">文本 / 对话数据</span><br><span class="line">→ Tokenizer</span><br><span class="line">→ X / Y 右移一位</span><br><span class="line">→ loss_mask</span><br><span class="line">→ Pretrain</span><br><span class="line">→ SFT</span><br><span class="line">→ temperature + top-k</span><br><span class="line">→ 自回归生成</span><br></pre></td></tr></table></figure>
+
+<p>最需要记住：</p>
+<ol>
+<li><strong>LLaMA2 是 Decoder-Only Transformer</strong>，第五章手写 RMSNorm、GQA、RoPE、门控 MLP、Decoder Layer 和完整 Transformer。</li>
+<li><strong>RMSNorm</strong> 不显式减均值，只根据均方根缩放隐藏状态。</li>
+<li><strong>GQA</strong> 减少 K&#x2F;V Head 数，让多个 Q Head 共享 K&#x2F;V，降低推理和 KV Cache 成本。</li>
+<li><strong>RoPE</strong> 对 Q、K 做位置相关旋转，把相对位置信息注入 Attention。</li>
+<li>LLaMA 风格 MLP：</li>
+</ol>
+<p>$$
+FFN(x) &#x3D;
+W_2
+\left(
+SiLU(W_1x)
+\odot
+W_3x
+\right)
+$$</p>
+<ol start="6">
+<li>Tokenizer 最终采用 <strong>BPE + ByteLevel</strong>，并用 <code>NFKC</code> 做 Unicode 文本规范化。</li>
+<li><code>X=input_id[:-1]</code>、<code>Y=input_id[1:]</code> 的作用是构造 <strong>Next Token Prediction</strong>。</li>
+<li>Pretrain 的 <code>loss_mask</code> 主要屏蔽 Padding；SFT 的 <code>loss_mask</code> 主要只保留 Assistant 回答区域。</li>
+<li><code>self.ctx</code> 是 <strong>自动混合精度 AMP 的上下文管理器</strong>。CPU 用 <code>nullcontext()</code>，GPU 用 <code>torch.amp.autocast(...)</code>。</li>
+<li><code>temperature</code> 控制采样随机性；<code>temperature=0</code> 时教程代码直接切换为 Greedy Decoding。</li>
+<li>SFT 与 Pretrain 的训练循环基本相同，主要区别是 Dataset、loss mask，以及 SFT 会从预训练权重继续训练。</li>
+<li>文本生成循环：<strong>最后位置 logits → temperature → top-k → Softmax → Sample → 拼回序列 → 继续生成</strong>。</li>
+</ol>
+<p>一句话背诵：</p>
+<blockquote>
+<p><strong>第五章从零完成一个小型 LLM 的完整闭环：先手写 LLaMA2，再训练 BPE Tokenizer，通过移位标签构造因果语言模型数据，完成 Pretrain 和 SFT，最后使用 temperature、top-k 做自回归生成。</strong></p>
+</blockquote>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><h3 id="1-请介绍-Happy-LLM-第五章的主要内容"><a href="#1-请介绍-Happy-LLM-第五章的主要内容" class="headerlink" title="1. 请介绍 Happy-LLM 第五章的主要内容"></a>1. 请介绍 Happy-LLM 第五章的主要内容</h3><blockquote>
+<p>第五章把前面 Transformer 和 LLM 的理论落实到代码。首先使用 PyTorch 手写一个 LLaMA2 风格的 Decoder-Only Transformer，包括 RMSNorm、GQA、RoPE、Causal Self-Attention、门控 MLP 和 Decoder Layer；然后基于 Hugging Face Tokenizers 训练 BPE Tokenizer；接着将文本处理成因果语言模型需要的 X、Y 和 loss mask，完成 Pretrain 和 SFT；最后实现自回归生成，并通过 temperature 和 top-k 控制采样。</p>
+</blockquote>
+<h3 id="2-从零训练一个小型-LLM-的流程是什么？"><a href="#2-从零训练一个小型-LLM-的流程是什么？" class="headerlink" title="2. 从零训练一个小型 LLM 的流程是什么？"></a>2. 从零训练一个小型 LLM 的流程是什么？</h3><blockquote>
+<p>先准备预训练语料和 SFT 对话数据，再训练或加载 Tokenizer，把文本映射为 Token ID；然后构建 Decoder-Only Transformer。预训练阶段将序列右移一位构造 X 和 Y，通过 Cross Entropy 做 Next Token Prediction；SFT 阶段使用 Chat Template 格式化对话，并通过 loss mask 主要只计算 Assistant 回答部分的损失。训练时可以结合 AMP、梯度累积、梯度裁剪和学习率调度，最后通过自回归采样生成文本。</p>
+</blockquote>
+<h3 id="3-第五章里的-LLaMA2-与原始-Transformer-有哪些关键区别？"><a href="#3-第五章里的-LLaMA2-与原始-Transformer-有哪些关键区别？" class="headerlink" title="3. 第五章里的 LLaMA2 与原始 Transformer 有哪些关键区别？"></a>3. 第五章里的 LLaMA2 与原始 Transformer 有哪些关键区别？</h3><blockquote>
+<p>它采用 Decoder-Only 架构，不再需要 Encoder 和 Cross-Attention；归一化使用 RMSNorm；位置信息使用 RoPE；Attention 支持 GQA；FFN 使用 SiLU 门控结构，也就是 LLaMA 常见的 SwiGLU 风格 FFN；Decoder Layer 使用 Pre-Norm 加残差连接。</p>
+</blockquote>
+<h3 id="4-Pretrain-与-SFT-在代码层面最大的区别是什么？"><a href="#4-Pretrain-与-SFT-在代码层面最大的区别是什么？" class="headerlink" title="4. Pretrain 与 SFT 在代码层面最大的区别是什么？"></a>4. Pretrain 与 SFT 在代码层面最大的区别是什么？</h3><blockquote>
+<p>两者训练循环基本一致，都是 X 输入、Y 作为 Next Token Target，再计算 Cross Entropy。主要区别在 Dataset：Pretrain 通常对所有非 Padding 的文本 Token 计算损失；SFT 通过 Chat Template 区分 system、user、assistant，并通过 loss mask 主要只训练 Assistant 回答部分。另外 SFT 通常从 Base Model checkpoint 继续训练。</p>
+</blockquote>
+<hr>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="Q1：为什么要把-input-id-拆成-X-和-Y？"><a href="#Q1：为什么要把-input-id-拆成-X-和-Y？" class="headerlink" title="Q1：为什么要把 input_id 拆成 X 和 Y？"></a>Q1：为什么要把 <code>input_id</code> 拆成 X 和 Y？</h3><p>代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X = input_id[:-<span class="number">1</span>]</span><br><span class="line">Y = input_id[<span class="number">1</span>:]</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">input_id = [BOS, 我, 喜欢, NLP, EOS]</span><br><span class="line"></span><br><span class="line">X = [BOS, 我, 喜欢, NLP]</span><br><span class="line">Y = [我, 喜欢, NLP, EOS]</span><br></pre></td></tr></table></figure>
+
+<p>这样每个位置都学习“根据前文预测下一个 Token”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BOS          → 我</span><br><span class="line">BOS 我       → 喜欢</span><br><span class="line">BOS 我 喜欢  → NLP</span><br><span class="line">... NLP      → EOS</span><br></pre></td></tr></table></figure>
+
+<p>训练目标：</p>
+<p>$$
+\mathcal{L} &#x3D;
+-\sum_{t&#x3D;1}^{T}
+\log
+P_{\theta}
+\left(
+x_t
+\mid
+x_{&lt;t}
+\right)
+$$</p>
+<p>作用：</p>
+<blockquote>
+<p><strong>把连续文本本身变成监督信号，一次前向传播即可并行计算所有位置的 Next Token Loss。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q2：loss-mask-是做什么的？"><a href="#Q2：loss-mask-是做什么的？" class="headerlink" title="Q2：loss_mask 是做什么的？"></a>Q2：<code>loss_mask</code> 是做什么的？</h3><p><code>loss_mask</code> 决定哪些 Token 参与损失。</p>
+<p>预训练：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">真实 Token → 1</span><br><span class="line">Padding    → 0</span><br></pre></td></tr></table></figure>
+
+<p>SFT：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">System        → 0</span><br><span class="line">User          → 0</span><br><span class="line">Assistant回答 → 1</span><br><span class="line">Padding       → 0</span><br></pre></td></tr></table></figure>
+
+<p>因此 SFT 主要学习：</p>
+<blockquote>
+<p><strong>给定 System、User 和历史对话，Assistant 应该生成什么。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q3：self-ctx-是什么？"><a href="#Q3：self-ctx-是什么？" class="headerlink" title="Q3：self.ctx 是什么？"></a>Q3：<code>self.ctx</code> 是什么？</h3><p><code>self.ctx</code> 是一个 <strong>自动混合精度（Automatic Mixed Precision, AMP）的上下文管理器</strong>。</p>
+<p>章节代码的核心逻辑：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.ctx = (</span><br><span class="line">    nullcontext()</span><br><span class="line">    <span class="keyword">if</span> <span class="variable language_">self</span>.device_type == <span class="string">&quot;cpu&quot;</span></span><br><span class="line">    <span class="keyword">else</span> torch.amp.autocast(</span><br><span class="line">        device_type=<span class="variable language_">self</span>.device_type,</span><br><span class="line">        dtype=ptdtype</span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> <span class="variable language_">self</span>.ctx:</span><br><span class="line">    output = model(...)</span><br></pre></td></tr></table></figure>
+
+<p>含义：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CPU</span><br><span class="line">→ nullcontext()</span><br><span class="line">→ 正常执行</span><br><span class="line"></span><br><span class="line">GPU</span><br><span class="line">→ autocast()</span><br><span class="line">→ 自动为不同算子选择适合的精度</span><br></pre></td></tr></table></figure>
+
+<p>AMP 的好处：</p>
+<ul>
+<li>降低显存占用；</li>
+<li>提高 Tensor Core 利用率；</li>
+<li>加速矩阵计算；</li>
+<li>对需要更高精度的算子自动采用更合适的精度。</li>
+</ul>
+<p>需要区分：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">autocast</span><br><span class="line">→ 控制前向计算精度</span><br><span class="line"></span><br><span class="line">GradScaler</span><br><span class="line">→ 主要避免 FP16 反向传播时的梯度下溢</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q4：temperature-是什么？"><a href="#Q4：temperature-是什么？" class="headerlink" title="Q4：temperature 是什么？"></a>Q4：temperature 是什么？</h3><p>Temperature 控制生成概率分布的尖锐程度。</p>
+<p>$$
+p_i &#x3D;
+\frac{
+\exp(z_i&#x2F;T)
+}{
+\sum_j \exp(z_j&#x2F;T)
+}
+$$</p>
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">T = 1</span><br><span class="line">→ logits 不变</span><br><span class="line"></span><br><span class="line">0 &lt; T &lt; 1</span><br><span class="line">→ 分布更尖锐</span><br><span class="line">→ 更确定</span><br><span class="line"></span><br><span class="line">T &gt; 1</span><br><span class="line">→ 分布更平坦</span><br><span class="line">→ 更随机</span><br></pre></td></tr></table></figure>
+
+<p>教程对 <code>temperature=0</code> 单独判断：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> temperature == <span class="number">0.0</span>:</span><br><span class="line">    <span class="comment"># greedy decoding</span></span><br></pre></td></tr></table></figure>
+
+<p>所以：</p>
+<blockquote>
+<p><strong>0.0 并不是拿 logits 去除以 0，而是直接切换成贪婪解码，每一步选择最大概率 Token。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q5：Top-k-和-Temperature-有什么区别？"><a href="#Q5：Top-k-和-Temperature-有什么区别？" class="headerlink" title="Q5：Top-k 和 Temperature 有什么区别？"></a>Q5：Top-k 和 Temperature 有什么区别？</h3><p>Temperature：</p>
+<blockquote>
+<p>改变整个概率分布的形状。</p>
+</blockquote>
+<p>Top-k：</p>
+<blockquote>
+<p>只保留概率最高的 k 个候选 Token，其余候选直接排除。</p>
+</blockquote>
+<p>流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">logits</span><br><span class="line">↓</span><br><span class="line">÷ temperature</span><br><span class="line">↓</span><br><span class="line">保留 top-k</span><br><span class="line">↓</span><br><span class="line">Softmax</span><br><span class="line">↓</span><br><span class="line">随机采样</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q6：tokenizer-json、tokenizer-config-json、special-tokens-map-json-有什么区别？"><a href="#Q6：tokenizer-json、tokenizer-config-json、special-tokens-map-json-有什么区别？" class="headerlink" title="Q6：tokenizer.json、tokenizer_config.json、special_tokens_map.json 有什么区别？"></a>Q6：<code>tokenizer.json</code>、<code>tokenizer_config.json</code>、<code>special_tokens_map.json</code> 有什么区别？</h3><p>一句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">tokenizer.json</span><br><span class="line">→ Tokenizer 本体</span><br><span class="line"></span><br><span class="line">tokenizer_config.json</span><br><span class="line">→ Tokenizer 使用说明书</span><br><span class="line"></span><br><span class="line">special_tokens_map.json</span><br><span class="line">→ 特殊 Token 的角色映射</span><br></pre></td></tr></table></figure>
+
+<p>详细内容见后文。</p>
+<hr>
+<h3 id="Q7：NFKC-是做什么的？"><a href="#Q7：NFKC-是做什么的？" class="headerlink" title="Q7：NFKC() 是做什么的？"></a>Q7：<code>NFKC()</code> 是做什么的？</h3><p><code>NFKC</code> 是 Unicode 的 <strong>Compatibility Normalization + Canonical Composition</strong>。<strong>Canonical（规范等价）</strong> 是指两个字符在语义上完全等同，只是编码方式或组合顺序不同（如 <code>é</code> 与 <code>e</code>+<code>´</code>），必须视为同一字符；而 <strong>Compatibility（兼容等价）</strong> 是指两个字符视觉或历史上有关联但语义并不严格等同（如全角 <code>Ａ</code> 与半角 <code>A</code>、上标 <code>²</code> 与数字 <code>2</code>、罗马数字 <code>Ⅳ</code> 与字母 <code>IV</code>），是为了兼容旧编码或特殊排版而存在的差异，全角&#x2F;半角只是兼容等价中的一种典型情况。</p>
+<p>简单说：</p>
+<blockquote>
+<p><strong>把视觉或兼容意义上相同&#x2F;接近、但 Unicode 编码形式不同的字符统一到标准形式。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ＡＢＣ１２３</span><br><span class="line">↓</span><br><span class="line">ABC123</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">① → 1</span><br><span class="line">ﬀ → ff</span><br></pre></td></tr></table></figure>
+
+<p>这样可以减少“同一种文本因为编码形式不同而被切成不同 Token”的问题，提高词表利用率和数据一致性。</p>
+<hr>
+<h3 id="Q8：为什么-LLaMA-使用-RMSNorm？"><a href="#Q8：为什么-LLaMA-使用-RMSNorm？" class="headerlink" title="Q8：为什么 LLaMA 使用 RMSNorm？"></a>Q8：为什么 LLaMA 使用 RMSNorm？</h3><p>公式：</p>
+<p>$$
+RMSNorm(x) &#x3D;
+\frac{x}{
+\sqrt{
+\frac{1}{n}
+\sum_{i&#x3D;1}^{n}
+x_i^2
++
+\epsilon
+}
+}
+\odot
+\gamma
+$$</p>
+<p>它不显式减均值，计算更简单，同时仍能稳定隐藏状态的数值尺度。</p>
+<hr>
+<h3 id="Q9：GQA-是怎么实现的？"><a href="#Q9：GQA-是怎么实现的？" class="headerlink" title="Q9：GQA 是怎么实现的？"></a>Q9：GQA 是怎么实现的？</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Q Heads = 16</span><br><span class="line">KV Heads = 8</span><br></pre></td></tr></table></figure>
+
+<p>则每 2 个 Q Head 共享一组 K&#x2F;V。</p>
+<p>核心目的：</p>
+<blockquote>
+<p><strong>减少 K&#x2F;V Head 数，在保留多个 Query Head 的同时降低显存和推理成本。</strong></p>
+</blockquote>
+<p>章节通过 <code>repeat_kv()</code> 在 Attention 前把 K&#x2F;V 扩展到与 Q Head 数量兼容。</p>
+<hr>
+<h3 id="Q10：RoPE-在代码里作用在哪里？"><a href="#Q10：RoPE-在代码里作用在哪里？" class="headerlink" title="Q10：RoPE 在代码里作用在哪里？"></a>Q10：RoPE 在代码里作用在哪里？</h3><p>流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Hidden State</span><br><span class="line">↓</span><br><span class="line">生成 Q、K、V</span><br><span class="line">↓</span><br><span class="line">对 Q、K 应用 RoPE</span><br><span class="line">↓</span><br><span class="line">QKᵀ</span><br><span class="line">↓</span><br><span class="line">Attention</span><br></pre></td></tr></table></figure>
+
+<p>RoPE 主要旋转 Q 和 K，不旋转 V，因为位置关系主要需要影响 Attention Score。</p>
+<hr>
+<h3 id="Q11：SFT-为什么主要只对-Assistant-回答计算-Loss？"><a href="#Q11：SFT-为什么主要只对-Assistant-回答计算-Loss？" class="headerlink" title="Q11：SFT 为什么主要只对 Assistant 回答计算 Loss？"></a>Q11：SFT 为什么主要只对 Assistant 回答计算 Loss？</h3><p>因为 System 和 User 主要作为上下文条件，SFT 真正希望模型学习的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">面对这样的上下文</span><br><span class="line">Assistant 应该回答什么</span><br></pre></td></tr></table></figure>
+
+<p>因此通过 loss mask 将 Assistant 回答区域设置为 1，其余区域通常设为 0。</p>
+<hr>
+<h3 id="Q12：第五章的文本生成使用-KV-Cache-吗？"><a href="#Q12：第五章的文本生成使用-KV-Cache-吗？" class="headerlink" title="Q12：第五章的文本生成使用 KV Cache 吗？"></a>Q12：第五章的文本生成使用 KV Cache 吗？</h3><p>没有。章节中的 <code>generate()</code> 是教学用的简单实现，每生成一个新 Token 都重新对当前上下文做 Forward。</p>
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">优点：逻辑简单</span><br><span class="line">缺点：推理效率低</span><br></pre></td></tr></table></figure>
+
+<p>实际生产推理通常使用 KV Cache。</p>
+<hr>
+<h1 id="第五章：动手搭建大模型"><a href="#第五章：动手搭建大模型" class="headerlink" title="第五章：动手搭建大模型"></a>第五章：动手搭建大模型</h1><h2 id="1-本章整体结构"><a href="#1-本章整体结构" class="headerlink" title="1. 本章整体结构"></a>1. 本章整体结构</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">5.1 动手实现 LLaMA2</span><br><span class="line">5.2 训练 Tokenizer</span><br><span class="line">5.3 数据处理、Pretrain、SFT 与文本生成</span><br></pre></td></tr></table></figure>
+
+<p>总流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">原始文本</span><br><span class="line">↓</span><br><span class="line">训练 Tokenizer</span><br><span class="line">↓</span><br><span class="line">Token IDs</span><br><span class="line">↓</span><br><span class="line">PretrainDataset / SFTDataset</span><br><span class="line">↓</span><br><span class="line">X + Y + loss_mask</span><br><span class="line">↓</span><br><span class="line">LLaMA2-style Decoder-Only Transformer</span><br><span class="line">↓</span><br><span class="line">Cross Entropy</span><br><span class="line">↓</span><br><span class="line">Pretrain</span><br><span class="line">↓</span><br><span class="line">Base Model</span><br><span class="line">↓</span><br><span class="line">SFT</span><br><span class="line">↓</span><br><span class="line">Chat Model</span><br><span class="line">↓</span><br><span class="line">Temperature / Top-k</span><br><span class="line">↓</span><br><span class="line">生成文本</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="2-LLaMA2-风格模型"><a href="#2-LLaMA2-风格模型" class="headerlink" title="2. LLaMA2 风格模型"></a>2. LLaMA2 风格模型</h1><h2 id="2-1-ModelConfig"><a href="#2-1-ModelConfig" class="headerlink" title="2.1 ModelConfig"></a>2.1 ModelConfig</h2><p>章节用 <code>ModelConfig</code> 管理模型超参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>dim</code></td>
+<td>Hidden Size</td>
+</tr>
+<tr>
+<td><code>n_layers</code></td>
+<td>Decoder Layer 数</td>
+</tr>
+<tr>
+<td><code>n_heads</code></td>
+<td>Query Head 数</td>
+</tr>
+<tr>
+<td><code>n_kv_heads</code></td>
+<td>K&#x2F;V Head 数</td>
+</tr>
+<tr>
+<td><code>vocab_size</code></td>
+<td>词表大小</td>
+</tr>
+<tr>
+<td><code>hidden_dim</code></td>
+<td>FFN Hidden Size</td>
+</tr>
+<tr>
+<td><code>norm_eps</code></td>
+<td>RMSNorm 的 epsilon</td>
+</tr>
+<tr>
+<td><code>max_seq_len</code></td>
+<td>最大序列长度</td>
+</tr>
+<tr>
+<td><code>dropout</code></td>
+<td>Dropout</td>
+</tr>
+<tr>
+<td><code>flash_attn</code></td>
+<td>是否启用高效 Attention</td>
+</tr>
+</tbody></table>
+<p>作用：</p>
+<blockquote>
+<p><strong>所有模块从同一份配置读取参数，便于统一管理模型规模。</strong></p>
+</blockquote>
+<hr>
+<h1 id="3-RMSNorm"><a href="#3-RMSNorm" class="headerlink" title="3. RMSNorm"></a>3. RMSNorm</h1><p>$$
+RMS(x) &#x3D;
+\sqrt{
+\frac{1}{n}
+\sum_{i&#x3D;1}^{n}
+x_i^2
++
+\epsilon
+}
+$$</p>
+<p>$$
+RMSNorm(x) &#x3D;
+\frac{x}{RMS(x)}
+\odot
+\gamma
+$$</p>
+<p>特点：</p>
+<ul>
+<li>不显式计算均值中心化；</li>
+<li>使用均方根控制 Hidden State 的尺度；</li>
+<li><code>gamma</code> 是可学习缩放参数；</li>
+<li><code>epsilon</code> 防止除零。</li>
+</ul>
+<hr>
+<h1 id="4-GQA"><a href="#4-GQA" class="headerlink" title="4. GQA"></a>4. GQA</h1><p>设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">n_heads = 16</span><br><span class="line">n_kv_heads = 8</span><br></pre></td></tr></table></figure>
+
+<p>则：</p>
+<p>$$
+n_{rep} &#x3D;
+\frac{n_Q}{n_{KV}} &#x3D;
+2
+$$</p>
+<p>即：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2 个 Q Head</span><br><span class="line">共享 1 组 K/V</span><br></pre></td></tr></table></figure>
+
+<p>对比：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th align="right">Q Head</th>
+<th align="right">KV Head</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MHA</td>
+<td align="right">h</td>
+<td align="right">h</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td align="right">h</td>
+<td align="right">g</td>
+</tr>
+<tr>
+<td>MQA</td>
+<td align="right">h</td>
+<td align="right">1</td>
+</tr>
+</tbody></table>
+<p>GQA 是 MHA 与 MQA 的折中。</p>
+<hr>
+<h1 id="5-RoPE"><a href="#5-RoPE" class="headerlink" title="5. RoPE"></a>5. RoPE</h1><p>流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">x</span><br><span class="line">↓</span><br><span class="line">Wq / Wk / Wv</span><br><span class="line">↓</span><br><span class="line">Q / K / V</span><br><span class="line">↓</span><br><span class="line">Q、K 应用 RoPE</span><br><span class="line">↓</span><br><span class="line">Attention</span><br></pre></td></tr></table></figure>
+
+<p>RoPE 通过位置相关旋转，将相对位置信息融入 Q&#x2F;K 内积。</p>
+<hr>
+<h1 id="6-Causal-Attention-与-Flash-Attention"><a href="#6-Causal-Attention-与-Flash-Attention" class="headerlink" title="6. Causal Attention 与 Flash Attention"></a>6. Causal Attention 与 Flash Attention</h1><p>普通 Attention：</p>
+<p>$$
+Attention(Q,K,V) &#x3D;
+Softmax
+\left(
+\frac{QK^T}{\sqrt{d_k}}
++
+Mask
+\right)V
+$$</p>
+<p>Causal Mask：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">        K1  K2  K3  K4</span><br><span class="line">Q1      ✓   ×   ×   ×</span><br><span class="line">Q2      ✓   ✓   ×   ×</span><br><span class="line">Q3      ✓   ✓   ✓   ×</span><br><span class="line">Q4      ✓   ✓   ✓   ✓</span><br></pre></td></tr></table></figure>
+
+<p>未来位置被设为 <code>-inf</code>，Softmax 后权重为 0。</p>
+<p>章节还检查 PyTorch 是否提供：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">torch.nn.functional.scaled_dot_product_attention</span><br></pre></td></tr></table></figure>
+
+<p>支持时使用高效 Attention 路径，否则回退到手写 Attention + Mask。</p>
+<hr>
+<h1 id="7-LLaMA-MLP"><a href="#7-LLaMA-MLP" class="headerlink" title="7. LLaMA MLP"></a>7. LLaMA MLP</h1><p>代码核心：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">self</span>.w2(</span><br><span class="line">    F.silu(<span class="variable language_">self</span>.w1(x)) * <span class="variable language_">self</span>.w3(x)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>可写为：</p>
+<p>$$
+h_1 &#x3D;
+SiLU(W_1x)
+$$</p>
+<p>$$
+h_2 &#x3D;
+W_3x
+$$</p>
+<p>$$
+FFN(x) &#x3D;
+W_2
+\left(
+h_1
+\odot
+h_2
+\right)
+$$</p>
+<p>即：</p>
+<p>$$
+FFN(x) &#x3D;
+W_2
+\left(
+SiLU(W_1x)
+\odot
+W_3x
+\right)
+$$</p>
+<p>这是 LLaMA 常见的 <strong>SwiGLU 风格门控 FFN</strong>。</p>
+<hr>
+<h1 id="8-Decoder-Layer"><a href="#8-Decoder-Layer" class="headerlink" title="8. Decoder Layer"></a>8. Decoder Layer</h1><p>章节实现 Pre-Norm：</p>
+<p>$$
+h &#x3D;
+x
++
+Attention
+\left(
+RMSNorm(x)
+\right)
+$$</p>
+<p>$$
+out &#x3D;
+h
++
+FFN
+\left(
+RMSNorm(h)
+\right)
+$$</p>
+<p>结构：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">x</span><br><span class="line">↓</span><br><span class="line">RMSNorm</span><br><span class="line">↓</span><br><span class="line">GQA + RoPE + Causal Attention</span><br><span class="line">↓</span><br><span class="line">Residual</span><br><span class="line">↓</span><br><span class="line">RMSNorm</span><br><span class="line">↓</span><br><span class="line">SwiGLU-style MLP</span><br><span class="line">↓</span><br><span class="line">Residual</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="9-完整-Decoder-Only-Transformer"><a href="#9-完整-Decoder-Only-Transformer" class="headerlink" title="9. 完整 Decoder-Only Transformer"></a>9. 完整 Decoder-Only Transformer</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Token IDs</span><br><span class="line">↓</span><br><span class="line">Token Embedding</span><br><span class="line">↓</span><br><span class="line">DecoderLayer × N</span><br><span class="line">↓</span><br><span class="line">RMSNorm</span><br><span class="line">↓</span><br><span class="line">LM Head</span><br><span class="line">↓</span><br><span class="line">Vocabulary Logits</span><br></pre></td></tr></table></figure>
+
+<p>训练：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">所有位置输出 logits</span><br><span class="line">→ 和 Y 计算 Cross Entropy</span><br></pre></td></tr></table></figure>
+
+<p>推理：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">只取最后一个位置 logits</span><br><span class="line">→ 预测 Next Token</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="10-Tokenizer-基础"><a href="#10-Tokenizer-基础" class="headerlink" title="10. Tokenizer 基础"></a>10. Tokenizer 基础</h1><p>Tokenizer：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Text</span><br><span class="line">↓</span><br><span class="line">Token</span><br><span class="line">↓</span><br><span class="line">Token ID</span><br></pre></td></tr></table></figure>
+
+<p>章节介绍：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Word-based</td>
+<td>直观，但 OOV 和超大词表问题明显</td>
+</tr>
+<tr>
+<td>Character-based</td>
+<td>几乎无 OOV，但序列过长</td>
+</tr>
+<tr>
+<td>Subword</td>
+<td>在词和字符之间折中，是现代 LLM 主流</td>
+</tr>
+</tbody></table>
+<p>Subword 常见算法：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心思想</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BPE</td>
+<td>反复合并最高频的字符&#x2F;子词对</td>
+</tr>
+<tr>
+<td>WordPiece</td>
+<td>根据语言建模目标选择更有价值的子词</td>
+</tr>
+<tr>
+<td>Unigram</td>
+<td>基于概率模型选择最优子词组合</td>
+</tr>
+</tbody></table>
+<p>第五章采用：</p>
+<blockquote>
+<p><strong>BPE + ByteLevel</strong></p>
+</blockquote>
+<hr>
+<h1 id="11-BPE-Tokenizer-训练流程"><a href="#11-BPE-Tokenizer-训练流程" class="headerlink" title="11. BPE Tokenizer 训练流程"></a>11. BPE Tokenizer 训练流程</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">JSONL 文本</span><br><span class="line">↓</span><br><span class="line">NFKC Normalizer</span><br><span class="line">↓</span><br><span class="line">ByteLevel Pre-Tokenizer</span><br><span class="line">↓</span><br><span class="line">BPE Trainer</span><br><span class="line">↓</span><br><span class="line">Special Tokens</span><br><span class="line">↓</span><br><span class="line">Vocab + Merge Rules</span><br><span class="line">↓</span><br><span class="line">tokenizer.json</span><br><span class="line">↓</span><br><span class="line">tokenizer_config.json</span><br><span class="line">↓</span><br><span class="line">special_tokens_map.json</span><br></pre></td></tr></table></figure>
+
+<p>特殊 Token：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;unk&gt;</span><br><span class="line">&lt;s&gt;</span><br><span class="line">&lt;/s&gt;</span><br><span class="line">&lt;|im_start|&gt;</span><br><span class="line">&lt;|im_end|&gt;</span><br></pre></td></tr></table></figure>
+
+<p>示例 ID：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;unk&gt;        → 0</span><br><span class="line">&lt;s&gt;          → 1</span><br><span class="line">&lt;/s&gt;         → 2</span><br><span class="line">&lt;|im_start|&gt; → 3</span><br><span class="line">&lt;|im_end|&gt;   → 4</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="12-NFKC-的作用"><a href="#12-NFKC-的作用" class="headerlink" title="12. NFKC 的作用"></a>12. <code>NFKC</code> 的作用</h1><p>代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tokenizers.normalizers <span class="keyword">import</span> NFKC</span><br><span class="line"></span><br><span class="line">tokenizer.normalizer = NFKC()</span><br></pre></td></tr></table></figure>
+
+<p>NFKC：</p>
+<blockquote>
+<p><strong>Normalization Form Compatibility Composition</strong></p>
+</blockquote>
+<p>可理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Compatibility Decomposition</span><br><span class="line">↓</span><br><span class="line">Canonical Composition</span><br></pre></td></tr></table></figure>
+
+<p>目的：</p>
+<blockquote>
+<p><strong>统一 Unicode 中兼容等价但编码不同的文本形式。</strong></p>
+</blockquote>
+<p>示例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ＡＢＣ１２３ → ABC123</span><br><span class="line">① → 1</span><br><span class="line">ﬀ → ff</span><br></pre></td></tr></table></figure>
+
+<p>好处：</p>
+<ul>
+<li>减少重复字符形式；</li>
+<li>减少无意义的低频 Token；</li>
+<li>提高词表利用率；</li>
+<li>保证同类文本分词更一致。</li>
+</ul>
+<p>注意：</p>
+<blockquote>
+<p>NFKC 会消除部分兼容性差异，因此对必须保留精确字形或排版语义的任务需要谨慎。</p>
+</blockquote>
+<hr>
+<h1 id="13-三个-Tokenizer-文件"><a href="#13-三个-Tokenizer-文件" class="headerlink" title="13. 三个 Tokenizer 文件"></a>13. 三个 Tokenizer 文件</h1><h2 id="13-1-tokenizer-json"><a href="#13-1-tokenizer-json" class="headerlink" title="13.1 tokenizer.json"></a>13.1 <code>tokenizer.json</code></h2><p>一句话：</p>
+<blockquote>
+<p><strong>Tokenizer 本体。</strong></p>
+</blockquote>
+<p>第五章的 BPE Tokenizer 中，核心包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Vocab</span><br><span class="line">BPE Merge Rules</span><br><span class="line">NFKC Normalizer</span><br><span class="line">ByteLevel Pre-Tokenizer</span><br><span class="line">BPE Model</span><br><span class="line">ByteLevel Decoder</span><br><span class="line">Added / Special Tokens</span><br></pre></td></tr></table></figure>
+
+<p>更准确地说，<code>tokenizer.json</code> 保存 Hugging Face Fast Tokenizer 底层的完整序列化分词 Pipeline，而不仅仅是词表。</p>
+<hr>
+<h2 id="13-2-tokenizer-config-json"><a href="#13-2-tokenizer-config-json" class="headerlink" title="13.2 tokenizer_config.json"></a>13.2 <code>tokenizer_config.json</code></h2><p>一句话：</p>
+<blockquote>
+<p><strong>Tokenizer 的行为说明书。</strong></p>
+</blockquote>
+<p>第五章包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">add_bos_token</span><br><span class="line">add_eos_token</span><br><span class="line">bos_token</span><br><span class="line">eos_token</span><br><span class="line">pad_token</span><br><span class="line">unk_token</span><br><span class="line">model_max_length</span><br><span class="line">tokenizer_class</span><br><span class="line">chat_template</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>作用：</p>
+<blockquote>
+<p>告诉 Transformers 应该怎样加载和使用 Tokenizer。</p>
+</blockquote>
+<p>其中 <code>chat_template</code> 非常重要，它将：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;...&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>等结构化消息转换为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;|im_start|&gt;user</span><br><span class="line">...</span><br><span class="line">&lt;|im_end|&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这样的模型输入格式。</p>
+<hr>
+<h2 id="13-3-special-tokens-map-json"><a href="#13-3-special-tokens-map-json" class="headerlink" title="13.3 special_tokens_map.json"></a>13.3 <code>special_tokens_map.json</code></h2><p>一句话：</p>
+<blockquote>
+<p><strong>特殊 Token 的角色映射表。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;bos_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_start|&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;eos_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_end|&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;unk_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;unk&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;pad_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_end|&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;additional_special_tokens&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;&lt;s&gt;&quot;</span><span class="punctuation">,</span> <span class="string">&quot;&lt;/s&gt;&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>它告诉 Transformers：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">哪个字符串是 BOS</span><br><span class="line">哪个字符串是 EOS</span><br><span class="line">哪个是 PAD</span><br><span class="line">哪个是 UNK</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="13-4-三个文件对比"><a href="#13-4-三个文件对比" class="headerlink" title="13.4 三个文件对比"></a>13.4 三个文件对比</h2><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>存什么</th>
+<th>作用</th>
+<th>记忆</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tokenizer.json</code></td>
+<td>Vocab、Merge Rules、Normalizer、PreTokenizer、Decoder 等</td>
+<td>真正执行分词</td>
+<td><strong>怎么切</strong></td>
+</tr>
+<tr>
+<td><code>tokenizer_config.json</code></td>
+<td>类、最大长度、Chat Template、BOS&#x2F;EOS 行为等</td>
+<td>Transformers 使用方式</td>
+<td><strong>怎么用</strong></td>
+</tr>
+<tr>
+<td><code>special_tokens_map.json</code></td>
+<td>BOS&#x2F;EOS&#x2F;PAD&#x2F;UNK 等角色映射</td>
+<td>定义特殊 Token 身份</td>
+<td><strong>特殊 Token 是谁</strong></td>
+</tr>
+</tbody></table>
+<p>最简单：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">tokenizer.json</span><br><span class="line">= 怎么切</span><br><span class="line"></span><br><span class="line">tokenizer_config.json</span><br><span class="line">= 怎么用</span><br><span class="line"></span><br><span class="line">special_tokens_map.json</span><br><span class="line">= 特殊 Token 是谁</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="14-数据预处理"><a href="#14-数据预处理" class="headerlink" title="14. 数据预处理"></a>14. 数据预处理</h1><p>预训练数据：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...&quot;</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>SFT 数据统一为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">  <span class="punctuation">&#123;</span><span class="attr">&quot;role&quot;</span><span class="punctuation">:</span> <span class="string">&quot;system&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;你是一个AI助手&quot;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="punctuation">&#123;</span><span class="attr">&quot;role&quot;</span><span class="punctuation">:</span> <span class="string">&quot;user&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...&quot;</span><span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="punctuation">&#123;</span><span class="attr">&quot;role&quot;</span><span class="punctuation">:</span> <span class="string">&quot;assistant&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;content&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...&quot;</span><span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+
+<p>SFT 再通过 <code>apply_chat_template()</code> 转换为模型真正读取的字符串。</p>
+<hr>
+<h1 id="15-为什么-X-Y-要错一位？"><a href="#15-为什么-X-Y-要错一位？" class="headerlink" title="15. 为什么 X&#x2F;Y 要错一位？"></a>15. 为什么 X&#x2F;Y 要错一位？</h1><p>原始：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[BOS, T1, T2, T3, T4, EOS]</span><br></pre></td></tr></table></figure>
+
+<p>构造：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X = [BOS, T1, T2, T3, T4]</span><br><span class="line">Y = [T1, T2, T3, T4, EOS]</span><br></pre></td></tr></table></figure>
+
+<p>对应：</p>
+<table>
+<thead>
+<tr>
+<th>X</th>
+<th>Y</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BOS</td>
+<td>T1</td>
+</tr>
+<tr>
+<td>T1</td>
+<td>T2</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>T3</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>T4</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>EOS</td>
+</tr>
+</tbody></table>
+<p>目标：</p>
+<p>$$
+P
+\left(
+x_{t+1}
+\mid
+x_{\le t}
+\right)
+$$</p>
+<p>序列概率：</p>
+<p>$$
+P(x_1,\dots,x_T) &#x3D;
+\prod_{t&#x3D;1}^{T}
+P
+\left(
+x_t
+\mid
+x_{&lt;t}
+\right)
+$$</p>
+<p>这就是 Decoder-Only LLM 的因果语言建模目标。</p>
+<hr>
+<h1 id="16-Pretrain-loss-mask"><a href="#16-Pretrain-loss-mask" class="headerlink" title="16. Pretrain loss_mask"></a>16. Pretrain loss_mask</h1><p>Padding：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[BOS, T1, T2, EOS, PAD, PAD]</span><br></pre></td></tr></table></figure>
+
+<p>Mask：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[1, 1, 1, 1, 0, 0]</span><br></pre></td></tr></table></figure>
+
+<p>最终：</p>
+<p>$$
+Loss &#x3D;
+\frac{
+\sum_i m_iL_i
+}{
+\sum_i m_i
+}
+$$</p>
+<p>避免模型在 Padding 上浪费梯度。</p>
+<hr>
+<h1 id="17-SFT-loss-mask"><a href="#17-SFT-loss-mask" class="headerlink" title="17. SFT loss_mask"></a>17. SFT loss_mask</h1><p>SFT 仍然使用相同的 X&#x2F;Y Shift。</p>
+<p>关键差异：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">System        → mask 0</span><br><span class="line">User          → mask 0</span><br><span class="line">Assistant回答 → mask 1</span><br><span class="line">Padding       → mask 0</span><br></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<blockquote>
+<p><strong>对话上下文负责“给条件”，Assistant span 负责“提供监督标签”。</strong></p>
+</blockquote>
+<hr>
+<h1 id="18-Pretrain-训练流程"><a href="#18-Pretrain-训练流程" class="headerlink" title="18. Pretrain 训练流程"></a>18. Pretrain 训练流程</h1><p>训练循环包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">DataLoader</span><br><span class="line">↓</span><br><span class="line">动态学习率</span><br><span class="line">↓</span><br><span class="line">AMP Forward</span><br><span class="line">↓</span><br><span class="line">Masked Cross Entropy</span><br><span class="line">↓</span><br><span class="line">Gradient Accumulation</span><br><span class="line">↓</span><br><span class="line">Backward</span><br><span class="line">↓</span><br><span class="line">Gradient Clipping</span><br><span class="line">↓</span><br><span class="line">Optimizer Step</span><br><span class="line">↓</span><br><span class="line">Checkpoint</span><br></pre></td></tr></table></figure>
+
+<h2 id="Warmup"><a href="#Warmup" class="headerlink" title="Warmup"></a>Warmup</h2><p>$$
+LR_t &#x3D;
+LR_{max}
+\frac{t}{T_{warmup}}
+$$</p>
+<h2 id="Cosine-Decay"><a href="#Cosine-Decay" class="headerlink" title="Cosine Decay"></a>Cosine Decay</h2><p>$$
+coeff &#x3D;
+\frac{1}{2}
+\left(
+1
++
+\cos(\pi r)
+\right)
+$$</p>
+<hr>
+<h1 id="19-AMP：self-ctx-ctx"><a href="#19-AMP：self-ctx-ctx" class="headerlink" title="19. AMP：self.ctx &#x2F; ctx"></a>19. AMP：<code>self.ctx</code> &#x2F; <code>ctx</code></h1><p><code>self.ctx</code> 是一个 <strong>Automatic Mixed Precision 上下文管理器</strong>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> <span class="variable language_">self</span>.ctx:</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>GPU 时进入 <code>autocast</code>，很多计算自动使用 BF16&#x2F;FP16 等较低精度。</p>
+<p>主要价值：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">更少显存</span><br><span class="line">+</span><br><span class="line">更高吞吐</span><br></pre></td></tr></table></figure>
+
+<p>训练时通常还配合：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GradScaler</span><br></pre></td></tr></table></figure>
+
+<p>来提高 FP16 梯度计算稳定性。</p>
+<hr>
+<h1 id="20-Gradient-Accumulation"><a href="#20-Gradient-Accumulation" class="headerlink" title="20. Gradient Accumulation"></a>20. Gradient Accumulation</h1><p>如果显存只能放：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">batch_size = 8</span><br></pre></td></tr></table></figure>
+
+<p>但希望有效 Batch 接近：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">32</span><br></pre></td></tr></table></figure>
+
+<p>可以连续 4 个 Mini-batch 做 Backward，再 Step。</p>
+<p>$$
+EffectiveBatch &#x3D;
+BatchSize
+\times
+AccumulationSteps
+$$</p>
+<p>这样可以：</p>
+<blockquote>
+<p><strong>用更多计算时间换更低显存占用。</strong></p>
+</blockquote>
+<hr>
+<h1 id="21-Gradient-Clipping"><a href="#21-Gradient-Clipping" class="headerlink" title="21. Gradient Clipping"></a>21. Gradient Clipping</h1><p>代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">torch.nn.utils.clip_grad_norm_(</span><br><span class="line">    model.parameters(),</span><br><span class="line">    grad_clip</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>作用：</p>
+<blockquote>
+<p>限制梯度范数，防止梯度突然爆炸导致训练不稳定。</p>
+</blockquote>
+<hr>
+<h1 id="22-SFT-训练"><a href="#22-SFT-训练" class="headerlink" title="22. SFT 训练"></a>22. SFT 训练</h1><p>SFT：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Pretrained Base Model</span><br><span class="line">↓</span><br><span class="line">加载预训练 checkpoint</span><br><span class="line">↓</span><br><span class="line">SFTDataset</span><br><span class="line">↓</span><br><span class="line">Chat Template</span><br><span class="line">↓</span><br><span class="line">Assistant-only loss mask</span><br><span class="line">↓</span><br><span class="line">继续优化</span><br><span class="line">↓</span><br><span class="line">Chat / Instruction Model</span><br></pre></td></tr></table></figure>
+
+<p>训练循环与 Pretrain 基本相同。</p>
+<hr>
+<h1 id="23-自回归生成"><a href="#23-自回归生成" class="headerlink" title="23. 自回归生成"></a>23. 自回归生成</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Prompt</span><br><span class="line">↓</span><br><span class="line">Tokenizer</span><br><span class="line">↓</span><br><span class="line">Input IDs</span><br><span class="line">↓</span><br><span class="line">Forward</span><br><span class="line">↓</span><br><span class="line">最后位置 logits</span><br><span class="line">↓</span><br><span class="line">Temperature</span><br><span class="line">↓</span><br><span class="line">Top-k</span><br><span class="line">↓</span><br><span class="line">Softmax</span><br><span class="line">↓</span><br><span class="line">Sample</span><br><span class="line">↓</span><br><span class="line">Next Token</span><br><span class="line">↓</span><br><span class="line">拼回 Input</span><br><span class="line">↓</span><br><span class="line">重复</span><br></pre></td></tr></table></figure>
+
+<p>直到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EOS / stop_id</span><br><span class="line">或</span><br><span class="line">max_new_tokens</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="24-Temperature-实现机制"><a href="#24-Temperature-实现机制" class="headerlink" title="24. Temperature 实现机制"></a>24. Temperature 实现机制</h1><p>$$
+z_i’ &#x3D;
+\frac{z_i}{T}
+$$</p>
+<p>$$
+P_i &#x3D;
+Softmax(z_i’)
+$$</p>
+<table>
+<thead>
+<tr>
+<th>Temperature</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0</code></td>
+<td>教程代码走 Greedy</td>
+</tr>
+<tr>
+<td><code>&lt; 1</code></td>
+<td>更确定</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>不改变 logits</td>
+</tr>
+<tr>
+<td><code>&gt; 1</code></td>
+<td>更随机</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="25-Top-k"><a href="#25-Top-k" class="headerlink" title="25. Top-k"></a>25. Top-k</h1><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vocab_size = 6144</span><br><span class="line">top_k = 50</span><br></pre></td></tr></table></figure>
+
+<p>只保留最高的 50 个 logits，其余设置为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-inf</span><br></pre></td></tr></table></figure>
+
+<p>然后在剩余候选中采样。</p>
+<p>作用：</p>
+<blockquote>
+<p><strong>避免从概率极低的长尾 Token 中采到明显不合理的结果。</strong></p>
+</blockquote>
+<hr>
+<h1 id="26-torch-no-grad-torch-inference-mode"><a href="#26-torch-no-grad-torch-inference-mode" class="headerlink" title="26. torch.no_grad() &#x2F; torch.inference_mode()"></a>26. <code>torch.no_grad()</code> &#x2F; <code>torch.inference_mode()</code></h1><p>推理不需要梯度：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">不需要 backward</span><br><span class="line">不需要 optimizer</span><br></pre></td></tr></table></figure>
+
+<p>因此关闭 Autograd 可以：</p>
+<ul>
+<li>节省显存；</li>
+<li>减少计算图开销；</li>
+<li>提升推理效率。</li>
+</ul>
+<hr>
+<h1 id="27-Pretrain、SFT、Inference-对比"><a href="#27-Pretrain、SFT、Inference-对比" class="headerlink" title="27. Pretrain、SFT、Inference 对比"></a>27. Pretrain、SFT、Inference 对比</h1><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>输入</th>
+<th>Target</th>
+<th>Loss Mask</th>
+<th>Backward</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Pretrain</td>
+<td>普通文本</td>
+<td>下一个 Token</td>
+<td>屏蔽 Padding</td>
+<td>✅</td>
+<td>学语言和知识</td>
+</tr>
+<tr>
+<td>SFT</td>
+<td>对话上下文</td>
+<td>下一个 Token</td>
+<td>主要保留 Assistant</td>
+<td>✅</td>
+<td>学指令和对话</td>
+</tr>
+<tr>
+<td>Inference</td>
+<td>Prompt + 已生成 Token</td>
+<td>无</td>
+<td>无</td>
+<td>❌</td>
+<td>生成回答</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="28-第五章关键组件速查"><a href="#28-第五章关键组件速查" class="headerlink" title="28. 第五章关键组件速查"></a>28. 第五章关键组件速查</h1><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ModelConfig</td>
+<td>管理模型超参数</td>
+</tr>
+<tr>
+<td>RMSNorm</td>
+<td>稳定 Hidden State 尺度</td>
+</tr>
+<tr>
+<td>GQA</td>
+<td>减少 K&#x2F;V Head</td>
+</tr>
+<tr>
+<td>RoPE</td>
+<td>向 Q&#x2F;K 注入位置</td>
+</tr>
+<tr>
+<td>Causal Mask</td>
+<td>防止看到未来</td>
+</tr>
+<tr>
+<td>Flash Attention 路径</td>
+<td>高效 Attention</td>
+</tr>
+<tr>
+<td>SwiGLU 风格 MLP</td>
+<td>门控非线性变换</td>
+</tr>
+<tr>
+<td>BPE</td>
+<td>Subword 分词</td>
+</tr>
+<tr>
+<td>NFKC</td>
+<td>Unicode 规范化</td>
+</tr>
+<tr>
+<td>X&#x2F;Y Shift</td>
+<td>Next Token Target</td>
+</tr>
+<tr>
+<td>loss_mask</td>
+<td>控制哪些 Token 计算 Loss</td>
+</tr>
+<tr>
+<td>AMP</td>
+<td>降显存、提吞吐</td>
+</tr>
+<tr>
+<td>GradScaler</td>
+<td>混合精度数值稳定</td>
+</tr>
+<tr>
+<td>Gradient Accumulation</td>
+<td>模拟更大 Batch</td>
+</tr>
+<tr>
+<td>Gradient Clipping</td>
+<td>防梯度爆炸</td>
+</tr>
+<tr>
+<td>Temperature</td>
+<td>控制随机性</td>
+</tr>
+<tr>
+<td>Top-k</td>
+<td>限制候选范围</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="29-从文本到一次参数更新"><a href="#29-从文本到一次参数更新" class="headerlink" title="29. 从文本到一次参数更新"></a>29. 从文本到一次参数更新</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&quot;北京是中国的首都&quot;</span><br><span class="line">↓</span><br><span class="line">NFKC</span><br><span class="line">↓</span><br><span class="line">BPE Tokenizer</span><br><span class="line">↓</span><br><span class="line">[BOS, 103, 251, 88, 29, EOS]</span><br><span class="line">↓</span><br><span class="line">X / Y Shift</span><br><span class="line"></span><br><span class="line">X = [BOS, 103, 251, 88, 29]</span><br><span class="line">Y = [103, 251, 88, 29, EOS]</span><br><span class="line"></span><br><span class="line">↓</span><br><span class="line">Embedding</span><br><span class="line">↓</span><br><span class="line">Decoder Layers</span><br><span class="line">↓</span><br><span class="line">LM Head</span><br><span class="line">↓</span><br><span class="line">Vocabulary Logits</span><br><span class="line">↓</span><br><span class="line">Cross Entropy</span><br><span class="line">↓</span><br><span class="line">loss_mask</span><br><span class="line">↓</span><br><span class="line">Backward</span><br><span class="line">↓</span><br><span class="line">Gradient Accumulation</span><br><span class="line">↓</span><br><span class="line">Gradient Clipping</span><br><span class="line">↓</span><br><span class="line">Optimizer Step</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="30-从-Prompt-到回答"><a href="#30-从-Prompt-到回答" class="headerlink" title="30. 从 Prompt 到回答"></a>30. 从 Prompt 到回答</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">“中国的首都是哪里？”</span><br><span class="line">↓</span><br><span class="line">Chat Template</span><br><span class="line">↓</span><br><span class="line">Tokenizer</span><br><span class="line">↓</span><br><span class="line">Prompt IDs</span><br><span class="line">↓</span><br><span class="line">LLM</span><br><span class="line">↓</span><br><span class="line">最后位置 logits</span><br><span class="line">↓</span><br><span class="line">Temperature</span><br><span class="line">↓</span><br><span class="line">Top-k</span><br><span class="line">↓</span><br><span class="line">Sample next token</span><br><span class="line">↓</span><br><span class="line">拼回上下文</span><br><span class="line">↓</span><br><span class="line">再次 Forward</span><br><span class="line">↓</span><br><span class="line">...</span><br><span class="line">↓</span><br><span class="line">EOS</span><br><span class="line">↓</span><br><span class="line">decode</span><br><span class="line">↓</span><br><span class="line">“中国的首都是北京。”</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="31-一分钟背诵"><a href="#31-一分钟背诵" class="headerlink" title="31. 一分钟背诵"></a>31. 一分钟背诵</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">第五章</span><br><span class="line">= 从零搭建小 LLM</span><br><span class="line"></span><br><span class="line">模型：</span><br><span class="line">LLaMA2-style Decoder Only</span><br><span class="line">= RMSNorm</span><br><span class="line">+ GQA</span><br><span class="line">+ RoPE</span><br><span class="line">+ Causal Attention</span><br><span class="line">+ SwiGLU-style MLP</span><br><span class="line"></span><br><span class="line">Tokenizer：</span><br><span class="line">NFKC</span><br><span class="line">→ ByteLevel</span><br><span class="line">→ BPE</span><br><span class="line"></span><br><span class="line">三个文件：</span><br><span class="line">tokenizer.json</span><br><span class="line">= 怎么切</span><br><span class="line"></span><br><span class="line">tokenizer_config.json</span><br><span class="line">= 怎么用</span><br><span class="line"></span><br><span class="line">special_tokens_map.json</span><br><span class="line">= 特殊 Token 是谁</span><br><span class="line"></span><br><span class="line">Dataset：</span><br><span class="line">X = input_id[:-1]</span><br><span class="line">Y = input_id[1:]</span><br><span class="line"></span><br><span class="line">作用：</span><br><span class="line">前缀 → 下一个 Token</span><br><span class="line"></span><br><span class="line">Pretrain：</span><br><span class="line">主要所有非 Padding Token 算 Loss</span><br><span class="line"></span><br><span class="line">SFT：</span><br><span class="line">主要 Assistant Token 算 Loss</span><br><span class="line"></span><br><span class="line">AMP：</span><br><span class="line">self.ctx / ctx</span><br><span class="line">= autocast 上下文</span><br><span class="line"></span><br><span class="line">生成：</span><br><span class="line">logits</span><br><span class="line">→ temperature</span><br><span class="line">→ top-k</span><br><span class="line">→ softmax</span><br><span class="line">→ sampling</span><br><span class="line"></span><br><span class="line">temperature：</span><br><span class="line">0 = greedy</span><br><span class="line">&lt;1 = 更确定</span><br><span class="line">1 = 原分布</span><br><span class="line">&gt;1 = 更随机</span><br></pre></td></tr></table></figure>
+
+<p>最终一句话：</p>
+<blockquote>
+<p><strong>第五章把 LLM 从概念变成可以运行的完整代码：模型结构决定如何计算，Tokenizer 决定文字如何变成 Token，X&#x2F;Y Shift 决定学习目标，loss mask 决定哪些 Token 学，AMP 决定怎样更高效地训练和推理，temperature&#x2F;top-k 决定生成时怎样选择下一个 Token。</strong></p>
+</blockquote>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-15T08:56:15.239Z" itemprop="dateModified">最后编辑：2026-09-15</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" Transformer中的位置编码方法" href="/2026/09/14/Happy-LLM_Transformer 中的位置编码方法/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第六章：大模型训练流程实践——框架与特有名词整理" href="/2026/09/15/Happy-LLM_第六章_框架与特有名词整理/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>Transformer中的位置编码方法 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/14/Happy-LLM_Transformer%20%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="面试速记背诵版总结Transformer 本身的 Self-Attention 不具备顺序感知能力，因此必须额外加入位置信息。位置编码大体可以分为 绝对位置编码 和 相对位置编码 两类。 常见方法可以这样记： 1234567891011121314151617181920212223242526Sinusoidal&#x3D; 固定正弦余弦位置编码&#x3D; 不需要训练&#x3D; 原始 TransformerLearned">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transformer中的位置编码方法">
+<meta property="og:url" content="http://example.com/2026/09/14/Happy-LLM_Transformer%20%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记背诵版总结Transformer 本身的 Self-Attention 不具备顺序感知能力，因此必须额外加入位置信息。位置编码大体可以分为 绝对位置编码 和 相对位置编码 两类。 常见方法可以这样记： 1234567891011121314151617181920212223242526Sinusoidal&#x3D; 固定正弦余弦位置编码&#x3D; 不需要训练&#x3D; 原始 TransformerLearned">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-2.png">
+<meta property="article:published_time" content="2026-09-14T11:35:38.697Z">
+<meta property="article:modified_time" content="2026-09-14T11:45:23.515Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-2.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"Transformer中的位置编码方法","description":"面试速记背诵版...","image":"http://example.com/2026/09/14/Happy-LLM_Transformer%20%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95/assets/posts/happy-llm/happy-llm-2.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-14T11:35:38.697Z","dateModified":"2026-09-14T11:45:23.515Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/14/Happy-LLM_Transformer%20%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/14/Happy-LLM_Transformer%20%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">Transformer中的位置编码方法</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-14T11:35:38.697Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-14</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~9.91K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><p>Transformer 本身的 Self-Attention <strong>不具备顺序感知能力</strong>，因此必须额外加入位置信息。位置编码大体可以分为 <strong>绝对位置编码</strong> 和 <strong>相对位置编码</strong> 两类。</p>
+<p>常见方法可以这样记：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Sinusoidal</span><br><span class="line">= 固定正弦余弦位置编码</span><br><span class="line">= 不需要训练</span><br><span class="line">= 原始 Transformer</span><br><span class="line"></span><br><span class="line">Learned Position Embedding</span><br><span class="line">= 每个位置对应一个可训练向量</span><br><span class="line">= 简单直接</span><br><span class="line">= BERT / GPT-2</span><br><span class="line"></span><br><span class="line">Relative Position</span><br><span class="line">= 不强调“我在第几个位置”</span><br><span class="line">= 更强调“两个 Token 相距多远”</span><br><span class="line">= Transformer-XL / T5</span><br><span class="line"></span><br><span class="line">RoPE</span><br><span class="line">= 旋转 Q 和 K</span><br><span class="line">= 将相对位置自然编码进 Attention</span><br><span class="line">= 当前 LLM 主流方法</span><br><span class="line">= LLaMA / Qwen / Mistral</span><br><span class="line"></span><br><span class="line">ALiBi</span><br><span class="line">= 在 Attention Score 中加入距离惩罚</span><br><span class="line">= 距离越远，分数越低</span><br><span class="line">= 实现简单、外推较强</span><br><span class="line">= BLOOM</span><br></pre></td></tr></table></figure>
+
+<p>一句话总结：</p>
+<blockquote>
+<p><strong>早期 Transformer 主要显式加入绝对位置，而现代 LLM 更倾向于把相对位置信息直接融入 Attention，其中 RoPE 是目前最常见的方法之一。</strong></p>
+</blockquote>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><blockquote>
+<p>Transformer 的 Self-Attention 本身并不能感知 Token 的顺序，因此需要额外加入位置编码。位置编码主要分为绝对位置和相对位置两类。原始 Transformer 使用固定的 Sinusoidal Positional Encoding，BERT 和 GPT-2 使用 Learned Position Embedding，这两种方法都显式表示 Token 的绝对位置。后来模型逐渐转向相对位置编码，因为自然语言中往往更关注两个 Token 之间的距离。T5 使用 Relative Position Bias，在 Attention Score 中加入相对位置偏置；现代大语言模型中更常见的是 RoPE，它通过旋转 Query 和 Key，把相对位置关系直接融入 Attention；另外还有 ALiBi，它通过在线性地惩罚远距离 Token 的 Attention Score 实现位置建模，具有较好的长度外推能力。</p>
+</blockquote>
+<p>如果面试官追问“当前大模型最常见的是哪一种”，可以回答：</p>
+<blockquote>
+<p><strong>目前 Decoder-Only LLM 中 RoPE 非常常见。它不直接把 Position Embedding 加到输入上，而是对 Q 和 K 进行位置相关的旋转，使 Q 和 K 的内积天然包含相对位置差。</strong></p>
+</blockquote>
+<hr>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="Q1：为什么-Transformer-必须使用位置编码？"><a href="#Q1：为什么-Transformer-必须使用位置编码？" class="headerlink" title="Q1：为什么 Transformer 必须使用位置编码？"></a>Q1：为什么 Transformer 必须使用位置编码？</h3><p>Self-Attention 主要根据 Token 内容之间的相似度计算注意力，它本身并不知道 Token 的先后顺序。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">我 喜欢 你</span><br><span class="line">你 喜欢 我</span><br></pre></td></tr></table></figure>
+
+<p>如果没有位置信息，两句话包含完全相同的 Token，模型很难区分它们的顺序。</p>
+<p>因此 Transformer 需要额外告诉模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding：</span><br><span class="line">这个 Token 是什么</span><br><span class="line"></span><br><span class="line">Position Information：</span><br><span class="line">这个 Token 在什么位置</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q2：绝对位置编码和相对位置编码有什么区别？"><a href="#Q2：绝对位置编码和相对位置编码有什么区别？" class="headerlink" title="Q2：绝对位置编码和相对位置编码有什么区别？"></a>Q2：绝对位置编码和相对位置编码有什么区别？</h3><p>绝对位置关注：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Token A 位于第 5 个位置</span><br><span class="line">Token B 位于第 8 个位置</span><br></pre></td></tr></table></figure>
+
+<p>相对位置关注：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Token B 比 Token A 晚 3 个位置</span><br></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">绝对位置：</span><br><span class="line">关注“我在哪里”</span><br><span class="line"></span><br><span class="line">相对位置：</span><br><span class="line">关注“我和其他 Token 相距多远”</span><br></pre></td></tr></table></figure>
+
+<p>现代 LLM 更常使用相对位置思想，因为 Attention 本质上关注的是 Token 之间的关系。</p>
+<hr>
+<h3 id="Q3：Sinusoidal-Position-Encoding-为什么使用正弦和余弦？"><a href="#Q3：Sinusoidal-Position-Encoding-为什么使用正弦和余弦？" class="headerlink" title="Q3：Sinusoidal Position Encoding 为什么使用正弦和余弦？"></a>Q3：Sinusoidal Position Encoding 为什么使用正弦和余弦？</h3><p>因为不同频率的正弦余弦函数可以为不同位置生成唯一、连续的位置表示，而且不需要额外学习参数。</p>
+<p>另外，正弦余弦函数还具有一定的相对位置性质，因此模型可以从不同位置之间的函数关系中推断距离信息。</p>
+<hr>
+<h3 id="Q4：Learned-Position-Embedding-的主要缺点是什么？"><a href="#Q4：Learned-Position-Embedding-的主要缺点是什么？" class="headerlink" title="Q4：Learned Position Embedding 的主要缺点是什么？"></a>Q4：Learned Position Embedding 的主要缺点是什么？</h3><p>最大问题是：</p>
+<blockquote>
+<p><strong>长度外推能力较差。</strong></p>
+</blockquote>
+<p>例如模型训练时只学习：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Position 0 ~ 511</span><br></pre></td></tr></table></figure>
+
+<p>那么对于：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Position 512</span><br><span class="line">Position 513</span><br></pre></td></tr></table></figure>
+
+<p>模型并没有训练过对应的位置向量。</p>
+<p>所以当输入长度明显超过训练长度时，Learned Position Embedding 通常比较受限。</p>
+<hr>
+<h3 id="Q5：RoPE-为什么能表示相对位置？"><a href="#Q5：RoPE-为什么能表示相对位置？" class="headerlink" title="Q5：RoPE 为什么能表示相对位置？"></a>Q5：RoPE 为什么能表示相对位置？</h3><p>RoPE 会根据 Token 的位置，对 Query 和 Key 进行不同角度的旋转。</p>
+<p>假设位置分别是 $m$ 和 $n$，旋转后的 Q 和 K 计算内积时，会出现：</p>
+<p>$$
+R_m^T R_n &#x3D;
+R_{n-m}
+$$</p>
+<p>因此最终的 Attention 只和：</p>
+<p>$$
+n-m
+$$</p>
+<p>有关。</p>
+<p>也就是两个 Token 之间的<strong>相对位置差</strong>。</p>
+<p>所以可以记：</p>
+<blockquote>
+<p><strong>RoPE 通过旋转 Q 和 K，让 Attention 内积天然包含相对位置信息。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q6：RoPE-为什么只作用于-Q-和-K？"><a href="#Q6：RoPE-为什么只作用于-Q-和-K？" class="headerlink" title="Q6：RoPE 为什么只作用于 Q 和 K？"></a>Q6：RoPE 为什么只作用于 Q 和 K？</h3><p>因为 Attention Score 是通过 Q 和 K 的内积计算的：</p>
+<p>$$
+Score &#x3D;
+QK^T
+$$</p>
+<p>位置关系真正影响的是：</p>
+<blockquote>
+<p>“当前位置应该对哪个位置给予多少注意力”。</p>
+</blockquote>
+<p>所以将位置旋转加入 Q 和 K，就可以直接影响 Attention Score。</p>
+<p>而 V 主要表示真正被聚合的信息，因此通常不需要进行位置旋转。</p>
+<hr>
+<h3 id="Q7：ALiBi-和-RoPE-有什么区别？"><a href="#Q7：ALiBi-和-RoPE-有什么区别？" class="headerlink" title="Q7：ALiBi 和 RoPE 有什么区别？"></a>Q7：ALiBi 和 RoPE 有什么区别？</h3><p>RoPE：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对 Q 和 K 做位置相关旋转</span><br><span class="line">↓</span><br><span class="line">通过内积体现相对位置</span><br></pre></td></tr></table></figure>
+
+<p>ALiBi：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">直接在 Attention Score 中</span><br><span class="line">加入与距离相关的负偏置</span><br></pre></td></tr></table></figure>
+
+<p>简单记：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RoPE：</span><br><span class="line">改 Q/K</span><br><span class="line"></span><br><span class="line">ALiBi：</span><br><span class="line">改 Attention Score</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q8：哪种位置编码长度外推最好？"><a href="#Q8：哪种位置编码长度外推最好？" class="headerlink" title="Q8：哪种位置编码长度外推最好？"></a>Q8：哪种位置编码长度外推最好？</h3><p>一般来说：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Learned Position</span><br><span class="line">→ 较差</span><br><span class="line"></span><br><span class="line">Sinusoidal</span><br><span class="line">→ 一般到较好</span><br><span class="line"></span><br><span class="line">Relative Position</span><br><span class="line">→ 较好</span><br><span class="line"></span><br><span class="line">RoPE</span><br><span class="line">→ 较好，可配合 RoPE Scaling 进一步扩展</span><br><span class="line"></span><br><span class="line">ALiBi</span><br><span class="line">→ 通常具有较好的长度外推能力</span><br></pre></td></tr></table></figure>
+
+<p>但实际效果还取决于训练长度、数据分布和具体模型设计。</p>
+<hr>
+<h3 id="Q9：为什么现代-LLM-更喜欢-RoPE？"><a href="#Q9：为什么现代-LLM-更喜欢-RoPE？" class="headerlink" title="Q9：为什么现代 LLM 更喜欢 RoPE？"></a>Q9：为什么现代 LLM 更喜欢 RoPE？</h3><p>主要因为 RoPE：</p>
+<ul>
+<li>可以自然建模相对位置；</li>
+<li>不需要传统的位置 Embedding Table；</li>
+<li>额外参数很少；</li>
+<li>实现和 Attention 高度结合；</li>
+<li>对 Decoder-Only 架构非常适合；</li>
+<li>可以配合 Scaling 方法扩展上下文长度；</li>
+<li>实践中效果稳定。</li>
+</ul>
+<p>因此 LLaMA、Qwen、Mistral 等大量现代 LLM 都采用了 RoPE 或其变体。</p>
+<hr>
+<h1 id="Transformer-中的位置编码方法"><a href="#Transformer-中的位置编码方法" class="headerlink" title="Transformer 中的位置编码方法"></a>Transformer 中的位置编码方法</h1><h2 id="1-为什么需要位置编码？"><a href="#1-为什么需要位置编码？" class="headerlink" title="1. 为什么需要位置编码？"></a>1. 为什么需要位置编码？</h2><p>Transformer 的 Self-Attention 本身主要通过 Token 之间的内容相关性进行计算，它并不会天然感知序列中 Token 的先后顺序。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">我 喜欢 你</span><br><span class="line"></span><br><span class="line">你 喜欢 我</span><br></pre></td></tr></table></figure>
+
+<p>两句话包含完全相同的 Token，但顺序不同，语义也完全不同。</p>
+<p>因此 Transformer 需要额外加入：</p>
+<blockquote>
+<p><strong>Positional Information</strong></p>
+</blockquote>
+<p>使模型同时知道：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding：</span><br><span class="line">这个 Token 是什么</span><br><span class="line"></span><br><span class="line">Position Information：</span><br><span class="line">这个 Token 在哪里</span><br></pre></td></tr></table></figure>
+
+<p>常见位置编码方法可以分成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">绝对位置编码</span><br><span class="line">├── Sinusoidal Position Encoding</span><br><span class="line">└── Learned Position Embedding</span><br><span class="line"></span><br><span class="line">相对位置编码</span><br><span class="line">├── Relative Position Encoding</span><br><span class="line">├── T5 Relative Position Bias</span><br><span class="line">├── RoPE</span><br><span class="line">└── ALiBi</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="2-几种位置编码方法对比"><a href="#2-几种位置编码方法对比" class="headerlink" title="2. 几种位置编码方法对比"></a>2. 几种位置编码方法对比</h1><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>类型</th>
+<th>核心思想</th>
+<th>是否需要训练参数</th>
+<th>长度外推能力</th>
+<th>位置信息加入位置</th>
+<th>代表模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sinusoidal</td>
+<td>绝对位置</td>
+<td>用正弦、余弦函数表示位置</td>
+<td>❌</td>
+<td>较好</td>
+<td>Embedding</td>
+<td>原始 Transformer</td>
+</tr>
+<tr>
+<td>Learned Position Embedding</td>
+<td>绝对位置</td>
+<td>为每个位置学习一个向量</td>
+<td>✅</td>
+<td>较差</td>
+<td>Embedding</td>
+<td>BERT、GPT-2</td>
+</tr>
+<tr>
+<td>Relative Position Encoding</td>
+<td>相对位置</td>
+<td>建模 Token 之间的相对距离</td>
+<td>通常 ✅</td>
+<td>较好</td>
+<td>Attention</td>
+<td>Transformer-XL</td>
+</tr>
+<tr>
+<td>T5 Relative Position Bias</td>
+<td>相对位置</td>
+<td>在 Attention Score 中加入位置 Bias</td>
+<td>✅</td>
+<td>较好</td>
+<td>Attention Score</td>
+<td>T5</td>
+</tr>
+<tr>
+<td>RoPE</td>
+<td>相对位置思想</td>
+<td>旋转 Q、K 注入位置信息</td>
+<td>❌</td>
+<td>较好</td>
+<td>Q &#x2F; K</td>
+<td>LLaMA、Qwen、Mistral</td>
+</tr>
+<tr>
+<td>ALiBi</td>
+<td>相对位置偏置</td>
+<td>距离越远，Attention Score 惩罚越大</td>
+<td>❌</td>
+<td>很好</td>
+<td>Attention Score</td>
+<td>BLOOM</td>
+</tr>
+</tbody></table>
+<p>可以简单理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Sinusoidal：</span><br><span class="line">“我是第 5 个 Token”</span><br><span class="line"></span><br><span class="line">Learned Position：</span><br><span class="line">“模型自己学习第 5 个位置应该是什么表示”</span><br><span class="line"></span><br><span class="line">Relative Position：</span><br><span class="line">“我和另一个 Token 相距 3”</span><br><span class="line"></span><br><span class="line">RoPE：</span><br><span class="line">“把位置差编码进 Q、K 的旋转关系”</span><br><span class="line"></span><br><span class="line">ALiBi：</span><br><span class="line">“距离越远，Attention Score 越低”</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="3-Sinusoidal-Positional-Encoding"><a href="#3-Sinusoidal-Positional-Encoding" class="headerlink" title="3. Sinusoidal Positional Encoding"></a>3. Sinusoidal Positional Encoding</h1><h2 id="3-1-基本思想"><a href="#3-1-基本思想" class="headerlink" title="3.1 基本思想"></a>3.1 基本思想</h2><p>Sinusoidal Positional Encoding 是原始 Transformer 使用的位置编码。</p>
+<p>它使用不同频率的正弦和余弦函数来描述 Token 的位置。</p>
+<p>偶数维：</p>
+<p>$$
+PE(pos,2i) &#x3D;
+\sin
+\left(
+\frac{pos}
+{10000^{2i&#x2F;d_{model}}}
+\right)
+$$</p>
+<p>奇数维：</p>
+<p>$$
+PE(pos,2i+1) &#x3D;
+\cos
+\left(
+\frac{pos}
+{10000^{2i&#x2F;d_{model}}}
+\right)
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$pos$：Token 所在位置；</li>
+<li>$i$：位置向量的维度；</li>
+<li>$d_{model}$：模型隐藏维度。</li>
+</ul>
+<p>最终输入为：</p>
+<p>$$
+X &#x3D;
+TokenEmbedding
++
+PositionEncoding
+$$</p>
+<hr>
+<h2 id="3-2-实现机制"><a href="#3-2-实现机制" class="headerlink" title="3.2 实现机制"></a>3.2 实现机制</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding</span><br><span class="line">      +</span><br><span class="line">Sinusoidal Position Encoding</span><br><span class="line">      ↓</span><br><span class="line">Transformer</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Position 0 → PE0</span><br><span class="line">Position 1 → PE1</span><br><span class="line">Position 2 → PE2</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>每个位置都有一个唯一的正余弦向量。</p>
+<hr>
+<h2 id="3-3-优点"><a href="#3-3-优点" class="headerlink" title="3.3 优点"></a>3.3 优点</h2><ul>
+<li>不需要训练参数；</li>
+<li>实现简单；</li>
+<li>可以直接计算任意位置；</li>
+<li>理论上可以处理训练长度之外的位置；</li>
+<li>不同频率能够描述不同尺度的位置变化。</li>
+</ul>
+<h2 id="3-4-缺点"><a href="#3-4-缺点" class="headerlink" title="3.4 缺点"></a>3.4 缺点</h2><ul>
+<li>位置表示是人工设计的；</li>
+<li>不能根据数据自动学习；</li>
+<li>更偏向绝对位置；</li>
+<li>当前主流 Decoder-Only LLM 中已经不再常用。</li>
+</ul>
+<h2 id="3-5-代表模型"><a href="#3-5-代表模型" class="headerlink" title="3.5 代表模型"></a>3.5 代表模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Original Transformer</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="4-Learned-Positional-Embedding"><a href="#4-Learned-Positional-Embedding" class="headerlink" title="4. Learned Positional Embedding"></a>4. Learned Positional Embedding</h1><h2 id="4-1-基本思想"><a href="#4-1-基本思想" class="headerlink" title="4.1 基本思想"></a>4.1 基本思想</h2><p>Learned Position Embedding 的思路非常直接：</p>
+<blockquote>
+<p><strong>每一个位置都对应一个可训练的位置向量。</strong></p>
+</blockquote>
+<p>例如最大序列长度为 512：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Position 0   → PositionEmbedding[0]</span><br><span class="line">Position 1   → PositionEmbedding[1]</span><br><span class="line">...</span><br><span class="line">Position 511 → PositionEmbedding[511]</span><br></pre></td></tr></table></figure>
+
+<p>本质上与 Token Embedding 类似。</p>
+<hr>
+<h2 id="4-2-实现机制"><a href="#4-2-实现机制" class="headerlink" title="4.2 实现机制"></a>4.2 实现机制</h2><p>定义一个位置 Embedding 矩阵：</p>
+<p>$$
+P
+\in
+\mathbb{R}^{L_{max}\times d_{model}}
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$L_{max}$：最大序列长度；</li>
+<li>$d_{model}$：隐藏维度。</li>
+</ul>
+<p>第 $i$ 个 Token：</p>
+<p>$$
+X_i &#x3D;
+TokenEmbedding(x_i)
++
+PositionEmbedding(i)
+$$</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token “我”</span><br><span class="line">=</span><br><span class="line">TokenEmbedding(我)</span><br><span class="line">+</span><br><span class="line">PositionEmbedding(0)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-3-优点"><a href="#4-3-优点" class="headerlink" title="4.3 优点"></a>4.3 优点</h2><ul>
+<li>位置表示可以自动学习；</li>
+<li>实现简单；</li>
+<li>在固定上下文长度下效果通常较好；</li>
+<li>不需要人为设计位置函数。</li>
+</ul>
+<h2 id="4-4-缺点"><a href="#4-4-缺点" class="headerlink" title="4.4 缺点"></a>4.4 缺点</h2><p>最大问题：</p>
+<blockquote>
+<p><strong>长度外推能力较差。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">训练最大长度：</span><br><span class="line">512</span><br></pre></td></tr></table></figure>
+
+<p>模型只学过：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Position 0 ~ 511</span><br></pre></td></tr></table></figure>
+
+<p>超出这个长度的位置并没有经过训练。</p>
+<p>因此直接扩展到更长上下文比较困难。</p>
+<h2 id="4-5-代表模型"><a href="#4-5-代表模型" class="headerlink" title="4.5 代表模型"></a>4.5 代表模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BERT</span><br><span class="line">GPT-2</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="5-Relative-Positional-Encoding"><a href="#5-Relative-Positional-Encoding" class="headerlink" title="5. Relative Positional Encoding"></a>5. Relative Positional Encoding</h1><h2 id="5-1-基本思想"><a href="#5-1-基本思想" class="headerlink" title="5.1 基本思想"></a>5.1 基本思想</h2><p>Relative Position Encoding 不再重点关心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">这个 Token 是第几个</span><br></pre></td></tr></table></figure>
+
+<p>而是更加关注：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">这个 Token 和另一个 Token 相距多少</span><br></pre></td></tr></table></figure>
+
+<p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Token A：Position 5</span><br><span class="line">Token B：Position 8</span><br></pre></td></tr></table></figure>
+
+<p>则相对距离为：</p>
+<p>$$
+Relative(i,j) &#x3D;
+j-i
+$$</p>
+<p>所以：</p>
+<p>$$
+8-5&#x3D;3
+$$</p>
+<p>模型需要知道的是：</p>
+<blockquote>
+<p>Token B 在 Token A 后面 3 个位置。</p>
+</blockquote>
+<hr>
+<h2 id="5-2-实现机制"><a href="#5-2-实现机制" class="headerlink" title="5.2 实现机制"></a>5.2 实现机制</h2><p>一种典型方法是在 Attention Score 中加入相对位置项：</p>
+<p>$$
+AttentionScore_{ij} &#x3D;
+\frac{Q_iK_j^T}
+{\sqrt{d_k}}
++
+R_{i-j}
+$$</p>
+<p>其中：</p>
+<p>$$
+R_{i-j}
+$$</p>
+<p>表示 Token $i$ 与 Token $j$ 的相对位置关系。</p>
+<hr>
+<h2 id="5-3-优点"><a href="#5-3-优点" class="headerlink" title="5.3 优点"></a>5.3 优点</h2><ul>
+<li>直接表示 Token 间距离；</li>
+<li>更符合自然语言关系建模；</li>
+<li>对局部依赖和长距离依赖更加自然；</li>
+<li>长度泛化能力通常优于 Learned Position Embedding。</li>
+</ul>
+<h2 id="5-4-缺点"><a href="#5-4-缺点" class="headerlink" title="5.4 缺点"></a>5.4 缺点</h2><ul>
+<li>实现比绝对位置编码更复杂；</li>
+<li>可能增加额外参数和计算；</li>
+<li>不同模型实现方式差异较大。</li>
+</ul>
+<h2 id="5-5-代表模型"><a href="#5-5-代表模型" class="headerlink" title="5.5 代表模型"></a>5.5 代表模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Transformer-XL</span><br><span class="line">T5</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="6-T5-Relative-Position-Bias"><a href="#6-T5-Relative-Position-Bias" class="headerlink" title="6. T5 Relative Position Bias"></a>6. T5 Relative Position Bias</h1><p>T5 使用的是一种比较轻量的 Relative Position 方法。</p>
+<p>它不会直接把位置向量加入 Token Embedding，而是：</p>
+<blockquote>
+<p><strong>在 Attention Score 中加入一个位置相关的 Bias。</strong></p>
+</blockquote>
+<p>公式：</p>
+<p>$$
+Score_{ij} &#x3D;
+\frac{Q_iK_j^T}
+{\sqrt{d_k}}
++
+b_{Relative(i,j)}
+$$</p>
+<p>其中：</p>
+<p>$$
+b_{Relative(i,j)}
+$$</p>
+<p>是一个可学习的位置偏置。</p>
+<hr>
+<h2 id="6-1-Bucket-机制"><a href="#6-1-Bucket-机制" class="headerlink" title="6.1 Bucket 机制"></a>6.1 Bucket 机制</h2><p>T5 并不会为所有距离都学习不同参数。</p>
+<p>它会把不同距离划分到多个 Bucket：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">距离 1</span><br><span class="line">→ Bucket 1</span><br><span class="line"></span><br><span class="line">距离 2</span><br><span class="line">→ Bucket 2</span><br><span class="line"></span><br><span class="line">距离 3~4</span><br><span class="line">→ Bucket 3</span><br><span class="line"></span><br><span class="line">距离 5~8</span><br><span class="line">→ Bucket 4</span><br><span class="line"></span><br><span class="line">更远距离</span><br><span class="line">→ 更大的 Bucket</span><br></pre></td></tr></table></figure>
+
+<p>核心思想：</p>
+<blockquote>
+<p><strong>近距离位置关系需要更精细，远距离位置关系可以更粗略。</strong></p>
+</blockquote>
+<p>因为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">距离 1 和距离 2</span><br><span class="line">通常差异比较重要</span><br><span class="line"></span><br><span class="line">距离 100 和距离 101</span><br><span class="line">通常差异没那么重要</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-RoPE：Rotary-Position-Embedding"><a href="#7-RoPE：Rotary-Position-Embedding" class="headerlink" title="7. RoPE：Rotary Position Embedding"></a>7. RoPE：Rotary Position Embedding</h1><h2 id="7-1-基本思想"><a href="#7-1-基本思想" class="headerlink" title="7.1 基本思想"></a>7.1 基本思想</h2><p>RoPE 全称：</p>
+<blockquote>
+<p><strong>Rotary Position Embedding，旋转位置编码。</strong></p>
+</blockquote>
+<p>它是当前 Decoder-Only LLM 中非常常见的位置编码方法。</p>
+<p>传统方法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding</span><br><span class="line">+</span><br><span class="line">Position Embedding</span><br></pre></td></tr></table></figure>
+
+<p>而 RoPE：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Q → 位置旋转</span><br><span class="line">K → 位置旋转</span><br></pre></td></tr></table></figure>
+
+<p>也就是说：</p>
+<blockquote>
+<p><strong>RoPE 不直接修改 Token Embedding，而是把位置信息加入 Attention 的 Q 和 K。</strong></p>
+</blockquote>
+<hr>
+<h2 id="7-2-旋转矩阵"><a href="#7-2-旋转矩阵" class="headerlink" title="7.2 旋转矩阵"></a>7.2 旋转矩阵</h2><p>二维旋转矩阵为：</p>
+<p>$$
+R_{\theta} &#x3D;
+\begin{bmatrix}
+\cos\theta &amp; -\sin\theta \
+\sin\theta &amp; \cos\theta
+\end{bmatrix}
+$$</p>
+<p>RoPE 会将 Q 和 K 的维度两两组合，并根据当前位置应用不同角度的旋转。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Position 1</span><br><span class="line">→ 旋转 θ</span><br><span class="line"></span><br><span class="line">Position 2</span><br><span class="line">→ 旋转 2θ</span><br><span class="line"></span><br><span class="line">Position 3</span><br><span class="line">→ 旋转 3θ</span><br></pre></td></tr></table></figure>
+
+<p>对于位置 $m$：</p>
+<p>$$
+Q_m’ &#x3D;
+R_mQ_m
+$$</p>
+<p>对于位置 $n$：</p>
+<p>$$
+K_n’ &#x3D;
+R_nK_n
+$$</p>
+<hr>
+<h2 id="7-3-为什么-RoPE-可以表示相对位置？"><a href="#7-3-为什么-RoPE-可以表示相对位置？" class="headerlink" title="7.3 为什么 RoPE 可以表示相对位置？"></a>7.3 为什么 RoPE 可以表示相对位置？</h2><p>计算旋转后的内积：</p>
+<p>$$
+(Q_m’)^T K_n’
+$$</p>
+<p>代入后：</p>
+<p>$$
+(R_mQ_m)^T(R_nK_n)
+$$</p>
+<p>得到：</p>
+<p>$$
+Q_m^T
+R_m^T
+R_n
+K_n
+$$</p>
+<p>而：</p>
+<p>$$
+R_m^T R_n &#x3D;
+R_{n-m}
+$$</p>
+<p>因此最终 Attention 与：</p>
+<p>$$
+n-m
+$$</p>
+<p>有关。</p>
+<p>也就是：</p>
+<blockquote>
+<p><strong>两个 Token 的相对位置差。</strong></p>
+</blockquote>
+<p>这是 RoPE 最核心的原理。</p>
+<hr>
+<h2 id="7-4-实现流程"><a href="#7-4-实现流程" class="headerlink" title="7.4 实现流程"></a>7.4 实现流程</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Hidden State</span><br><span class="line">      ↓</span><br><span class="line">生成 Q、K、V</span><br><span class="line">      ↓</span><br><span class="line">对 Q、K 应用 RoPE</span><br><span class="line">      ↓</span><br><span class="line">计算 QKᵀ</span><br><span class="line">      ↓</span><br><span class="line">Attention</span><br></pre></td></tr></table></figure>
+
+<p>注意：</p>
+<blockquote>
+<p><strong>RoPE 通常只作用于 Q 和 K，不作用于 V。</strong></p>
+</blockquote>
+<hr>
+<h2 id="7-5-为什么不旋转-V？"><a href="#7-5-为什么不旋转-V？" class="headerlink" title="7.5 为什么不旋转 V？"></a>7.5 为什么不旋转 V？</h2><p>因为 Attention Score 来自：</p>
+<p>$$
+QK^T
+$$</p>
+<p>位置信息需要影响的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">当前 Token</span><br><span class="line">应该关注哪个 Token</span><br></pre></td></tr></table></figure>
+
+<p>所以只需要通过 Q 和 K 改变：</p>
+<blockquote>
+<p>Attention 权重。</p>
+</blockquote>
+<p>而 V 主要承担：</p>
+<blockquote>
+<p>真正需要被加权汇聚的信息。</p>
+</blockquote>
+<p>因此通常不需要进行旋转。</p>
+<hr>
+<h2 id="7-6-优点"><a href="#7-6-优点" class="headerlink" title="7.6 优点"></a>7.6 优点</h2><ul>
+<li>自然表示相对位置；</li>
+<li>不需要传统 Learned Position Embedding；</li>
+<li>与 Attention 结构结合紧密；</li>
+<li>参数开销小；</li>
+<li>计算开销较低；</li>
+<li>长上下文效果较好；</li>
+<li>可以配合 RoPE Scaling 扩展上下文长度。</li>
+</ul>
+<h2 id="7-7-缺点"><a href="#7-7-缺点" class="headerlink" title="7.7 缺点"></a>7.7 缺点</h2><ul>
+<li>超出训练长度过多时仍可能退化；</li>
+<li>长上下文通常还需要额外 Scaling；</li>
+<li>相比传统 Position Embedding，实现稍复杂。</li>
+</ul>
+<h2 id="7-8-代表模型"><a href="#7-8-代表模型" class="headerlink" title="7.8 代表模型"></a>7.8 代表模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LLaMA</span><br><span class="line">Qwen</span><br><span class="line">Mistral</span><br><span class="line">以及大量现代 Decoder-Only LLM</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="8-ALiBi"><a href="#8-ALiBi" class="headerlink" title="8. ALiBi"></a>8. ALiBi</h1><h2 id="8-1-基本思想"><a href="#8-1-基本思想" class="headerlink" title="8.1 基本思想"></a>8.1 基本思想</h2><p>ALiBi 全称：</p>
+<blockquote>
+<p><strong>Attention with Linear Biases</strong></p>
+</blockquote>
+<p>它甚至不需要显式的位置 Embedding。</p>
+<p>核心思想：</p>
+<blockquote>
+<p><strong>两个 Token 距离越远，就给它们的 Attention Score 越大的负偏置。</strong></p>
+</blockquote>
+<hr>
+<h2 id="8-2-实现机制"><a href="#8-2-实现机制" class="headerlink" title="8.2 实现机制"></a>8.2 实现机制</h2><p>普通 Attention Score：</p>
+<p>$$
+Score_{ij} &#x3D;
+\frac{Q_iK_j^T}
+{\sqrt{d_k}}
+$$</p>
+<p>ALiBi：</p>
+<p>$$
+Score_{ij} &#x3D;
+\frac{Q_iK_j^T}
+{\sqrt{d_k}} -
+m|i-j|
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$|i-j|$：两个 Token 的位置距离；</li>
+<li>$m$：该 Attention Head 对应的斜率。</li>
+</ul>
+<hr>
+<h2 id="8-3-示例"><a href="#8-3-示例" class="headerlink" title="8.3 示例"></a>8.3 示例</h2><p>假设：</p>
+<p>$$
+m&#x3D;0.1
+$$</p>
+<p>那么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">距离 1</span><br><span class="line">→ -0.1</span><br><span class="line"></span><br><span class="line">距离 5</span><br><span class="line">→ -0.5</span><br><span class="line"></span><br><span class="line">距离 10</span><br><span class="line">→ -1.0</span><br></pre></td></tr></table></figure>
+
+<p>随着距离增加：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">负偏置越来越大</span><br><span class="line">      ↓</span><br><span class="line">Attention Score 越来越低</span><br></pre></td></tr></table></figure>
+
+<p>因此模型天然更倾向于关注较近的 Token。</p>
+<hr>
+<h2 id="8-4-优点"><a href="#8-4-优点" class="headerlink" title="8.4 优点"></a>8.4 优点</h2><ul>
+<li>实现非常简单；</li>
+<li>不需要 Position Embedding；</li>
+<li>几乎不增加参数；</li>
+<li>长度外推能力较好；</li>
+<li>可以比较自然地扩展到更长序列。</li>
+</ul>
+<h2 id="8-5-缺点"><a href="#8-5-缺点" class="headerlink" title="8.5 缺点"></a>8.5 缺点</h2><ul>
+<li>位置表达形式较简单；</li>
+<li>主要使用线性距离惩罚；</li>
+<li>灵活性不如 RoPE；</li>
+<li>当前主流 LLM 使用范围低于 RoPE。</li>
+</ul>
+<h2 id="8-6-代表模型"><a href="#8-6-代表模型" class="headerlink" title="8.6 代表模型"></a>8.6 代表模型</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BLOOM</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="9-几种位置编码到底加在哪里？"><a href="#9-几种位置编码到底加在哪里？" class="headerlink" title="9. 几种位置编码到底加在哪里？"></a>9. 几种位置编码到底加在哪里？</h1><p>这是非常适合面试记忆的一个对比。</p>
+<h2 id="Sinusoidal"><a href="#Sinusoidal" class="headerlink" title="Sinusoidal"></a>Sinusoidal</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding</span><br><span class="line">      +</span><br><span class="line">Position Encoding</span><br></pre></td></tr></table></figure>
+
+<h2 id="Learned-Position"><a href="#Learned-Position" class="headerlink" title="Learned Position"></a>Learned Position</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Token Embedding</span><br><span class="line">      +</span><br><span class="line">Learned Position Embedding</span><br></pre></td></tr></table></figure>
+
+<h2 id="Relative-Position"><a href="#Relative-Position" class="headerlink" title="Relative Position"></a>Relative Position</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Attention</span><br><span class="line">+</span><br><span class="line">Relative Position Information</span><br></pre></td></tr></table></figure>
+
+<h2 id="T5-Relative-Position-Bias"><a href="#T5-Relative-Position-Bias" class="headerlink" title="T5 Relative Position Bias"></a>T5 Relative Position Bias</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Attention Score</span><br><span class="line">      +</span><br><span class="line">Position Bias</span><br></pre></td></tr></table></figure>
+
+<h2 id="RoPE"><a href="#RoPE" class="headerlink" title="RoPE"></a>RoPE</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Q / K</span><br><span class="line"> ↓</span><br><span class="line">Position Rotation</span><br><span class="line"> ↓</span><br><span class="line">Attention</span><br></pre></td></tr></table></figure>
+
+<h2 id="ALiBi"><a href="#ALiBi" class="headerlink" title="ALiBi"></a>ALiBi</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Attention Score</span><br><span class="line">      +</span><br><span class="line">Linear Distance Bias</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="10-完整对比表"><a href="#10-完整对比表" class="headerlink" title="10. 完整对比表"></a>10. 完整对比表</h1><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Sinusoidal</th>
+<th>Learned Position</th>
+<th>Relative Position</th>
+<th>RoPE</th>
+<th>ALiBi</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类型</td>
+<td>绝对</td>
+<td>绝对</td>
+<td>相对</td>
+<td>相对位置思想</td>
+<td>相对</td>
+</tr>
+<tr>
+<td>是否学习参数</td>
+<td>❌</td>
+<td>✅</td>
+<td>通常 ✅</td>
+<td>通常 ❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>加入位置</td>
+<td>Embedding</td>
+<td>Embedding</td>
+<td>Attention</td>
+<td>Q &#x2F; K</td>
+<td>Attention Score</td>
+</tr>
+<tr>
+<td>修改 Token Embedding</td>
+<td>✅</td>
+<td>✅</td>
+<td>通常 ❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>能否表示相对距离</td>
+<td>间接</td>
+<td>较弱</td>
+<td>✅</td>
+<td><strong>✅</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>长度外推</td>
+<td>一般&#x2F;较好</td>
+<td>较差</td>
+<td>较好</td>
+<td><strong>较好</strong></td>
+<td><strong>很好</strong></td>
+</tr>
+<tr>
+<td>参数量</td>
+<td>0</td>
+<td>有</td>
+<td>通常有</td>
+<td>极少 &#x2F; 0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>实现复杂度</td>
+<td>低</td>
+<td>最低</td>
+<td>中</td>
+<td>中</td>
+<td>低</td>
+</tr>
+<tr>
+<td>长上下文能力</td>
+<td>一般</td>
+<td>较差</td>
+<td>较好</td>
+<td><strong>很好</strong></td>
+<td><strong>很好</strong></td>
+</tr>
+<tr>
+<td>当前 LLM 常见程度</td>
+<td>较少</td>
+<td>较少</td>
+<td>部分</td>
+<td><strong>非常常见</strong></td>
+<td>部分</td>
+</tr>
+<tr>
+<td>代表模型</td>
+<td>Transformer</td>
+<td>BERT &#x2F; GPT-2</td>
+<td>Transformer-XL &#x2F; T5</td>
+<td>LLaMA &#x2F; Qwen &#x2F; Mistral</td>
+<td>BLOOM</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="11-最后总结"><a href="#11-最后总结" class="headerlink" title="11. 最后总结"></a>11. 最后总结</h1><p>位置编码的发展趋势可以理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">最早：</span><br><span class="line"></span><br><span class="line">直接告诉模型</span><br><span class="line">“这个 Token 在第几个位置”</span><br><span class="line"></span><br><span class="line">Sinusoidal</span><br><span class="line">Learned Position</span><br><span class="line">      ↓</span><br><span class="line"></span><br><span class="line">后来：</span><br><span class="line"></span><br><span class="line">告诉模型</span><br><span class="line">“两个 Token 之间是什么位置关系”</span><br><span class="line"></span><br><span class="line">Relative Position</span><br><span class="line">      ↓</span><br><span class="line"></span><br><span class="line">现代 LLM：</span><br><span class="line"></span><br><span class="line">直接把位置关系融入 Attention</span><br><span class="line"></span><br><span class="line">RoPE</span><br><span class="line">ALiBi</span><br></pre></td></tr></table></figure>
+
+<p>其中最值得重点掌握的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Sinusoidal</span><br><span class="line">→ 原始 Transformer</span><br><span class="line"></span><br><span class="line">Learned Position</span><br><span class="line">→ BERT / GPT-2</span><br><span class="line"></span><br><span class="line">T5 Relative Bias</span><br><span class="line">→ Attention Score 加位置 Bias</span><br><span class="line"></span><br><span class="line">RoPE</span><br><span class="line">→ 旋转 Q/K</span><br><span class="line">→ 当前大模型高频</span><br><span class="line"></span><br><span class="line">ALiBi</span><br><span class="line">→ Attention Score 加距离惩罚</span><br><span class="line">→ 外推能力强</span><br></pre></td></tr></table></figure>
+
+<p>最终一句话：</p>
+<blockquote>
+<p><strong>Transformer 的位置编码从显式绝对位置逐渐发展到直接建模相对位置关系；现代大语言模型更倾向于把位置信息直接融入 Attention，其中 RoPE 是当前非常主流的位置编码方案。</strong></p>
+</blockquote>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-14T11:45:23.515Z" itemprop="dateModified">最后编辑：2026-09-14</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" happy-llm第二章Transformer架构的阅读笔记" href="/2026/09/14/Happy-LLM_第二章_Transformer架构/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第五章动手搭建大模型的阅读笔记" href="/2026/09/15/Happy-LLM_第五章_动手搭建大模型/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

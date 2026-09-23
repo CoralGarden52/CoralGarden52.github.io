@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>happy-llm第六章：大模型训练流程实践的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="面试速记 基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理，并补充 LoRA、PEFT、ZeRO、Prefix Tuning 与 FFN 投影层等面试高频知识。  背诵版总结 Transformers 负责模型、Tokenizer、Trainer 等训练主流程；DeepSpeed 负责大模型分布式与显存优化；PEFT 负责参数高效微调。 ZeRO-1 &#x2F; 2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="happy-llm第六章：大模型训练流程实践的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记 基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理，并补充 LoRA、PEFT、ZeRO、Prefix Tuning 与 FFN 投影层等面试高频知识。  背诵版总结 Transformers 负责模型、Tokenizer、Trainer 等训练主流程；DeepSpeed 负责大模型分布式与显存优化；PEFT 负责参数高效微调。 ZeRO-1 &#x2F; 2">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-6.png">
+<meta property="article:published_time" content="2026-09-15T14:00:00.323Z">
+<meta property="article:modified_time" content="2026-09-15T14:08:40.579Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-6.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"happy-llm第六章：大模型训练流程实践的阅读笔记","description":"面试速记\n基于 Datawhale《Happy-LLM》第六章 大模型训练流程实践 整理...","image":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/assets/posts/happy-llm/happy-llm-6.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-15T14:00:00.323Z","dateModified":"2026-09-15T14:08:40.579Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">happy-llm第六章：大模型训练流程实践的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-15T14:00:00.323Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-15</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~12.68K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><blockquote>
+<p>基于 Datawhale《Happy-LLM》第六章 <strong>大模型训练流程实践</strong> 整理，并补充 LoRA、PEFT、ZeRO、Prefix Tuning 与 FFN 投影层等面试高频知识。</p>
+</blockquote>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><ol>
+<li><strong>Transformers</strong> 负责模型、Tokenizer、Trainer 等训练主流程；<strong>DeepSpeed</strong> 负责大模型分布式与显存优化；<strong>PEFT</strong> 负责参数高效微调。</li>
+<li><strong>ZeRO-1 &#x2F; 2 &#x2F; 3</strong> 依次分片：Optimizer State → + Gradient → + Parameter。</li>
+<li><strong>SFT</strong> 与 Pretrain 都可使用 CLM，但 SFT 用指令数据，通常主要对 Assistant 回答区域计算 Loss。</li>
+<li><strong>LoRA</strong> 冻结原权重，只训练低秩更新：</li>
+</ol>
+<p>$$
+W &#x3D;
+W_0
++
+BA
+$$</p>
+<ol start="5">
+<li><code>target_modules</code> 决定 LoRA 插在哪些层。经典配置：</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><code>q_proj</code> 生成 Query，<code>v_proj</code> 生成 Value。经典 LoRA 实验表明 Q&#x2F;V 是一个很好的性能—参数量折中，但不是所有任务固定最优。</li>
+<li>如果注意力之外也要适配，可加入：</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gate_proj</span><br><span class="line">up_proj</span><br><span class="line">down_proj</span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>LLaMA 类 FFN 常用 SwiGLU：</li>
+</ol>
+<p>$$
+FFN(x) &#x3D;
+W_{down}
+\left(
+SiLU(W_{gate}x)
+\odot
+W_{up}x
+\right)
+$$</p>
+<ol start="9">
+<li><code>gate_proj</code> 是 FFN 的门控分支；<code>up_proj</code> 升到中间维度；<code>down_proj</code> 再投影回 Hidden Size。</li>
+<li><strong>SiLU</strong>：</li>
+</ol>
+<p>$$
+SiLU(x) &#x3D;
+x\sigma(x)
+$$</p>
+<p>   <strong>GELU</strong>：</p>
+<p>$$
+GELU(x) &#x3D;
+x\Phi(x)
+$$</p>
+<ol start="11">
+<li><strong>Prefix Tuning</strong> 冻结基础模型，只训练连续 Prefix；这些 Prefix 会注入各层 Attention 的 K&#x2F;V，而不仅仅是第一层输入。</li>
+<li><code>logging</code> 设置为 <code>INFO</code> 后，会输出 <code>INFO/WARNING/ERROR/CRITICAL</code>，而过滤 <code>DEBUG</code>。</li>
+</ol>
+<p>一句话：</p>
+<blockquote>
+<p><strong>第六章的重点是工业级 LLM 训练：Transformers&#x2F;Trainer 管训练流程，DeepSpeed&#x2F;ZeRO 解决多卡和显存，PEFT&#x2F;LoRA&#x2F;Prefix Tuning 解决低成本下游适配。</strong></p>
+</blockquote>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><h3 id="1-第六章主要讲什么？"><a href="#1-第六章主要讲什么？" class="headerlink" title="1. 第六章主要讲什么？"></a>1. 第六章主要讲什么？</h3><blockquote>
+<p>第六章从手写 LLM 过渡到工业级训练框架。使用 Hugging Face Transformers 加载模型、Tokenizer 和 Trainer，通过 DeepSpeed&#x2F;ZeRO 做多卡分布式训练与显存优化，再使用 PEFT 中的 LoRA、Prefix Tuning 等方法做参数高效微调。</p>
+</blockquote>
+<h3 id="2-LoRA-是怎么实现的？"><a href="#2-LoRA-是怎么实现的？" class="headerlink" title="2. LoRA 是怎么实现的？"></a>2. LoRA 是怎么实现的？</h3><blockquote>
+<p>LoRA 假设下游任务真正需要的权重更新具有较低秩，因此不训练完整权重矩阵，而是在目标层旁边增加两个低秩矩阵 A、B。原模型权重冻结，只更新 A、B。通过 target_modules 指定 LoRA 插入 q_proj、v_proj 或 FFN 等哪些层。</p>
+</blockquote>
+<h3 id="3-为什么经典-LoRA-经常选-q-proj-和-v-proj？"><a href="#3-为什么经典-LoRA-经常选-q-proj-和-v-proj？" class="headerlink" title="3. 为什么经典 LoRA 经常选 q_proj 和 v_proj？"></a>3. 为什么经典 LoRA 经常选 q_proj 和 v_proj？</h3><blockquote>
+<p>q_proj 改变模型“如何发起查询”，v_proj 改变被注意到的位置“实际提供什么信息”。原始 LoRA 的消融实验表明，对 Query 和 Value 投影做适配具有很好的参数效率和性能折中，因此成为经典配置。但现代复杂任务中也常同时适配 Q&#x2F;K&#x2F;V&#x2F;O 和 FFN。</p>
+</blockquote>
+<h3 id="4-Prefix-Tuning-怎么实现？"><a href="#4-Prefix-Tuning-怎么实现？" class="headerlink" title="4. Prefix Tuning 怎么实现？"></a>4. Prefix Tuning 怎么实现？</h3><blockquote>
+<p>Prefix Tuning 冻结基础模型，为每个任务学习连续的 Virtual Prefix。与 Prompt Tuning 只在第一层输入前增加 Soft Prompt 不同，Prefix Tuning 会把 Prefix 转换为各层 Attention 可使用的 K&#x2F;V 前缀，让真实 Token 的 Query 同时关注 Prefix KV 和真实上下文 KV。</p>
+</blockquote>
+<hr>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="Q1：ZeRO-1、ZeRO-2、ZeRO-3-有什么区别？"><a href="#Q1：ZeRO-1、ZeRO-2、ZeRO-3-有什么区别？" class="headerlink" title="Q1：ZeRO-1、ZeRO-2、ZeRO-3 有什么区别？"></a>Q1：ZeRO-1、ZeRO-2、ZeRO-3 有什么区别？</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>Optimizer State</th>
+<th>Gradient</th>
+<th>Parameter</th>
+<th>单卡显存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ZeRO-1</td>
+<td>分片</td>
+<td>完整&#x2F;同步</td>
+<td>完整</td>
+<td>↓</td>
+</tr>
+<tr>
+<td>ZeRO-2</td>
+<td>分片</td>
+<td><strong>分片</strong></td>
+<td>完整</td>
+<td>↓↓</td>
+</tr>
+<tr>
+<td>ZeRO-3</td>
+<td>分片</td>
+<td>分片</td>
+<td><strong>分片</strong></td>
+<td>↓↓↓</td>
+</tr>
+</tbody></table>
+<p>记忆：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ZeRO-1：切优化器状态</span><br><span class="line">ZeRO-2：再切梯度</span><br><span class="line">ZeRO-3：再切参数</span><br></pre></td></tr></table></figure>
+
+<p>阶段越高，显存越低，但通信复杂度越高。</p>
+<hr>
+<h3 id="Q2：logging-设置成-INFO，“只输出该级别及以上”是什么意思？"><a href="#Q2：logging-设置成-INFO，“只输出该级别及以上”是什么意思？" class="headerlink" title="Q2：logging 设置成 INFO，“只输出该级别及以上”是什么意思？"></a>Q2：<code>logging</code> 设置成 INFO，“只输出该级别及以上”是什么意思？</h3><p>日志等级：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DEBUG &lt; INFO &lt; WARNING &lt; ERROR &lt; CRITICAL</span><br></pre></td></tr></table></figure>
+
+<p>如果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logger.setLevel(logging.INFO)</span><br></pre></td></tr></table></figure>
+
+<p>则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">DEBUG      → 不输出</span><br><span class="line">INFO       → 输出</span><br><span class="line">WARNING    → 输出</span><br><span class="line">ERROR      → 输出</span><br><span class="line">CRITICAL   → 输出</span><br></pre></td></tr></table></figure>
+
+<p>这里的“以上”指的是<strong>严重程度等级更高</strong>，不是代码位置更高。</p>
+<hr>
+<h3 id="Q3：target-modules-是什么？"><a href="#Q3：target-modules-是什么？" class="headerlink" title="Q3：target_modules 是什么？"></a>Q3：<code>target_modules</code> 是什么？</h3><p>它告诉 PEFT：</p>
+<blockquote>
+<p><strong>在哪些原模型层上插入 LoRA Adapter。</strong></p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>表示遍历模型，找到各层的 Query Projection 和 Value Projection，在这些层上加入低秩更新。</p>
+<hr>
+<h3 id="Q4：为什么还需要指定-q-proj、v-proj？"><a href="#Q4：为什么还需要指定-q-proj、v-proj？" class="headerlink" title="Q4：为什么还需要指定 q_proj、v_proj？"></a>Q4：为什么还需要指定 <code>q_proj</code>、<code>v_proj</code>？</h3><p>因为 LoRA 不应该默认在所有层都插入。</p>
+<p>LoRA 的目标是：</p>
+<blockquote>
+<p><strong>用尽可能少的可训练参数获得足够强的任务适配能力。</strong></p>
+</blockquote>
+<p>只用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>参数少。</p>
+<p>如果使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;k_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;o_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;gate_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;up_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;down_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>适配能力更强，但训练参数、显存和 Adapter 大小都会增加。</p>
+<hr>
+<h3 id="Q5：q-proj、k-proj、v-proj、o-proj-分别是什么？"><a href="#Q5：q-proj、k-proj、v-proj、o-proj-分别是什么？" class="headerlink" title="Q5：q_proj、k_proj、v_proj、o_proj 分别是什么？"></a>Q5：q_proj、k_proj、v_proj、o_proj 分别是什么？</h3><p>$$
+Q &#x3D;
+XW_Q
+$$</p>
+<p>$$
+K &#x3D;
+XW_K
+$$</p>
+<p>$$
+V &#x3D;
+XW_V
+$$</p>
+<p>$$
+Attention(Q,K,V) &#x3D;
+Softmax
+\left(
+\frac{QK^T}{\sqrt{d_k}}
+\right)V
+$$</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>q_proj</code></td>
+<td>生成 Query：我要找什么</td>
+</tr>
+<tr>
+<td><code>k_proj</code></td>
+<td>生成 Key：我可以怎样被匹配</td>
+</tr>
+<tr>
+<td><code>v_proj</code></td>
+<td>生成 Value：真正提供什么信息</td>
+</tr>
+<tr>
+<td><code>o_proj</code></td>
+<td>把 Attention 输出投影回 Hidden Size</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="Q6：为什么经典-LoRA-常选-q-proj-v-proj？"><a href="#Q6：为什么经典-LoRA-常选-q-proj-v-proj？" class="headerlink" title="Q6：为什么经典 LoRA 常选 q_proj + v_proj？"></a>Q6：为什么经典 LoRA 常选 <code>q_proj + v_proj</code>？</h3><p>经典 LoRA 实验发现 Q&#x2F;V 是一个很好的性能—参数量折中。</p>
+<p>功能上：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">q_proj</span><br><span class="line">→ 改变“怎么查询”</span><br><span class="line"></span><br><span class="line">v_proj</span><br><span class="line">→ 改变“取回什么内容”</span><br></pre></td></tr></table></figure>
+
+<p>但不要理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">k_proj / o_proj 没作用</span><br></pre></td></tr></table></figure>
+
+<p>现代训练中经常适配：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Q + K + V + O</span><br></pre></td></tr></table></figure>
+
+<p>甚至所有 Linear 层。</p>
+<hr>
+<h3 id="Q7：为什么要加入-gate-proj、up-proj、down-proj？"><a href="#Q7：为什么要加入-gate-proj、up-proj、down-proj？" class="headerlink" title="Q7：为什么要加入 gate_proj、up_proj、down_proj？"></a>Q7：为什么要加入 <code>gate_proj</code>、<code>up_proj</code>、<code>down_proj</code>？</h3><p>只适配 Attention：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">主要改变 Token 之间如何交换信息</span><br></pre></td></tr></table></figure>
+
+<p>同时适配 FFN：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">还能改变每个 Token 的内部特征加工方式</span><br></pre></td></tr></table></figure>
+
+<p>因此复杂任务中常见：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;k_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;o_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;gate_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;up_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;down_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q8：gate-proj-在哪里用？"><a href="#Q8：gate-proj-在哪里用？" class="headerlink" title="Q8：gate_proj 在哪里用？"></a>Q8：<code>gate_proj</code> 在哪里用？</h3><p><code>gate_proj</code> 位于 LLaMA 类 Transformer Block 的 <strong>FFN &#x2F; MLP</strong> 中。</p>
+<p>流程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Hidden x</span><br><span class="line">├── gate_proj → SiLU ─┐</span><br><span class="line">│                     ×</span><br><span class="line">└── up_proj ──────────┘</span><br><span class="line">                      ↓</span><br><span class="line">                  down_proj</span><br><span class="line">                      ↓</span><br><span class="line">                    Output</span><br></pre></td></tr></table></figure>
+
+<p>数学形式：</p>
+<p>$$
+g &#x3D;
+SiLU(W_{gate}x)
+$$</p>
+<p>$$
+u &#x3D;
+W_{up}x
+$$</p>
+<p>$$
+h &#x3D;
+g
+\odot
+u
+$$</p>
+<p>$$
+FFN(x) &#x3D;
+W_{down}h
+$$</p>
+<p><code>gate_proj</code> 的作用：</p>
+<blockquote>
+<p><strong>产生门控分支，控制 up_proj 产生的中间特征哪些被增强或抑制。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q9：up-proj-和-down-proj-是什么？"><a href="#Q9：up-proj-和-down-proj-是什么？" class="headerlink" title="Q9：up_proj 和 down_proj 是什么？"></a>Q9：<code>up_proj</code> 和 <code>down_proj</code> 是什么？</h3><p>在 LLaMA FFN 中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">up_proj：</span><br><span class="line">hidden_size</span><br><span class="line">→ intermediate_size</span><br><span class="line"></span><br><span class="line">gate_proj：</span><br><span class="line">hidden_size</span><br><span class="line">→ intermediate_size</span><br><span class="line"></span><br><span class="line">down_proj：</span><br><span class="line">intermediate_size</span><br><span class="line">→ hidden_size</span><br></pre></td></tr></table></figure>
+
+<p>即：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">先升维</span><br><span class="line">再降维</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="Q10：这和-Adapter-的-down-project-up-project-一样吗？"><a href="#Q10：这和-Adapter-的-down-project-up-project-一样吗？" class="headerlink" title="Q10：这和 Adapter 的 down-project &#x2F; up-project 一样吗？"></a>Q10：这和 Adapter 的 down-project &#x2F; up-project 一样吗？</h3><p><strong>不一样。</strong></p>
+<h4 id="LLaMA-FFN"><a href="#LLaMA-FFN" class="headerlink" title="LLaMA FFN"></a>LLaMA FFN</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hidden</span><br><span class="line">→ gate_proj / up_proj</span><br><span class="line">→ 更大的 intermediate</span><br><span class="line">→ down_proj</span><br><span class="line">→ hidden</span><br></pre></td></tr></table></figure>
+
+<h4 id="Bottleneck-Adapter"><a href="#Bottleneck-Adapter" class="headerlink" title="Bottleneck Adapter"></a>Bottleneck Adapter</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hidden</span><br><span class="line">→ down-project</span><br><span class="line">→ 更小 bottleneck</span><br><span class="line">→ activation</span><br><span class="line">→ up-project</span><br><span class="line">→ hidden</span><br></pre></td></tr></table></figure>
+
+<p>所以：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LLaMA FFN：先升维，再降维</span><br><span class="line">Adapter：先降维，再升维</span><br></pre></td></tr></table></figure>
+
+<p>名称类似，但结构完全不同。</p>
+<hr>
+<h3 id="Q11：SiLU-与-GELU-的区别？"><a href="#Q11：SiLU-与-GELU-的区别？" class="headerlink" title="Q11：SiLU 与 GELU 的区别？"></a>Q11：SiLU 与 GELU 的区别？</h3><h4 id="SiLU"><a href="#SiLU" class="headerlink" title="SiLU"></a>SiLU</h4><p>$$
+SiLU(x) &#x3D;
+x
+\cdot
+\sigma(x)
+$$</p>
+<p>其中：</p>
+<p>$$
+\sigma(x) &#x3D;
+\frac{1}{1+e^{-x}}
+$$</p>
+<p>特点：</p>
+<ul>
+<li>平滑；</li>
+<li>允许负值；</li>
+<li>有连续门控效果；</li>
+<li>常与 GLU 结合形成 SwiGLU；</li>
+<li>LLaMA 类模型常用。</li>
+</ul>
+<h4 id="GELU"><a href="#GELU" class="headerlink" title="GELU"></a>GELU</h4><p>$$
+GELU(x) &#x3D;
+x
+\Phi(x)
+$$</p>
+<p>其中：</p>
+<p>$$
+\Phi(x)
+$$</p>
+<p>是标准高斯分布 CDF。</p>
+<p>近似：</p>
+<p>$$
+GELU(x)
+\approx
+0.5x
+\left[
+1+
+\tanh
+\left(
+\sqrt{\frac{2}{\pi}}
+\left(
+x+0.044715x^3
+\right)
+\right)
+\right]
+$$</p>
+<p>常见于 BERT、GPT-2 等模型。</p>
+<hr>
+<h3 id="Q12：SiLU-与-GELU-对比表"><a href="#Q12：SiLU-与-GELU-对比表" class="headerlink" title="Q12：SiLU 与 GELU 对比表"></a>Q12：SiLU 与 GELU 对比表</h3><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>SiLU</th>
+<th>GELU</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公式核心</td>
+<td>(x\sigma(x))</td>
+<td>(x\Phi(x))</td>
+</tr>
+<tr>
+<td>基于</td>
+<td>Sigmoid</td>
+<td>Gaussian CDF</td>
+</tr>
+<tr>
+<td>平滑</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>可输出负值</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>常见组合</td>
+<td>SwiGLU</td>
+<td>标准 FFN &#x2F; GeGLU</td>
+</tr>
+<tr>
+<td>常见模型</td>
+<td>LLaMA 类</td>
+<td>BERT、GPT-2 等</td>
+</tr>
+<tr>
+<td>直观理解</td>
+<td>Sigmoid 控制 x 通过多少</td>
+<td>高斯概率控制 x 通过多少</td>
+</tr>
+</tbody></table>
+<p>一句话：</p>
+<blockquote>
+<p><strong>两者都是平滑激活函数，SiLU 用 Sigmoid 做连续门控，GELU 用高斯累计概率做连续门控；LLaMA 的 SwiGLU 常用 SiLU。</strong></p>
+</blockquote>
+<hr>
+<h3 id="Q13：教程里-nn-Linear、nn-Embedding、nn-Conv2d-三种有什么区别？"><a href="#Q13：教程里-nn-Linear、nn-Embedding、nn-Conv2d-三种有什么区别？" class="headerlink" title="Q13：教程里 nn.Linear、nn.Embedding、nn.Conv2d 三种有什么区别？"></a>Q13：教程里 <code>nn.Linear</code>、<code>nn.Embedding</code>、<code>nn.Conv2d</code> 三种有什么区别？</h3><blockquote>
+<p>第六章教程代码语境中列出这三类 LoRA 目标层。当前 PEFT 已经支持更丰富的模块形式，因此不要把“三种”理解成当前版本的完整限制。</p>
+</blockquote>
+<h4 id="nn-Linear"><a href="#nn-Linear" class="headerlink" title="nn.Linear"></a><code>nn.Linear</code></h4><p>线性映射：</p>
+<p>$$
+y &#x3D;
+xW^T+b
+$$</p>
+<p>Transformer 中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">q_proj</span><br><span class="line">k_proj</span><br><span class="line">v_proj</span><br><span class="line">o_proj</span><br><span class="line">gate_proj</span><br><span class="line">up_proj</span><br><span class="line">down_proj</span><br></pre></td></tr></table></figure>
+
+<p>大多都是 <code>nn.Linear</code>。</p>
+<p>因此文本 LLM 的 LoRA 目标绝大多数属于 Linear。</p>
+<h4 id="nn-Embedding"><a href="#nn-Embedding" class="headerlink" title="nn.Embedding"></a><code>nn.Embedding</code></h4><p>作用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token ID</span><br><span class="line">↓</span><br><span class="line">查 Embedding Table</span><br><span class="line">↓</span><br><span class="line">Dense Vector</span><br></pre></td></tr></table></figure>
+
+<p>参数矩阵：</p>
+<p>$$
+E
+\in
+\mathbb{R}^{V\times d}
+$$</p>
+<p>本质是按 ID 查表，不是普通的全连接层。</p>
+<h4 id="nn-Conv2d"><a href="#nn-Conv2d" class="headerlink" title="nn.Conv2d"></a><code>nn.Conv2d</code></h4><p>二维卷积层，常处理：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Image</span><br><span class="line">Feature Map</span><br><span class="line">二维局部结构</span><br></pre></td></tr></table></figure>
+
+<p>更常见于 CNN、Vision、Diffusion，纯文本 LLM 中较少。</p>
+<hr>
+<h3 id="Q14：三类层对比"><a href="#Q14：三类层对比" class="headerlink" title="Q14：三类层对比"></a>Q14：三类层对比</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>输入</th>
+<th>核心操作</th>
+<th>文本 LLM 常见程度</th>
+<th>LoRA 场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nn.Linear</code></td>
+<td>Hidden State</td>
+<td>矩阵乘法</td>
+<td><strong>极高</strong></td>
+<td>Attention &#x2F; FFN</td>
+</tr>
+<tr>
+<td><code>nn.Embedding</code></td>
+<td>离散 ID</td>
+<td>查表</td>
+<td>高</td>
+<td>Token Embedding</td>
+</tr>
+<tr>
+<td><code>nn.Conv2d</code></td>
+<td>2D Feature Map</td>
+<td>卷积</td>
+<td>很低</td>
+<td>Vision &#x2F; Diffusion</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="Q15：Prefix-Tuning-是怎么实现的？"><a href="#Q15：Prefix-Tuning-是怎么实现的？" class="headerlink" title="Q15：Prefix Tuning 是怎么实现的？"></a>Q15：Prefix Tuning 是怎么实现的？</h3><p>Prefix Tuning 不是真的把一段自然语言放到 Prompt 前面。</p>
+<p>它学习的是：</p>
+<blockquote>
+<p><strong>连续可训练向量（Continuous Virtual Prefix）</strong></p>
+</blockquote>
+<p>并冻结整个 Base Model。</p>
+<hr>
+<h1 id="第六章详细总结"><a href="#第六章详细总结" class="headerlink" title="第六章详细总结"></a>第六章详细总结</h1><h2 id="1-第六章的定位"><a href="#1-第六章的定位" class="headerlink" title="1. 第六章的定位"></a>1. 第六章的定位</h2><p>第五章：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">手写 LLaMA</span><br><span class="line">手写训练循环</span><br></pre></td></tr></table></figure>
+
+<p>第六章：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Transformers</span><br><span class="line">+</span><br><span class="line">Datasets</span><br><span class="line">+</span><br><span class="line">Trainer</span><br><span class="line">+</span><br><span class="line">DeepSpeed</span><br><span class="line">+</span><br><span class="line">PEFT</span><br></pre></td></tr></table></figure>
+
+<p>重点：</p>
+<blockquote>
+<p><strong>从教学实现进入真实 LLM 工程训练。</strong></p>
+</blockquote>
+<hr>
+<h1 id="2-Transformers-Trainer"><a href="#2-Transformers-Trainer" class="headerlink" title="2. Transformers &#x2F; Trainer"></a>2. Transformers &#x2F; Trainer</h1><p>Transformers 提供：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AutoConfig</span><br><span class="line">AutoTokenizer</span><br><span class="line">AutoModelForCausalLM</span><br><span class="line">TrainingArguments</span><br><span class="line">Trainer</span><br><span class="line">HfArgumentParser</span><br></pre></td></tr></table></figure>
+
+<p>Trainer 封装：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Forward</span><br><span class="line">Loss</span><br><span class="line">Backward</span><br><span class="line">Optimizer</span><br><span class="line">Scheduler</span><br><span class="line">Gradient Accumulation</span><br><span class="line">Checkpoint</span><br><span class="line">Logging</span><br><span class="line">Distributed Training</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="3-Pretrain-与-SFT"><a href="#3-Pretrain-与-SFT" class="headerlink" title="3. Pretrain 与 SFT"></a>3. Pretrain 与 SFT</h1><p>二者都可以使用 CLM：</p>
+<p>$$
+P(x_1,\dots,x_T) &#x3D;
+\prod_{t&#x3D;1}^{T}
+P(x_t|x_{&lt;t})
+$$</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Pretrain</th>
+<th>SFT</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据</td>
+<td>无监督文本</td>
+<td>指令数据</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>学知识与语言</td>
+<td>学指令遵循</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>大多数有效 Token</td>
+<td>通常主要 Assistant</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="4-ZeRO-原理"><a href="#4-ZeRO-原理" class="headerlink" title="4. ZeRO 原理"></a>4. ZeRO 原理</h1><p>标准 DDP：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">每张 GPU</span><br><span class="line">都有完整 Parameter</span><br><span class="line">完整 Gradient</span><br><span class="line">完整 Optimizer State</span><br></pre></td></tr></table></figure>
+
+<p>ZeRO 逐级分片。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">DDP：</span><br><span class="line">[P G O] [P G O] [P G O]</span><br><span class="line"></span><br><span class="line">ZeRO-1：</span><br><span class="line">[P G O1] [P G O2] [P G O3]</span><br><span class="line"></span><br><span class="line">ZeRO-2：</span><br><span class="line">[P G1 O1] [P G2 O2] [P G3 O3]</span><br><span class="line"></span><br><span class="line">ZeRO-3：</span><br><span class="line">[P1 G1 O1] [P2 G2 O2] [P3 G3 O3]</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">P = Parameter</span><br><span class="line">G = Gradient</span><br><span class="line">O = Optimizer State</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="5-PEFT"><a href="#5-PEFT" class="headerlink" title="5. PEFT"></a>5. PEFT</h1><p>PEFT：</p>
+<blockquote>
+<p><strong>Parameter-Efficient Fine-Tuning</strong></p>
+</blockquote>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">冻结大部分 Base Model</span><br><span class="line">+</span><br><span class="line">只训练少量新增参数</span><br></pre></td></tr></table></figure>
+
+<p>常见：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Adapter Tuning</span><br><span class="line">Prefix Tuning</span><br><span class="line">P-Tuning</span><br><span class="line">LoRA</span><br><span class="line">QLoRA</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="6-Adapter-Tuning"><a href="#6-Adapter-Tuning" class="headerlink" title="6. Adapter Tuning"></a>6. Adapter Tuning</h1><p>Bottleneck Adapter：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">x</span><br><span class="line">│</span><br><span class="line">├─────────────────────┐</span><br><span class="line">↓                     │</span><br><span class="line">down-project          │</span><br><span class="line">d → r                 │</span><br><span class="line">↓                     │</span><br><span class="line">Activation            │</span><br><span class="line">↓                     │</span><br><span class="line">up-project            │</span><br><span class="line">r → d                 │</span><br><span class="line">│                     │</span><br><span class="line">└────── + x ──────────┘</span><br><span class="line">          ↓</span><br><span class="line">        output</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<p>$$
+r
+\ll
+d
+$$</p>
+<p>基础模型冻结，只训练 Adapter。</p>
+<hr>
+<h1 id="7-Prefix-Tuning"><a href="#7-Prefix-Tuning" class="headerlink" title="7. Prefix Tuning"></a>7. Prefix Tuning</h1><h2 id="7-1-Prefix-是什么？"><a href="#7-1-Prefix-是什么？" class="headerlink" title="7.1 Prefix 是什么？"></a>7.1 Prefix 是什么？</h2><p>假设有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">P1 P2 ... Pm</span><br></pre></td></tr></table></figure>
+
+<p>它们不是词表里的 Token，而是：</p>
+<blockquote>
+<p><strong>模型直接学习出来的连续向量。</strong></p>
+</blockquote>
+<hr>
+<h2 id="7-2-Prefix-Tuning-vs-Prompt-Tuning"><a href="#7-2-Prefix-Tuning-vs-Prompt-Tuning" class="headerlink" title="7.2 Prefix Tuning vs Prompt Tuning"></a>7.2 Prefix Tuning vs Prompt Tuning</h2><p>Prompt Tuning：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Virtual Token</span><br><span class="line">↓</span><br><span class="line">只放在第一层 Input Embedding 前</span><br></pre></td></tr></table></figure>
+
+<p>Prefix Tuning：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Virtual Prefix</span><br><span class="line">↓</span><br><span class="line">注入 Transformer 各层 Attention</span><br></pre></td></tr></table></figure>
+
+<p>核心区别：</p>
+<blockquote>
+<p><strong>Prefix Tuning 影响多层 Attention；Prompt Tuning 主要修改输入层。</strong></p>
+</blockquote>
+<hr>
+<h1 id="8-Prefix-Tuning-的具体实现"><a href="#8-Prefix-Tuning-的具体实现" class="headerlink" title="8. Prefix Tuning 的具体实现"></a>8. Prefix Tuning 的具体实现</h1><p>原本第 (l) 层：</p>
+<p>$$
+K^{(l)} &#x3D;
+X^{(l)}W_K^{(l)}
+$$</p>
+<p>$$
+V^{(l)} &#x3D;
+X^{(l)}W_V^{(l)}
+$$</p>
+<p>Prefix Tuning 为每层增加：</p>
+<p>$$
+K_{prefix}^{(l)}
+$$</p>
+<p>$$
+V_{prefix}^{(l)}
+$$</p>
+<p>拼接：</p>
+<p>$$
+\tilde{K}^{(l)} &#x3D;
+[
+K_{prefix}^{(l)};
+K^{(l)}
+]
+$$</p>
+<p>$$
+\tilde{V}^{(l)} &#x3D;
+[
+V_{prefix}^{(l)};
+V^{(l)}
+]
+$$</p>
+<p>然后：</p>
+<p>$$
+Attention
+\left(
+Q^{(l)},
+\tilde{K}^{(l)},
+\tilde{V}^{(l)}
+\right)
+$$</p>
+<p>于是每个真实 Token 的 Query 都可以关注：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Prefix K/V</span><br><span class="line">+</span><br><span class="line">真实 Token K/V</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="9-Prefix-Encoder"><a href="#9-Prefix-Encoder" class="headerlink" title="9. Prefix Encoder"></a>9. Prefix Encoder</h1><p>实际实现常用一个小型 Prefix Encoder：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Virtual Token IDs</span><br><span class="line">↓</span><br><span class="line">Prefix Embedding</span><br><span class="line">↓</span><br><span class="line">MLP / Projection</span><br><span class="line">↓</span><br><span class="line">Layer 1 Prefix K/V</span><br><span class="line">Layer 2 Prefix K/V</span><br><span class="line">...</span><br><span class="line">Layer N Prefix K/V</span><br></pre></td></tr></table></figure>
+
+<p>训练：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Base LLM</span><br><span class="line">→ Frozen</span><br><span class="line"></span><br><span class="line">Prefix Encoder</span><br><span class="line">→ Trainable</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="10-Hugging-Face-Prefix-Tuning"><a href="#10-Hugging-Face-Prefix-Tuning" class="headerlink" title="10. Hugging Face Prefix Tuning"></a>10. Hugging Face Prefix Tuning</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> peft <span class="keyword">import</span> PrefixTuningConfig, get_peft_model</span><br><span class="line"></span><br><span class="line">config = PrefixTuningConfig(</span><br><span class="line">    task_type=<span class="string">&quot;CAUSAL_LM&quot;</span>,</span><br><span class="line">    num_virtual_tokens=<span class="number">20</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">model = get_peft_model(</span><br><span class="line">    base_model,</span><br><span class="line">    config</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>关键：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">num_virtual_tokens</span><br><span class="line">→ Prefix 长度</span><br><span class="line"></span><br><span class="line">prefix_projection</span><br><span class="line">→ 是否通过 MLP 将 Prefix Embedding 投影到各层 KV</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="11-Prefix-Tuning-完整流程"><a href="#11-Prefix-Tuning-完整流程" class="headerlink" title="11. Prefix Tuning 完整流程"></a>11. Prefix Tuning 完整流程</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">加载预训练 LLM</span><br><span class="line">↓</span><br><span class="line">冻结所有 Base 参数</span><br><span class="line">↓</span><br><span class="line">创建 Virtual Prefix</span><br><span class="line">↓</span><br><span class="line">Prefix Encoder</span><br><span class="line">↓</span><br><span class="line">生成每层 Prefix K/V</span><br><span class="line">↓</span><br><span class="line">与真实 K/V 拼接</span><br><span class="line">↓</span><br><span class="line">Attention</span><br><span class="line">↓</span><br><span class="line">Task Loss</span><br><span class="line">↓</span><br><span class="line">Backward</span><br><span class="line">↓</span><br><span class="line">只更新 Prefix</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="12-Prefix-Tuning-优缺点"><a href="#12-Prefix-Tuning-优缺点" class="headerlink" title="12. Prefix Tuning 优缺点"></a>12. Prefix Tuning 优缺点</h1><p>优点：</p>
+<ul>
+<li>训练参数少；</li>
+<li>一个 Base Model 可以切换多个任务 Prefix；</li>
+<li>Checkpoint 小；</li>
+<li>不破坏基础模型权重。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>Prefix 太短，表达能力不足；</li>
+<li>Prefix 太长，Attention&#x2F;KV 开销上升；</li>
+<li>复杂知识注入能力有限；</li>
+<li>不同模型结构效果差异明显。</li>
+</ul>
+<hr>
+<h1 id="13-LoRA-原理"><a href="#13-LoRA-原理" class="headerlink" title="13. LoRA 原理"></a>13. LoRA 原理</h1><p>$$
+y &#x3D;
+W_0x
++
+BAx
+$$</p>
+<p>训练：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">W0 → Frozen</span><br><span class="line">A/B → Trainable</span><br></pre></td></tr></table></figure>
+
+<p>如果：</p>
+<p>$$
+W_0
+\in
+\mathbb{R}^{d\times k}
+$$</p>
+<p>Full FT 要训练：</p>
+<p>$$
+dk
+$$</p>
+<p>个参数。</p>
+<p>LoRA：</p>
+<p>$$
+A
+\in
+\mathbb{R}^{r\times k}
+$$</p>
+<p>$$
+B
+\in
+\mathbb{R}^{d\times r}
+$$</p>
+<p>参数数：</p>
+<p>$$
+r(k+d)
+$$</p>
+<p>当：</p>
+<p>$$
+r
+\ll
+d,k
+$$</p>
+<p>时，训练参数大幅下降。</p>
+<hr>
+<h1 id="14-target-modules-的匹配"><a href="#14-target-modules-的匹配" class="headerlink" title="14. target_modules 的匹配"></a>14. <code>target_modules</code> 的匹配</h1><p>教程用正则说明目标层查找。</p>
+<p>模块名可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">model.layers.0.self_attn.q_proj</span><br><span class="line">model.layers.0.self_attn.v_proj</span><br><span class="line">model.layers.1.self_attn.q_proj</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>当前 PEFT 中：</p>
+<ul>
+<li><code>target_modules</code> 传字符串时可按 Regex 匹配；</li>
+<li>传列表时一般按具体名称或名称后缀匹配。</li>
+</ul>
+<p>所以：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">&quot;q_proj&quot;</span>, <span class="string">&quot;v_proj&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>会匹配各 Transformer Block 中同名投影层。</p>
+<hr>
+<h1 id="15-不同模型的层名不同"><a href="#15-不同模型的层名不同" class="headerlink" title="15. 不同模型的层名不同"></a>15. 不同模型的层名不同</h1><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Query 投影常见名字</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LLaMA &#x2F; Qwen</td>
+<td><code>q_proj</code></td>
+</tr>
+<tr>
+<td>BERT</td>
+<td><code>query</code></td>
+</tr>
+<tr>
+<td>GPT-2</td>
+<td><code>c_attn</code> 中 QKV 融合</td>
+</tr>
+<tr>
+<td>T5</td>
+<td><code>q</code></td>
+</tr>
+</tbody></table>
+<p>所以使用 LoRA 前最好：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> name, module <span class="keyword">in</span> model.named_modules():</span><br><span class="line">    <span class="built_in">print</span>(name)</span><br></pre></td></tr></table></figure>
+
+<p>确认实际层名。</p>
+<hr>
+<h1 id="16-常见-LoRA-配置"><a href="#16-常见-LoRA-配置" class="headerlink" title="16. 常见 LoRA 配置"></a>16. 常见 LoRA 配置</h1><h2 id="经典省参数"><a href="#经典省参数" class="headerlink" title="经典省参数"></a>经典省参数</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h2 id="全-Attention"><a href="#全-Attention" class="headerlink" title="全 Attention"></a>全 Attention</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;k_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;o_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h2 id="Attention-FFN"><a href="#Attention-FFN" class="headerlink" title="Attention + FFN"></a>Attention + FFN</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">target_modules = [</span><br><span class="line">    <span class="string">&quot;q_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;k_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;v_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;o_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;gate_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;up_proj&quot;</span>,</span><br><span class="line">    <span class="string">&quot;down_proj&quot;</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h2 id="当前-PEFT-便捷配置"><a href="#当前-PEFT-便捷配置" class="headerlink" title="当前 PEFT 便捷配置"></a>当前 PEFT 便捷配置</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">target_modules = <span class="string">&quot;all-linear&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>适合希望对多数 Linear 类层进行 LoRA 适配的情况。</p>
+<hr>
+<h1 id="17-FFN-投影层"><a href="#17-FFN-投影层" class="headerlink" title="17. FFN 投影层"></a>17. FFN 投影层</h1><p>LLaMA FFN：</p>
+<p>$$
+FFN(x) &#x3D;
+W_{down}
+\left(
+SiLU(W_{gate}x)
+\odot
+W_{up}x
+\right)
+$$</p>
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">gate_proj</span><br><span class="line">hidden → intermediate</span><br><span class="line">负责门控</span><br><span class="line"></span><br><span class="line">up_proj</span><br><span class="line">hidden → intermediate</span><br><span class="line">负责内容分支</span><br><span class="line"></span><br><span class="line">down_proj</span><br><span class="line">intermediate → hidden</span><br><span class="line">负责映射回模型维度</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="18-为什么-FFN-也适合-LoRA？"><a href="#18-为什么-FFN-也适合-LoRA？" class="headerlink" title="18. 为什么 FFN 也适合 LoRA？"></a>18. 为什么 FFN 也适合 LoRA？</h1><p>Attention：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">负责 Token 间的信息交互</span><br></pre></td></tr></table></figure>
+
+<p>FFN：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">负责每个 Token 内部表示的非线性加工</span><br></pre></td></tr></table></figure>
+
+<p>因此只微调 Attention 与同时微调 FFN 的能力不同。</p>
+<p>复杂任务中加入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gate_proj</span><br><span class="line">up_proj</span><br><span class="line">down_proj</span><br></pre></td></tr></table></figure>
+
+<p>通常能提供更强的适配空间。</p>
+<hr>
+<h1 id="19-PEFT-三类典型层"><a href="#19-PEFT-三类典型层" class="headerlink" title="19. PEFT 三类典型层"></a>19. PEFT 三类典型层</h1><h2 id="nn-Linear-1"><a href="#nn-Linear-1" class="headerlink" title="nn.Linear"></a><code>nn.Linear</code></h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Hidden State</span><br><span class="line">↓</span><br><span class="line">矩阵乘法</span><br><span class="line">↓</span><br><span class="line">新 Hidden State</span><br></pre></td></tr></table></figure>
+
+<p>LLM 中最常见。</p>
+<h2 id="nn-Embedding-1"><a href="#nn-Embedding-1" class="headerlink" title="nn.Embedding"></a><code>nn.Embedding</code></h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Token ID</span><br><span class="line">↓</span><br><span class="line">Embedding 查表</span><br><span class="line">↓</span><br><span class="line">Vector</span><br></pre></td></tr></table></figure>
+
+<p>用于 Token Embedding。</p>
+<h2 id="nn-Conv2d-1"><a href="#nn-Conv2d-1" class="headerlink" title="nn.Conv2d"></a><code>nn.Conv2d</code></h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2D Feature Map</span><br><span class="line">↓</span><br><span class="line">卷积核</span><br><span class="line">↓</span><br><span class="line">新的 Feature Map</span><br></pre></td></tr></table></figure>
+
+<p>更常用于视觉&#x2F;扩散模型。</p>
+<hr>
+<h1 id="20-当前-PEFT-的版本补充"><a href="#20-当前-PEFT-的版本补充" class="headerlink" title="20. 当前 PEFT 的版本补充"></a>20. 当前 PEFT 的版本补充</h1><p>第六章教程的“三种层”属于教程当时实现语境。</p>
+<p>当前 PEFT 已支持更丰富的用法，例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">target_modules=<span class="string">&quot;all-linear&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>以及：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">target_parameters</span><br></pre></td></tr></table></figure>
+
+<p>可用于部分 MoE 中并非 <code>nn.Linear</code>、而是直接存成 <code>nn.Parameter</code> 的融合专家权重。</p>
+<p>所以实际工程中：</p>
+<blockquote>
+<p><strong>应以当前 PEFT 文档 + 模型自身结构为准。</strong></p>
+</blockquote>
+<hr>
+<h1 id="21-Prefix-Tuning-Prompt-Tuning-LoRA-对比"><a href="#21-Prefix-Tuning-Prompt-Tuning-LoRA-对比" class="headerlink" title="21. Prefix Tuning &#x2F; Prompt Tuning &#x2F; LoRA 对比"></a>21. Prefix Tuning &#x2F; Prompt Tuning &#x2F; LoRA 对比</h1><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>Base Model</th>
+<th>新参数位置</th>
+<th>虚拟 Token</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prompt Tuning</td>
+<td>Frozen</td>
+<td>输入层</td>
+<td>✅</td>
+<td>最简单</td>
+</tr>
+<tr>
+<td>Prefix Tuning</td>
+<td>Frozen</td>
+<td>多层 Attention KV</td>
+<td>✅</td>
+<td>多层控制</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td>Frozen</td>
+<td>权重旁路</td>
+<td>❌</td>
+<td>当前最常用</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="22-一分钟背诵"><a href="#22-一分钟背诵" class="headerlink" title="22. 一分钟背诵"></a>22. 一分钟背诵</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">第六章</span><br><span class="line">= 工业级训练</span><br><span class="line"></span><br><span class="line">Transformers</span><br><span class="line">= 模型 + Tokenizer + Trainer</span><br><span class="line"></span><br><span class="line">DeepSpeed</span><br><span class="line">= 多卡 + 显存优化</span><br><span class="line"></span><br><span class="line">ZeRO：</span><br><span class="line">1 切 Optimizer</span><br><span class="line">2 + Gradient</span><br><span class="line">3 + Parameter</span><br><span class="line"></span><br><span class="line">logging INFO：</span><br><span class="line">DEBUG 不输出</span><br><span class="line">INFO 及以上输出</span><br><span class="line"></span><br><span class="line">PEFT</span><br><span class="line">= 参数高效微调</span><br><span class="line"></span><br><span class="line">LoRA</span><br><span class="line">= 冻结 W0</span><br><span class="line">+ 训练 BA</span><br><span class="line"></span><br><span class="line">target_modules</span><br><span class="line">= LoRA 插在哪里</span><br><span class="line"></span><br><span class="line">经典：</span><br><span class="line">q_proj + v_proj</span><br><span class="line"></span><br><span class="line">更充分：</span><br><span class="line">q/k/v/o</span><br><span class="line">+ gate/up/down</span><br><span class="line"></span><br><span class="line">gate_proj</span><br><span class="line">= FFN 门控</span><br><span class="line"></span><br><span class="line">up_proj</span><br><span class="line">= hidden → intermediate</span><br><span class="line"></span><br><span class="line">down_proj</span><br><span class="line">= intermediate → hidden</span><br><span class="line"></span><br><span class="line">SiLU</span><br><span class="line">= x * sigmoid(x)</span><br><span class="line"></span><br><span class="line">GELU</span><br><span class="line">= x * GaussianCDF(x)</span><br><span class="line"></span><br><span class="line">Prefix Tuning</span><br><span class="line">= 冻结 LLM</span><br><span class="line">+ 学习 Prefix</span><br><span class="line">+ 注入每层 Attention K/V</span><br><span class="line"></span><br><span class="line">Prompt Tuning</span><br><span class="line">= 只加到第一层输入</span><br><span class="line"></span><br><span class="line">Adapter</span><br><span class="line">= Bottleneck MLP</span><br></pre></td></tr></table></figure>
+
+<p>最终一句话：</p>
+<blockquote>
+<p><strong>第六章真正需要掌握的是三层能力：Transformers&#x2F;Trainer 让训练流程工程化，DeepSpeed&#x2F;ZeRO 让大模型在有限显存上训得动，PEFT&#x2F;LoRA&#x2F;Prefix Tuning 让下游微调的参数和成本降下来。</strong></p>
+</blockquote>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><p>Datawhale Happy-LLM，第六章：大模型训练流程实践<br><a target="_blank" rel="noopener" href="https://datawhalechina.github.io/happy-llm/">https://datawhalechina.github.io/happy-llm/</a></p>
+</li>
+<li><p>Hugging Face PEFT — LoRA<br><a target="_blank" rel="noopener" href="https://huggingface.co/docs/peft/package_reference/lora">https://huggingface.co/docs/peft/package_reference/lora</a></p>
+</li>
+<li><p>Hugging Face PEFT — Prefix Tuning<br><a target="_blank" rel="noopener" href="https://huggingface.co/docs/peft/main/package_reference/prefix_tuning">https://huggingface.co/docs/peft/main/package_reference/prefix_tuning</a></p>
+</li>
+<li><p>PyTorch Activation Functions<br><a target="_blank" rel="noopener" href="https://docs.pytorch.org/docs/main/nn.html">https://docs.pytorch.org/docs/main/nn.html</a></p>
+</li>
+</ol>
+<blockquote>
+<p><strong>说明</strong></p>
+<ul>
+<li><code>q_proj + v_proj</code>、<code>nn.Linear / nn.Embedding / nn.Conv2d</code> 等保留 Happy-LLM 第六章教程语境。</li>
+<li><code>target_modules=&quot;all-linear&quot;</code>、<code>target_parameters</code> 属于当前 PEFT 工程实践补充。</li>
+<li>LLaMA FFN 的 <code>gate_proj/up_proj/down_proj</code> 与 Bottleneck Adapter 的 down&#x2F;up projection 不是同一种结构。</li>
+</ul>
+</blockquote>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-15T14:08:40.579Z" itemprop="dateModified">最后编辑：2026-09-15</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" happy-llm第六章：大模型训练流程实践——框架与特有名词整理" href="/2026/09/15/Happy-LLM_第六章_框架与特有名词整理/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第七章：大模型应用的阅读笔记" href="/2026/09/16/Happy-LLM_第七章_大模型应用_面试速记/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

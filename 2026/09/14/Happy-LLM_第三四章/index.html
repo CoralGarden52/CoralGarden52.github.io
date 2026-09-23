@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>happy-llm第三四章预训练语言模型和大语言模型的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/14/Happy-LLM_%E7%AC%AC%E4%B8%89%E5%9B%9B%E7%AB%A0/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="面试速记 基于 Datawhale《Happy-LLM》第三章“预训练语言模型”和第四章“大语言模型”整理，并补充面试常问的 DPO、GRPO、MHA&#x2F;MQA&#x2F;GQA。 核心主线：Transformer → PLM 三种架构 → LLM → Pretrain → SFT → Preference Alignment（RLHF &#x2F; DPO &#x2F; GRPO）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="happy-llm第三四章预训练语言模型和大语言模型的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/09/14/Happy-LLM_%E7%AC%AC%E4%B8%89%E5%9B%9B%E7%AB%A0/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记 基于 Datawhale《Happy-LLM》第三章“预训练语言模型”和第四章“大语言模型”整理，并补充面试常问的 DPO、GRPO、MHA&#x2F;MQA&#x2F;GQA。 核心主线：Transformer → PLM 三种架构 → LLM → Pretrain → SFT → Preference Alignment（RLHF &#x2F; DPO &#x2F; GRPO）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-3-4.png">
+<meta property="article:published_time" content="2026-09-14T07:09:12.813Z">
+<meta property="article:modified_time" content="2026-09-14T11:09:49.851Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-3-4.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"happy-llm第三四章预训练语言模型和大语言模型的阅读笔记","description":"面试速记\n基于 Datawhale《Happy-LLM》第三章“预训练语言模型”和第四章“大语言模型”整理，并补充面试常问...","image":"http://example.com/2026/09/14/Happy-LLM_%E7%AC%AC%E4%B8%89%E5%9B%9B%E7%AB%A0/assets/posts/happy-llm/happy-llm-3-4.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-14T07:09:12.813Z","dateModified":"2026-09-14T11:09:49.851Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/14/Happy-LLM_%E7%AC%AC%E4%B8%89%E5%9B%9B%E7%AB%A0/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/14/Happy-LLM_%E7%AC%AC%E4%B8%89%E5%9B%9B%E7%AB%A0/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">happy-llm第三四章预训练语言模型和大语言模型的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-14T07:09:12.813Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-14</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~18.95K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><blockquote>
+<p>基于 Datawhale《Happy-LLM》第三章“预训练语言模型”和第四章“大语言模型”整理，并补充面试常问的 DPO、GRPO、MHA&#x2F;MQA&#x2F;GQA。</p>
+<p>核心主线：<strong>Transformer → PLM 三种架构 → LLM → Pretrain → SFT → Preference Alignment（RLHF &#x2F; DPO &#x2F; GRPO）</strong>。</p>
+</blockquote>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><ol>
+<li><strong>Encoder-Only</strong>：只保留 Transformer Encoder，使用<strong>双向自注意力</strong>，每个 token 都能看左右两侧上下文，擅长<strong>理解类任务 NLU</strong>。代表模型是 <strong>BERT &#x2F; RoBERTa &#x2F; ALBERT</strong>。经典预训练任务是 <strong>MLM</strong>，BERT 还使用 <strong>NSP</strong>。</li>
+<li><strong>Encoder-Decoder</strong>：Encoder 双向理解输入，Decoder 使用<strong>因果自注意力</strong>生成输出，并通过 <strong>Cross-Attention</strong>读取 Encoder 表示，天然适合 <strong>Seq2Seq</strong>。代表模型是 <strong>T5</strong>。</li>
+<li><strong>Decoder-Only</strong>：只保留 Decoder 的核心结构，使用 <strong>Causal Mask</strong>，每个 token 只能看到自己及之前的 token，通过 <strong>CLM &#x2F; Next Token Prediction</strong> 自回归生成。代表模型是 <strong>GPT、LLaMA、Qwen 等主流 LLM</strong>。</li>
+<li><strong>Pretrain</strong>：用海量无标注文本训练“下一个 token 预测”等自监督任务，主要解决“<strong>让模型学知识和语言规律</strong>”。</li>
+<li><strong>SFT</strong>：用高质量“指令—回答”数据做监督微调，主要解决“<strong>让模型学会听懂指令并按格式回答</strong>”。</li>
+<li><strong>RLHF</strong>：先用人类偏好数据训练 <strong>Reward Model（RM）</strong>，再用 PPO 等强化学习算法优化策略模型，使输出更符合人类偏好；经典 PPO-RLHF 一般需要 <strong>Actor、Reference、Reward、Critic</strong>。</li>
+<li><strong>DPO</strong>：直接用 <code>(prompt, chosen, rejected)</code> 偏好对优化语言模型，<strong>不显式训练 Reward Model，也不需要 Critic，不需要 PPO 在线 RL rollout</strong>，训练简单稳定。</li>
+<li><strong>GRPO</strong>：一种 PPO 变体。对同一个 prompt 一次采样多条回答，用<strong>组内相对奖励</strong>估计 advantage，<strong>去掉 Critic &#x2F; Value Model</strong>，仍属于在线策略优化。常见于数学、代码等可验证任务。</li>
+<li><strong>MHA</strong>：每个 Query Head 都有自己的 K&#x2F;V Head，表达能力强但 KV Cache 大。</li>
+<li><strong>MQA</strong>：多个 Query Head <strong>共享一套 K&#x2F;V</strong>，KV Cache 最小、推理最快，但可能损失部分表达能力。</li>
+<li><strong>GQA</strong>：将 Query Head 分组，每组共享一套 K&#x2F;V，是 MHA 和 MQA 的折中；当前大模型中非常常见。</li>
+</ol>
+<p>一句话串起来：</p>
+<blockquote>
+<p><strong>Pretrain 让模型“有知识”，SFT 让模型“会听话”，Preference Alignment 让模型“更符合人类偏好”；Decoder-Only + CLM 是当前主流 LLM 的基本路线。</strong></p>
+</blockquote>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><h3 id="1-三种-PLM-架构怎么回答"><a href="#1-三种-PLM-架构怎么回答" class="headerlink" title="1. 三种 PLM 架构怎么回答"></a>1. 三种 PLM 架构怎么回答</h3><blockquote>
+<p>Transformer 时代的预训练语言模型主要分为 Encoder-Only、Encoder-Decoder 和 Decoder-Only。Encoder-Only 采用双向 Self-Attention，更擅长文本理解，比如 BERT；Encoder-Decoder 将输入理解和输出生成拆开，Decoder 通过 Cross-Attention 读取 Encoder 表示，适合翻译、摘要等 Seq2Seq 任务，比如 T5；Decoder-Only 使用 Causal Mask 做自回归的 Next Token Prediction，训练目标和推理形式一致，扩展到大规模数据和参数后形成了 GPT、LLaMA 等主流 LLM。</p>
+</blockquote>
+<h3 id="2-Pretrain、SFT、RLHF-怎么回答"><a href="#2-Pretrain、SFT、RLHF-怎么回答" class="headerlink" title="2. Pretrain、SFT、RLHF 怎么回答"></a>2. Pretrain、SFT、RLHF 怎么回答</h3><blockquote>
+<p>Pretrain 使用海量无标注数据做自监督学习，核心目标是学习语言规律和世界知识；SFT 使用人工或模型构造的高质量指令数据，通过交叉熵训练模型按照指令输出目标回答，获得指令遵循和对话能力；RLHF 再利用人类偏好排序训练奖励模型，并用 PPO 等强化学习算法提高高奖励回答的概率，同时通过 KL 约束避免策略偏离参考模型太远。</p>
+</blockquote>
+<h3 id="3-DPO-和-RLHF-怎么回答"><a href="#3-DPO-和-RLHF-怎么回答" class="headerlink" title="3. DPO 和 RLHF 怎么回答"></a>3. DPO 和 RLHF 怎么回答</h3><blockquote>
+<p>经典 PPO-RLHF 要先训练 Reward Model，再进行在线 PPO 强化学习，还需要 Critic 做 advantage 估计。DPO 将这个偏好优化问题推导成一个直接的二分类式目标，只需要 chosen&#x2F;rejected 偏好对和一个 reference policy，就能直接提高 chosen 相对 rejected 的概率，因此没有显式 Reward Model、没有 Critic，也不需要 PPO rollout，工程上更简单。</p>
+</blockquote>
+<h3 id="4-GRPO-和-PPO-怎么回答"><a href="#4-GRPO-和-PPO-怎么回答" class="headerlink" title="4. GRPO 和 PPO 怎么回答"></a>4. GRPO 和 PPO 怎么回答</h3><blockquote>
+<p>GRPO 可以理解为不使用 Critic 的 PPO 类方法。它对同一个 prompt 采样一组回答，分别计算 reward，再用组内 reward 的均值和标准差得到相对 advantage。高于组平均的回答被增强，低于组平均的回答被抑制，因此省掉了通常与策略模型同量级的 Value&#x2F;Critic 模型，特别适合数学、代码等能够自动判分的任务。</p>
+</blockquote>
+<h3 id="5-MHA、MQA、GQA-怎么回答"><a href="#5-MHA、MQA、GQA-怎么回答" class="headerlink" title="5. MHA、MQA、GQA 怎么回答"></a>5. MHA、MQA、GQA 怎么回答</h3><blockquote>
+<p>MHA 中每个 Query Head 都有独立的 K&#x2F;V Head；MQA 保留多个 Query Head，但所有 Query Head 共享同一组 K&#x2F;V，大幅减少 KV Cache；GQA 则把 Query Head 分组，每组共享一组 K&#x2F;V，是表达能力和推理效率的折中。假设有 32 个 Q Head，MHA 可以有 32 个 KV Head，MQA 只有 1 个 KV Head，GQA 例如使用 8 个 KV Head。</p>
+</blockquote>
+<hr>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="Q1：为什么-BERT-更适合-NLU，而-GPT-更适合-NLG？"><a href="#Q1：为什么-BERT-更适合-NLU，而-GPT-更适合-NLG？" class="headerlink" title="Q1：为什么 BERT 更适合 NLU，而 GPT 更适合 NLG？"></a>Q1：为什么 BERT 更适合 NLU，而 GPT 更适合 NLG？</h3><p>BERT 使用 Encoder 的<strong>双向注意力</strong>，一个 token 可以同时利用左、右上下文，因此适合分类、NER、匹配、抽取等理解任务。GPT 使用<strong>因果注意力</strong>，每个位置只能看历史 token，天然和“根据上文生成下一个 token”的过程一致，因此更适合文本生成。</p>
+<h3 id="Q2：Decoder-Only-为什么成为-LLM-主流？"><a href="#Q2：Decoder-Only-为什么成为-LLM-主流？" class="headerlink" title="Q2：Decoder-Only 为什么成为 LLM 主流？"></a>Q2：Decoder-Only 为什么成为 LLM 主流？</h3><p>核心原因包括：</p>
+<ul>
+<li><strong>训练目标与生成方式一致</strong>：训练和推理都是 Next Token Prediction。</li>
+<li><strong>架构简单统一</strong>：理解、问答、翻译、摘要、代码等都能转化为“上下文 → 继续生成”。</li>
+<li><strong>容易做规模扩展</strong>：数据、参数、算力增加时能力持续增强。</li>
+<li><strong>天然支持 In-Context Learning</strong>：任务描述和示例都可以放进上下文中。</li>
+<li><strong>自回归生成部署成熟</strong>：可结合 KV Cache、MQA&#x2F;GQA 等优化推理。</li>
+</ul>
+<h3 id="Q3：BERT-的-MLM-是怎么做的？"><a href="#Q3：BERT-的-MLM-是怎么做的？" class="headerlink" title="Q3：BERT 的 MLM 是怎么做的？"></a>Q3：BERT 的 MLM 是怎么做的？</h3><p>随机选约 15% token 作为预测位置。经典 BERT 中，对这些位置：</p>
+<ul>
+<li>80% 替换为 <code>[MASK]</code></li>
+<li>10% 替换为随机 token</li>
+<li>10% 保持原 token</li>
+</ul>
+<p>模型利用左右上下文预测原 token。</p>
+<p>这样设计是为了既让模型学会<strong>利用上下文恢复词语</strong>，又减少预训练和下游任务之间的差异。80% 使用 <code>[MASK]</code> 提供明确的预测目标；10% 保持原词，可以避免模型只适应 <code>[MASK]</code> 这种实际任务中不存在的符号；10% 随机替换则防止模型直接复制当前位置的词，迫使它结合左右上下文判断当前词是否合理，从而提升模型的语义理解、鲁棒性和泛化能力。</p>
+<h3 id="Q4：NSP-是什么？为什么-RoBERTa-去掉它？"><a href="#Q4：NSP-是什么？为什么-RoBERTa-去掉它？" class="headerlink" title="Q4：NSP 是什么？为什么 RoBERTa 去掉它？"></a>Q4：NSP 是什么？为什么 RoBERTa 去掉它？</h3><p>NSP（Next Sentence Prediction）判断两个句子是否为连续上下文，用来学习句间关系。RoBERTa 的实验认为 NSP 太容易、贡献有限，因此去掉 NSP，只保留并改进 MLM。</p>
+<h3 id="Q5：SOP-和-NSP-的区别？"><a href="#Q5：SOP-和-NSP-的区别？" class="headerlink" title="Q5：SOP 和 NSP 的区别？"></a>Q5：SOP 和 NSP 的区别？</h3><p>NSP 的负样本通常来自<strong>随机不连续句子</strong>；SOP（Sentence Order Prediction）的负样本是把真实连续句子的<strong>顺序交换</strong>。因此 SOP 更关注句子顺序和篇章连贯性，任务更难。</p>
+<h3 id="Q6：T5-和-BERT-的“Mask”一样吗？"><a href="#Q6：T5-和-BERT-的“Mask”一样吗？" class="headerlink" title="Q6：T5 和 BERT 的“Mask”一样吗？"></a>Q6：T5 和 BERT 的“Mask”一样吗？</h3><p>不完全一样。教程为了入门把 T5 概括为 MLM，但经典 T5 更准确地说使用 <strong>Span Corruption &#x2F; Text Infilling</strong>：随机删除连续 token span，用 <code>&lt;extra_id_n&gt;</code> 等 sentinel token 代替；Encoder 看损坏后的文本，Decoder 生成被删除的 span。</p>
+<h3 id="Q7：RLHF-一定等于-PPO-吗？"><a href="#Q7：RLHF-一定等于-PPO-吗？" class="headerlink" title="Q7：RLHF 一定等于 PPO 吗？"></a>Q7：RLHF 一定等于 PPO 吗？</h3><p>不是。<strong>RLHF 是“利用人类反馈进行对齐”的框架&#x2F;范式，PPO 只是其中一种优化算法。</strong><br>经典 InstructGPT 式 RLHF 常使用 Reward Model + PPO，但也可以使用其他强化学习方法。</p>
+<h3 id="Q8：DPO-属于强化学习吗？"><a href="#Q8：DPO-属于强化学习吗？" class="headerlink" title="Q8：DPO 属于强化学习吗？"></a>Q8：DPO 属于强化学习吗？</h3><p>通常将 DPO 称为 <strong>RL-free preference optimization</strong>。它解决的是和 RLHF 相同的偏好对齐问题，但训练时直接优化偏好损失，不显式训练奖励模型，也不执行 PPO 式在线强化学习。</p>
+<h3 id="Q9：GRPO-需要-Reward-Model-吗？"><a href="#Q9：GRPO-需要-Reward-Model-吗？" class="headerlink" title="Q9：GRPO 需要 Reward Model 吗？"></a>Q9：GRPO 需要 Reward Model 吗？</h3><p><strong>不一定。</strong>GRPO 需要的是“reward 信号”，这个 reward 可以来自：</p>
+<ul>
+<li>训练好的 Reward Model；</li>
+<li>数学答案正确性；</li>
+<li>单元测试&#x2F;代码执行结果；</li>
+<li>格式检查器；</li>
+<li>规则或 verifier。</li>
+</ul>
+<p>因此在可验证任务里可以不使用人类偏好 RM。</p>
+<h3 id="Q10：GRPO-和-DPO-最大区别是什么？"><a href="#Q10：GRPO-和-DPO-最大区别是什么？" class="headerlink" title="Q10：GRPO 和 DPO 最大区别是什么？"></a>Q10：GRPO 和 DPO 最大区别是什么？</h3><ul>
+<li><strong>DPO</strong>：通常是<strong>离线偏好优化</strong>，使用固定 <code>(chosen, rejected)</code> 数据。</li>
+<li><strong>GRPO</strong>：是<strong>在线 RL</strong>，模型当前策略对同一 prompt 生成多条 response，在线打分后更新策略。</li>
+<li>DPO 不需要 reward function；GRPO 必须有某种 reward 信号。</li>
+<li>二者都可以省掉经典 PPO-RLHF 中的一部分复杂组件，但省掉的方式不同。</li>
+</ul>
+<hr>
+<h1 id="第三章：预训练语言模型（PLM）"><a href="#第三章：预训练语言模型（PLM）" class="headerlink" title="第三章：预训练语言模型（PLM）"></a>第三章：预训练语言模型（PLM）</h1><h2 id="1-第三章主线"><a href="#1-第三章主线" class="headerlink" title="1. 第三章主线"></a>1. 第三章主线</h2><p>第三章从 Transformer 的 Encoder 和 Decoder 出发，将 PLM 分为三条路线：</p>
+<table>
+<thead>
+<tr>
+<th>架构</th>
+<th>代表模型</th>
+<th>注意力方式</th>
+<th>典型预训练目标</th>
+<th>强项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Encoder-Only</td>
+<td>BERT、RoBERTa、ALBERT</td>
+<td>双向 Self-Attention</td>
+<td>MLM、NSP&#x2F;SOP</td>
+<td>NLU、表示学习</td>
+</tr>
+<tr>
+<td>Encoder-Decoder</td>
+<td>T5</td>
+<td>Encoder 双向；Decoder 因果；Cross-Attention</td>
+<td>Span Corruption &#x2F; Text-to-Text</td>
+<td>Seq2Seq、条件生成</td>
+</tr>
+<tr>
+<td>Decoder-Only</td>
+<td>GPT、LLaMA</td>
+<td>Causal Self-Attention</td>
+<td>CLM &#x2F; Next Token Prediction</td>
+<td>NLG、通用 LLM</td>
+</tr>
+</tbody></table>
+<p>第三章还展示了 PLM 的演化逻辑：</p>
+<p><strong>BERT → RoBERTa&#x2F;ALBERT：优化理解模型的训练目标和参数效率</strong></p>
+<p><strong>GPT → 更大参数 + 更多数据 → GPT-3 → LLM</strong></p>
+<p><strong>GPT&#x2F;LLaMA 路线最终成为当前通用大模型的主流路线。</strong></p>
+<hr>
+<h1 id="三种-PLM-架构详解"><a href="#三种-PLM-架构详解" class="headerlink" title="三种 PLM 架构详解"></a>三种 PLM 架构详解</h1><h2 id="2-Encoder-Only-PLM"><a href="#2-Encoder-Only-PLM" class="headerlink" title="2. Encoder-Only PLM"></a>2. Encoder-Only PLM</h2><h3 id="2-1-是什么"><a href="#2-1-是什么" class="headerlink" title="2.1 是什么"></a>2.1 是什么</h3><p>Encoder-Only 只使用 Transformer 的 Encoder 堆叠。</p>
+<p>典型代表：</p>
+<ul>
+<li>BERT</li>
+<li>RoBERTa</li>
+<li>ALBERT</li>
+<li>DistilBERT</li>
+</ul>
+<h3 id="2-2-核心实现机制"><a href="#2-2-核心实现机制" class="headerlink" title="2.2 核心实现机制"></a>2.2 核心实现机制</h3><p>输入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">文本</span><br><span class="line">  ↓</span><br><span class="line">Tokenizer</span><br><span class="line">  ↓</span><br><span class="line">Token IDs</span><br><span class="line">  ↓</span><br><span class="line">Token Embedding + Position Embedding</span><br><span class="line">  ↓</span><br><span class="line">Encoder Block × N</span><br><span class="line">  ↓</span><br><span class="line">每个 token 的双向上下文表示</span><br><span class="line">  ↓</span><br><span class="line">任务 Head</span><br></pre></td></tr></table></figure>
+
+<p>每一层核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Hidden States</span><br><span class="line">      ↓</span><br><span class="line">Multi-Head Self-Attention</span><br><span class="line">      ↓</span><br><span class="line">Residual + Norm</span><br><span class="line">      ↓</span><br><span class="line">FFN</span><br><span class="line">      ↓</span><br><span class="line">Residual + Norm</span><br></pre></td></tr></table></figure>
+
+<p>最关键的是：</p>
+<blockquote>
+<p><strong>Self-Attention 不使用 Causal Mask。</strong></p>
+</blockquote>
+<p>因此对于位置 <code>i</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">token_i ← 可以关注 token_1 ... token_n</span><br></pre></td></tr></table></figure>
+
+<p>也就是同时看到左侧和右侧上下文。</p>
+<h3 id="2-3-为什么适合-NLU"><a href="#2-3-为什么适合-NLU" class="headerlink" title="2.3 为什么适合 NLU"></a>2.3 为什么适合 NLU</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我去银行办理了贷款。</span><br></pre></td></tr></table></figure>
+
+<p>“银行”是金融机构。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我坐在河流的银行……</span><br></pre></td></tr></table></figure>
+
+<p>如果只根据左侧上下文判断会受限制，而双向上下文可以结合完整句子进行语义理解。</p>
+<h3 id="2-4-BERT-的预训练"><a href="#2-4-BERT-的预训练" class="headerlink" title="2.4 BERT 的预训练"></a>2.4 BERT 的预训练</h3><h4 id="MLM"><a href="#MLM" class="headerlink" title="MLM"></a>MLM</h4><p>Masked Language Model，掩码语言模型。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入：I [MASK] you.</span><br><span class="line">目标：love</span><br></pre></td></tr></table></figure>
+
+<p>模型利用 <code>[MASK]</code> 左右两侧信息预测被遮住的 token。</p>
+<h4 id="NSP"><a href="#NSP" class="headerlink" title="NSP"></a>NSP</h4><p>Next Sentence Prediction，下一句预测。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Sentence A: I love you.</span><br><span class="line">Sentence B: Because you are wonderful.</span><br><span class="line">Label: IsNext</span><br></pre></td></tr></table></figure>
+
+<p>判断 B 是否是 A 后面的真实连续句子。</p>
+<h3 id="2-5-RoBERTa"><a href="#2-5-RoBERTa" class="headerlink" title="2.5 RoBERTa"></a>2.5 RoBERTa</h3><p>核心思路：</p>
+<ul>
+<li>仍然是 BERT Encoder 架构；</li>
+<li>去掉 NSP；</li>
+<li>使用动态 Mask；</li>
+<li>使用更多数据、更大的 batch、更长训练；</li>
+<li>强调“把 BERT 训练充分”本身就能明显提升效果。</li>
+</ul>
+<h3 id="2-6-ALBERT"><a href="#2-6-ALBERT" class="headerlink" title="2.6 ALBERT"></a>2.6 ALBERT</h3><p>主要优化：</p>
+<ul>
+<li>Embedding 参数分解；</li>
+<li>Encoder 跨层参数共享；</li>
+<li>使用 SOP 替代 NSP。</li>
+</ul>
+<p>SOP：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">正例：</span><br><span class="line">A → B</span><br><span class="line"></span><br><span class="line">负例：</span><br><span class="line">B → A</span><br></pre></td></tr></table></figure>
+
+<p>让模型判断句子顺序是否正确。</p>
+<hr>
+<h2 id="3-Encoder-Decoder-PLM"><a href="#3-Encoder-Decoder-PLM" class="headerlink" title="3. Encoder-Decoder PLM"></a>3. Encoder-Decoder PLM</h2><h3 id="3-1-是什么"><a href="#3-1-是什么" class="headerlink" title="3.1 是什么"></a>3.1 是什么</h3><p>Encoder-Decoder 同时保留 Transformer 的两个部分。</p>
+<p>代表：</p>
+<ul>
+<li>T5</li>
+<li>BART（同类 Seq2Seq PLM）</li>
+</ul>
+<h3 id="3-2-核心实现机制"><a href="#3-2-核心实现机制" class="headerlink" title="3.2 核心实现机制"></a>3.2 核心实现机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Input Tokens</span><br><span class="line">     ↓</span><br><span class="line">Encoder</span><br><span class="line">     ↓</span><br><span class="line">Encoder Memory</span><br><span class="line">     ↓</span><br><span class="line">────────────────────────</span><br><span class="line">     ↓ Cross-Attention</span><br><span class="line">Decoder ← 已生成的 Target Tokens</span><br><span class="line">     ↓</span><br><span class="line">Next Target Token</span><br></pre></td></tr></table></figure>
+
+<p>Encoder：</p>
+<ul>
+<li>使用双向 Self-Attention；</li>
+<li>负责理解完整输入。</li>
+</ul>
+<p>Decoder：</p>
+<ol>
+<li>Causal Self-Attention：只看已经生成的 token；</li>
+<li>Cross-Attention：Query 来自 Decoder，K&#x2F;V 来自 Encoder；</li>
+<li>FFN；</li>
+<li>输出下一个 token。</li>
+</ol>
+<p>Cross-Attention 可以写成：</p>
+<p>$$
+Q &#x3D; H_{decoder}W_Q,\quad
+K &#x3D; H_{encoder}W_K,\quad
+V &#x3D; H_{encoder}W_V
+$$</p>
+<p>$$
+Attention(Q,K,V) &#x3D;
+softmax\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$</p>
+<p>因此 Decoder 每生成一个 token，都可以查询 Encoder 对输入的完整语义表示。</p>
+<h3 id="3-3-T5-的核心思想"><a href="#3-3-T5-的核心思想" class="headerlink" title="3.3 T5 的核心思想"></a>3.3 T5 的核心思想</h3><p>T5 &#x3D; <strong>Text-to-Text Transfer Transformer</strong>。</p>
+<p>所有任务统一成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">文本输入 → 文本输出</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">情感分类：</span><br><span class="line">Input: sentiment: 这个产品很好</span><br><span class="line">Output: positive</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">翻译：</span><br><span class="line">Input: translate English to German: How are you?</span><br><span class="line">Output: Wie geht es dir?</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">摘要：</span><br><span class="line">Input: summarize: &lt;long document&gt;</span><br><span class="line">Output: &lt;summary&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-T5-的预训练机制"><a href="#3-4-T5-的预训练机制" class="headerlink" title="3.4 T5 的预训练机制"></a>3.4 T5 的预训练机制</h3><p>更严格地说，经典 T5 最终采用 <strong>Span Corruption</strong>：</p>
+<p>原文：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Thank you for inviting me to your party last week.</span><br></pre></td></tr></table></figure>
+
+<p>损坏输入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Thank you &lt;extra_id_0&gt; me to your party &lt;extra_id_1&gt; week.</span><br></pre></td></tr></table></figure>
+
+<p>Decoder 目标：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;extra_id_0&gt; for inviting &lt;extra_id_1&gt; last &lt;extra_id_2&gt;</span><br></pre></td></tr></table></figure>
+
+<p>机制：</p>
+<ol>
+<li>随机选择约 15% token；</li>
+<li>将连续被选中的 token 合并为 span；</li>
+<li>每个 span 用一个 sentinel token 替换；</li>
+<li>Encoder 输入损坏文本；</li>
+<li>Decoder 自回归生成被删除的 span。</li>
+</ol>
+<hr>
+<h2 id="4-Decoder-Only-PLM"><a href="#4-Decoder-Only-PLM" class="headerlink" title="4. Decoder-Only PLM"></a>4. Decoder-Only PLM</h2><h3 id="4-1-是什么"><a href="#4-1-是什么" class="headerlink" title="4.1 是什么"></a>4.1 是什么</h3><p>Decoder-Only 保留 Transformer Decoder 的自回归部分，但没有 Encoder，因此也没有 Encoder-Decoder Cross-Attention。</p>
+<p>代表：</p>
+<ul>
+<li>GPT 系列</li>
+<li>LLaMA 系列</li>
+<li>Qwen 等主流生成式 LLM</li>
+</ul>
+<h3 id="4-2-核心实现机制"><a href="#4-2-核心实现机制" class="headerlink" title="4.2 核心实现机制"></a>4.2 核心实现机制</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Tokens</span><br><span class="line">  ↓</span><br><span class="line">Embedding + Position Encoding</span><br><span class="line">  ↓</span><br><span class="line">Causal Self-Attention</span><br><span class="line">  ↓</span><br><span class="line">FFN</span><br><span class="line">  ↓</span><br><span class="line">... × N Layers</span><br><span class="line">  ↓</span><br><span class="line">LM Head</span><br><span class="line">  ↓</span><br><span class="line">Vocabulary Probability</span><br><span class="line">  ↓</span><br><span class="line">Next Token</span><br></pre></td></tr></table></figure>
+
+<p>最关键的是 <strong>Causal Mask</strong>。</p>
+<p>假设序列：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A B C D</span><br></pre></td></tr></table></figure>
+
+<p>注意力可见范围：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A → A</span><br><span class="line">B → A B</span><br><span class="line">C → A B C</span><br><span class="line">D → A B C D</span><br></pre></td></tr></table></figure>
+
+<p>不能：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">B → C/D</span><br><span class="line">C → D</span><br></pre></td></tr></table></figure>
+
+<p>因此模型训练时模拟真实生成过程。</p>
+<h3 id="4-3-CLM：Decoder-Only-的核心训练任务"><a href="#4-3-CLM：Decoder-Only-的核心训练任务" class="headerlink" title="4.3 CLM：Decoder-Only 的核心训练任务"></a>4.3 CLM：Decoder-Only 的核心训练任务</h3><p>CLM &#x3D; Causal Language Modeling。</p>
+<p>给定：</p>
+<p>$$
+x_1,x_2,\dots,x_T
+$$</p>
+<p>训练目标：</p>
+<p>$$
+P(x_1,\dots,x_T) &#x3D;
+\prod_{t&#x3D;1}^{T}P(x_t|x_{&lt;t})
+$$</p>
+<p>Loss：</p>
+<p>$$
+\mathcal{L}<em>{CLM} &#x3D;
+-\sum_t \log P_\theta(x_t|x</em>{&lt;t})
+$$</p>
+<p>代码层面的直觉就是“标签右移一位”：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Input : 我 今天 去 北京</span><br><span class="line">Label : 今天 去 北京 &lt;EOS&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-推理过程"><a href="#4-4-推理过程" class="headerlink" title="4.4 推理过程"></a>4.4 推理过程</h3><p>给定 prompt：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">中国的首都是</span><br></pre></td></tr></table></figure>
+
+<p>模型得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">P(北京 | 中国的首都是)</span><br></pre></td></tr></table></figure>
+
+<p>选出“北京”后，将它拼回输入：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">中国的首都是 北京</span><br></pre></td></tr></table></figure>
+
+<p>继续：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">P(next_token | 中国的首都是 北京)</span><br></pre></td></tr></table></figure>
+
+<p>一直生成到 <code>&lt;EOS&gt;</code> 或最大长度。</p>
+<hr>
+<h1 id="PLM-三种架构总表"><a href="#PLM-三种架构总表" class="headerlink" title="PLM 三种架构总表"></a>PLM 三种架构总表</h1><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Encoder-Only</th>
+<th>Encoder-Decoder</th>
+<th>Decoder-Only</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代表模型</td>
+<td>BERT</td>
+<td>T5</td>
+<td>GPT &#x2F; LLaMA</td>
+</tr>
+<tr>
+<td>Encoder</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Decoder</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅式自回归 Block</td>
+</tr>
+<tr>
+<td>输入注意力</td>
+<td>双向</td>
+<td>Encoder 双向</td>
+<td>因果单向</td>
+</tr>
+<tr>
+<td>Cross-Attention</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>典型预训练任务</td>
+<td>MLM</td>
+<td>Span Corruption</td>
+<td>CLM</td>
+</tr>
+<tr>
+<td>天然强项</td>
+<td>理解</td>
+<td>条件生成&#x2F;Seq2Seq</td>
+<td>自由生成&#x2F;通用 LLM</td>
+</tr>
+<tr>
+<td>典型任务</td>
+<td>分类、NER、匹配</td>
+<td>翻译、摘要、QA</td>
+<td>对话、生成、代码、推理</td>
+</tr>
+<tr>
+<td>每个 token 能看未来吗</td>
+<td>✅</td>
+<td>Encoder ✅ &#x2F; Decoder ❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>自回归生成</td>
+<td>不擅长</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>当前通用 LLM 主流</td>
+<td>否</td>
+<td>少数</td>
+<td><strong>是</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="第四章：大语言模型（LLM）"><a href="#第四章：大语言模型（LLM）" class="headerlink" title="第四章：大语言模型（LLM）"></a>第四章：大语言模型（LLM）</h1><h2 id="5-什么是-LLM"><a href="#5-什么是-LLM" class="headerlink" title="5. 什么是 LLM"></a>5. 什么是 LLM</h2><p>LLM 本质仍然是语言模型，但相比传统 PLM：</p>
+<ul>
+<li>参数规模更大；</li>
+<li>预训练 token 更多；</li>
+<li>数据类型更多；</li>
+<li>算力投入更大；</li>
+<li>出现更强的通用能力。</li>
+</ul>
+<p>第四章重点强调的能力包括：</p>
+<h3 id="5-1-Emergent-Abilities：涌现能力"><a href="#5-1-Emergent-Abilities：涌现能力" class="headerlink" title="5.1 Emergent Abilities：涌现能力"></a>5.1 Emergent Abilities：涌现能力</h3><p>模型规模扩大后，一些复杂能力可能在较大规模时明显提升。</p>
+<p>面试时不要把“涌现”说成一个绝对严格的参数阈值，核心是：</p>
+<blockquote>
+<p>规模增加后，某些复杂任务能力出现明显的非线性提升。</p>
+</blockquote>
+<h3 id="5-2-In-Context-Learning：上下文学习"><a href="#5-2-In-Context-Learning：上下文学习" class="headerlink" title="5.2 In-Context Learning：上下文学习"></a>5.2 In-Context Learning：上下文学习</h3><p>无需更新参数，仅把任务说明或示例放进 Prompt：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">正面：这个电影非常好看</span><br><span class="line">负面：这个电影太无聊</span><br><span class="line"></span><br><span class="line">判断：</span><br><span class="line">这个故事很精彩 → ?</span><br></pre></td></tr></table></figure>
+
+<p>模型从上下文中的模式完成新任务。</p>
+<p>包含：</p>
+<ul>
+<li>Zero-shot</li>
+<li>One-shot</li>
+<li>Few-shot</li>
+</ul>
+<h3 id="5-3-Instruction-Following：指令遵循"><a href="#5-3-Instruction-Following：指令遵循" class="headerlink" title="5.3 Instruction Following：指令遵循"></a>5.3 Instruction Following：指令遵循</h3><p>经过指令微调后，模型可以按照自然语言要求完成未见过的任务。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">请把下面内容总结成三点……</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-Step-by-Step-Reasoning-CoT"><a href="#5-4-Step-by-Step-Reasoning-CoT" class="headerlink" title="5.4 Step-by-Step Reasoning &#x2F; CoT"></a>5.4 Step-by-Step Reasoning &#x2F; CoT</h3><p>模型通过显式或隐式的中间推理过程处理多步任务。</p>
+<p>典型形式：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Question → Intermediate Reasoning → Answer</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="LLM-三阶段训练"><a href="#LLM-三阶段训练" class="headerlink" title="LLM 三阶段训练"></a>LLM 三阶段训练</h1><h2 id="6-总览"><a href="#6-总览" class="headerlink" title="6. 总览"></a>6. 总览</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">大量无标注文本</span><br><span class="line">      ↓</span><br><span class="line">   Pretrain</span><br><span class="line">      ↓</span><br><span class="line">Base Model</span><br><span class="line">      ↓</span><br><span class="line">高质量指令数据</span><br><span class="line">      ↓</span><br><span class="line">     SFT</span><br><span class="line">      ↓</span><br><span class="line">Instruct / Chat Model</span><br><span class="line">      ↓</span><br><span class="line">人类偏好 / Reward</span><br><span class="line">      ↓</span><br><span class="line">RLHF / DPO / GRPO 等</span><br><span class="line">      ↓</span><br><span class="line">Aligned Model</span><br></pre></td></tr></table></figure>
+
+<p>一句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Pretrain：学知识</span><br><span class="line">SFT：学怎么回答</span><br><span class="line">Alignment：学什么回答更好</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-Pretrain"><a href="#7-Pretrain" class="headerlink" title="7. Pretrain"></a>7. Pretrain</h2><h3 id="7-1-是什么"><a href="#7-1-是什么" class="headerlink" title="7.1 是什么"></a>7.1 是什么</h3><p>Pretrain &#x3D; 预训练。</p>
+<p>对于当前 Decoder-Only LLM，最经典目标就是 <strong>CLM &#x2F; Next Token Prediction</strong>。</p>
+<p>不需要人工给每句话打标签，因为原始文本本身就能构造训练标签。</p>
+<h3 id="7-2-实现机制"><a href="#7-2-实现机制" class="headerlink" title="7.2 实现机制"></a>7.2 实现机制</h3><h4 id="Step-1：收集数据"><a href="#Step-1：收集数据" class="headerlink" title="Step 1：收集数据"></a>Step 1：收集数据</h4><p>例如：</p>
+<ul>
+<li>Common Crawl</li>
+<li>Wikipedia</li>
+<li>Books</li>
+<li>Code</li>
+<li>ArXiv</li>
+<li>Forums &#x2F; QA</li>
+<li>多语言语料</li>
+</ul>
+<h4 id="Step-2：数据清洗"><a href="#Step-2：数据清洗" class="headerlink" title="Step 2：数据清洗"></a>Step 2：数据清洗</h4><p>包括：</p>
+<ul>
+<li>去重；</li>
+<li>去乱码；</li>
+<li>语言识别；</li>
+<li>质量过滤；</li>
+<li>敏感&#x2F;隐私过滤；</li>
+<li>文档切分。</li>
+</ul>
+<h4 id="Step-3：Tokenizer"><a href="#Step-3：Tokenizer" class="headerlink" title="Step 3：Tokenizer"></a>Step 3：Tokenizer</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">文本 → token IDs</span><br></pre></td></tr></table></figure>
+
+<h4 id="Step-4：Packing"><a href="#Step-4：Packing" class="headerlink" title="Step 4：Packing"></a>Step 4：Packing</h4><p>把多个短文本拼成固定长度训练序列，提高 GPU 利用率。</p>
+<h4 id="Step-5：构造-CLM-标签"><a href="#Step-5：构造-CLM-标签" class="headerlink" title="Step 5：构造 CLM 标签"></a>Step 5：构造 CLM 标签</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Input : x1 x2 x3 x4</span><br><span class="line">Target: x2 x3 x4 x5</span><br></pre></td></tr></table></figure>
+
+<h4 id="Step-6：计算交叉熵"><a href="#Step-6：计算交叉熵" class="headerlink" title="Step 6：计算交叉熵"></a>Step 6：计算交叉熵</h4><p>$$
+\mathcal{L}<em>{pretrain} &#x3D;
+-\sum_t
+\log P_\theta(x_t|x</em>{&lt;t})
+$$</p>
+<h4 id="Step-7：反向传播"><a href="#Step-7：反向传播" class="headerlink" title="Step 7：反向传播"></a>Step 7：反向传播</h4><p>使用 AdamW 等优化器，在多 GPU &#x2F; TPU 上做：</p>
+<ul>
+<li>Data Parallel</li>
+<li>Tensor Parallel</li>
+<li>Pipeline Parallel</li>
+<li>ZeRO 等</li>
+</ul>
+<p>更新模型参数。</p>
+<h3 id="7-3-Pretrain-学到了什么"><a href="#7-3-Pretrain-学到了什么" class="headerlink" title="7.3 Pretrain 学到了什么"></a>7.3 Pretrain 学到了什么</h3><p>主要获得：</p>
+<ul>
+<li>语法；</li>
+<li>词义；</li>
+<li>世界知识；</li>
+<li>文本风格；</li>
+<li>一定程度的推理；</li>
+<li>代码模式；</li>
+<li>多语言映射。</li>
+</ul>
+<p>但 Base Model 通常<strong>不一定听指令</strong>。</p>
+<hr>
+<h2 id="8-SFT"><a href="#8-SFT" class="headerlink" title="8. SFT"></a>8. SFT</h2><h3 id="8-1-是什么"><a href="#8-1-是什么" class="headerlink" title="8.1 是什么"></a>8.1 是什么</h3><p>SFT &#x3D; Supervised Fine-Tuning，监督微调。</p>
+<p>训练数据：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;instruction&quot;</span><span class="punctuation">:</span> <span class="string">&quot;将下列文本翻译成英文&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;input&quot;</span><span class="punctuation">:</span> <span class="string">&quot;今天天气真好&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;output&quot;</span><span class="punctuation">:</span> <span class="string">&quot;The weather is nice today.&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>现代 Chat 模型还常使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">System</span><br><span class="line">User</span><br><span class="line">Assistant</span><br><span class="line">User</span><br><span class="line">Assistant</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-实现机制"><a href="#8-2-实现机制" class="headerlink" title="8.2 实现机制"></a>8.2 实现机制</h3><h4 id="Step-1：构造-Chat-Template"><a href="#Step-1：构造-Chat-Template" class="headerlink" title="Step 1：构造 Chat Template"></a>Step 1：构造 Chat Template</h4><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;System&gt; You are a helpful assistant.</span><br><span class="line">&lt;User&gt; 解释 Transformer</span><br><span class="line">&lt;Assistant&gt; Transformer 是……</span><br></pre></td></tr></table></figure>
+
+<h4 id="Step-2：Tokenize"><a href="#Step-2：Tokenize" class="headerlink" title="Step 2：Tokenize"></a>Step 2：Tokenize</h4><p>完整对话转换成 token IDs。</p>
+<h4 id="Step-3：构造-Loss-Mask"><a href="#Step-3：构造-Loss-Mask" class="headerlink" title="Step 3：构造 Loss Mask"></a>Step 3：构造 Loss Mask</h4><p>常见做法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">System tokens      → 不算 loss</span><br><span class="line">User tokens        → 不算 loss</span><br><span class="line">Assistant response → 计算 loss</span><br></pre></td></tr></table></figure>
+
+<p>在 PyTorch &#x2F; Transformers 中通常将不参与 loss 的 label 设置为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-100</span><br></pre></td></tr></table></figure>
+
+<h4 id="Step-4：仍然做-Next-Token-Prediction"><a href="#Step-4：仍然做-Next-Token-Prediction" class="headerlink" title="Step 4：仍然做 Next Token Prediction"></a>Step 4：仍然做 Next Token Prediction</h4><p>SFT 并没有换掉 Decoder-Only 的语言建模本质。</p>
+<p>$$
+\mathcal{L}<em>{SFT} &#x3D;
+-\sum</em>{t \in assistant}
+\log P_\theta(y_t|x,y_{&lt;t})
+$$</p>
+<h4 id="Step-5：更新参数"><a href="#Step-5：更新参数" class="headerlink" title="Step 5：更新参数"></a>Step 5：更新参数</h4><p>可以：</p>
+<ul>
+<li>Full Fine-Tuning；</li>
+<li>LoRA；</li>
+<li>QLoRA；</li>
+<li>其他 PEFT。</li>
+</ul>
+<h3 id="8-3-SFT-主要带来什么"><a href="#8-3-SFT-主要带来什么" class="headerlink" title="8.3 SFT 主要带来什么"></a>8.3 SFT 主要带来什么</h3><ul>
+<li>指令遵循；</li>
+<li>对话格式；</li>
+<li>多轮对话；</li>
+<li>特定回答风格；</li>
+<li>任务泛化。</li>
+</ul>
+<h3 id="8-4-一个很重要的理解"><a href="#8-4-一个很重要的理解" class="headerlink" title="8.4 一个很重要的理解"></a>8.4 一个很重要的理解</h3><blockquote>
+<p><strong>模型支持多轮对话不是因为 Transformer 自动“记住历史”，而是因为历史对话被重新放进上下文，并且 SFT 数据教会模型如何利用这种格式。</strong></p>
+</blockquote>
+<hr>
+<h2 id="9-RLHF"><a href="#9-RLHF" class="headerlink" title="9. RLHF"></a>9. RLHF</h2><h3 id="9-1-是什么"><a href="#9-1-是什么" class="headerlink" title="9.1 是什么"></a>9.1 是什么</h3><p>RLHF &#x3D; Reinforcement Learning from Human Feedback。</p>
+<p>核心目标：</p>
+<blockquote>
+<p>让模型不仅“能回答”，而且更倾向于生成<strong>人类认为更好、更有帮助、更安全</strong>的回答。</p>
+</blockquote>
+<p>经典 PPO-RLHF 可以拆成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">SFT Model</span><br><span class="line">   ↓</span><br><span class="line">收集多个回答</span><br><span class="line">   ↓</span><br><span class="line">人类排序</span><br><span class="line">   ↓</span><br><span class="line">训练 Reward Model</span><br><span class="line">   ↓</span><br><span class="line">PPO 强化学习</span><br><span class="line">   ↓</span><br><span class="line">Aligned Model</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="10-Reward-Model（RM）"><a href="#10-Reward-Model（RM）" class="headerlink" title="10. Reward Model（RM）"></a>10. Reward Model（RM）</h2><h3 id="10-1-偏好数据"><a href="#10-1-偏好数据" class="headerlink" title="10.1 偏好数据"></a>10.1 偏好数据</h3><p>典型数据：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Prompt: x</span><br><span class="line">Chosen: y_w</span><br><span class="line">Rejected: y_l</span><br></pre></td></tr></table></figure>
+
+<p>即：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y_w &gt; y_l</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-RM-做什么"><a href="#10-2-RM-做什么" class="headerlink" title="10.2 RM 做什么"></a>10.2 RM 做什么</h3><p>Reward Model：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(prompt, response) → scalar reward</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">好回答 → 4.2</span><br><span class="line">差回答 → -1.3</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-3-训练思想"><a href="#10-3-训练思想" class="headerlink" title="10.3 训练思想"></a>10.3 训练思想</h3><p>希望：</p>
+<p>$$
+r_\phi(x,y_w) &gt; r_\phi(x,y_l)
+$$</p>
+<p>常用 Bradley-Terry 风格 pairwise loss：</p>
+<p>$$
+\mathcal{L}_{RM} &#x3D;
+-\log \sigma(r_\phi(x,y_w)-r_\phi(x,y_l))
+$$</p>
+<hr>
+<h2 id="11-PPO-RLHF"><a href="#11-PPO-RLHF" class="headerlink" title="11. PPO-RLHF"></a>11. PPO-RLHF</h2><p>经典 PPO-RLHF 中可以理解为有四个角色：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th align="right">是否更新</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Actor &#x2F; Policy</td>
+<td align="right">✅</td>
+<td>被训练的 LLM</td>
+</tr>
+<tr>
+<td>Reference Model</td>
+<td align="right">❌</td>
+<td>防止策略偏离 SFT 模型太远</td>
+</tr>
+<tr>
+<td>Reward Model</td>
+<td align="right">❌</td>
+<td>对回答打偏好分</td>
+</tr>
+<tr>
+<td>Critic &#x2F; Value Model</td>
+<td align="right">✅</td>
+<td>估计 value &#x2F; advantage</td>
+</tr>
+</tbody></table>
+<p>训练循环：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Prompt</span><br><span class="line">  ↓</span><br><span class="line">Actor 生成 Response</span><br><span class="line">  ↓</span><br><span class="line">Reward Model 打分</span><br><span class="line">  ↓</span><br><span class="line">Reference Model 计算 KL</span><br><span class="line">  ↓</span><br><span class="line">Critic 估计 Value</span><br><span class="line">  ↓</span><br><span class="line">计算 Advantage</span><br><span class="line">  ↓</span><br><span class="line">PPO Clipped Objective</span><br><span class="line">  ↓</span><br><span class="line">更新 Actor + Critic</span><br></pre></td></tr></table></figure>
+
+<p>为什么要 Reference Model？</p>
+<p>防止模型为了“刷高 reward”完全偏离原本语言能力。</p>
+<p>常见 reward：</p>
+<p>$$
+R &#x3D;
+R_{RM} -
+\beta D_{KL}(\pi_\theta||\pi_{ref})
+$$</p>
+<hr>
+<h1 id="DPO"><a href="#DPO" class="headerlink" title="DPO"></a>DPO</h1><h2 id="12-DPO-是什么"><a href="#12-DPO-是什么" class="headerlink" title="12. DPO 是什么"></a>12. DPO 是什么</h2><p>DPO &#x3D; <strong>Direct Preference Optimization</strong>。</p>
+<p>核心思想：</p>
+<blockquote>
+<p>不再“先训练 Reward Model → 再用 PPO 最大化 reward”，而是直接让 policy 对 <strong>chosen 的相对偏好高于 rejected</strong>。</p>
+</blockquote>
+<p>训练数据仍然是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(x, y_w, y_l)</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li><code>x</code>：prompt；</li>
+<li><code>y_w</code>：chosen；</li>
+<li><code>y_l</code>：rejected。</li>
+</ul>
+<hr>
+<h2 id="13-DPO-实现原理"><a href="#13-DPO-实现原理" class="headerlink" title="13. DPO 实现原理"></a>13. DPO 实现原理</h2><p>需要：</p>
+<ol>
+<li>当前训练模型 (\pi_\theta)</li>
+<li>Reference Model (\pi_{ref})</li>
+<li>Preference Pair</li>
+</ol>
+<p>分别计算 chosen 和 rejected 的 sequence log probability。</p>
+<p>核心直觉：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当前模型相对于 reference：</span><br><span class="line">更应该提升 chosen</span><br><span class="line">更应该压低 rejected</span><br></pre></td></tr></table></figure>
+
+<p>经典 DPO loss：</p>
+<p>$$
+\mathcal L_{DPO} &#x3D;
+-\log \sigma
+\left(
+\beta
+\left[
+\log\frac{\pi_\theta(y_w|x)}
+{\pi_{ref}(y_w|x)} -
+\log\frac{\pi_\theta(y_l|x)}
+{\pi_{ref}(y_l|x)}
+\right]
+\right)
+$$</p>
+<p>训练结果：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">P(chosen | prompt) ↑</span><br><span class="line">P(rejected | prompt) ↓</span><br></pre></td></tr></table></figure>
+
+<h3 id="DPO-的关键特点"><a href="#DPO-的关键特点" class="headerlink" title="DPO 的关键特点"></a>DPO 的关键特点</h3><ul>
+<li>不需要显式 Reward Model；</li>
+<li>不需要 Critic；</li>
+<li>不执行 PPO；</li>
+<li>不需要训练过程中在线生成 rollout（经典 DPO）；</li>
+<li>直接基于离线 preference pairs；</li>
+<li>本质上更接近监督学习式偏好优化。</li>
+</ul>
+<hr>
+<h1 id="GRPO"><a href="#GRPO" class="headerlink" title="GRPO"></a>GRPO</h1><h2 id="14-GRPO-是什么"><a href="#14-GRPO-是什么" class="headerlink" title="14. GRPO 是什么"></a>14. GRPO 是什么</h2><p>GRPO &#x3D; <strong>Group Relative Policy Optimization</strong>。</p>
+<p>最初由 DeepSeekMath 系统性提出，是 PPO 的一种变体。</p>
+<p>关键改动：</p>
+<blockquote>
+<p><strong>去掉 Critic &#x2F; Value Model，用同一 prompt 下多条回答的“组内相对奖励”作为 advantage。</strong></p>
+</blockquote>
+<hr>
+<h2 id="15-GRPO-实现原理"><a href="#15-GRPO-实现原理" class="headerlink" title="15. GRPO 实现原理"></a>15. GRPO 实现原理</h2><p>对一个 Prompt (q)：</p>
+<h3 id="Step-1：一次生成-G-个回答"><a href="#Step-1：一次生成-G-个回答" class="headerlink" title="Step 1：一次生成 G 个回答"></a>Step 1：一次生成 G 个回答</h3><p>$$
+o_1,o_2,\dots,o_G
+$$</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Prompt: 2 + 3 × 4 = ?</span><br><span class="line"></span><br><span class="line">o1 = 14</span><br><span class="line">o2 = 20</span><br><span class="line">o3 = 14</span><br><span class="line">o4 = 11</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-2：计算-reward"><a href="#Step-2：计算-reward" class="headerlink" title="Step 2：计算 reward"></a>Step 2：计算 reward</h3><p>例如使用答案正确性：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">r = [1, 0, 1, 0]</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用：</p>
+<ul>
+<li>Reward Model；</li>
+<li>Rule-based Reward；</li>
+<li>Verifier；</li>
+<li>Unit Test；</li>
+<li>Format Reward。</li>
+</ul>
+<h3 id="Step-3：组内标准化"><a href="#Step-3：组内标准化" class="headerlink" title="Step 3：组内标准化"></a>Step 3：组内标准化</h3><p>$$
+A_i &#x3D;
+\frac{r_i-\mu_r}
+{\sigma_r+\epsilon}
+$$</p>
+<p>其中：</p>
+<p>$$
+\mu_r &#x3D; mean(r_1,\dots,r_G)
+$$</p>
+<p>$$
+\sigma_r &#x3D; std(r_1,\dots,r_G)
+$$</p>
+<p>于是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">高于组平均 → A &gt; 0 → 提高概率</span><br><span class="line">低于组平均 → A &lt; 0 → 降低概率</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-4：PPO-style-clipped-update"><a href="#Step-4：PPO-style-clipped-update" class="headerlink" title="Step 4：PPO-style clipped update"></a>Step 4：PPO-style clipped update</h3><p>GRPO 仍然使用类似 PPO 的 ratio clipping：</p>
+<p>$$
+\rho_{i,t} &#x3D;
+\frac{
+\pi_\theta(o_{i,t}|q,o_{i,&lt;t})
+}{
+\pi_{\theta_{old}}(o_{i,t}|q,o_{i,&lt;t})
+}
+$$</p>
+<p>目标中使用：</p>
+<p>$$
+\min(
+\rho_{i,t}A_i,
+clip(\rho_{i,t},1-\epsilon,1+\epsilon)A_i
+)
+$$</p>
+<p>同时通常加入针对 reference policy 的 KL penalty。</p>
+<h3 id="GRPO-为什么省显存"><a href="#GRPO-为什么省显存" class="headerlink" title="GRPO 为什么省显存"></a>GRPO 为什么省显存</h3><p>PPO 需要一个通常很大的 Critic &#x2F; Value Model。</p>
+<p>GRPO：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Critic ❌</span><br><span class="line">组内 reward 统计 → baseline / advantage</span><br></pre></td></tr></table></figure>
+
+<p>因此显著降低强化学习阶段的显存和计算负担。</p>
+<hr>
+<h1 id="RLHF、DPO、GRPO-对比"><a href="#RLHF、DPO、GRPO-对比" class="headerlink" title="RLHF、DPO、GRPO 对比"></a>RLHF、DPO、GRPO 对比</h1><blockquote>
+<p>严格来说，<strong>RLHF 是一个“使用人类反馈进行对齐”的大范式，而 PPO、GRPO 是优化算法，DPO 是直接偏好优化算法。</strong></p>
+<p>所以下表实际比较的是最常见的 <strong>PPO-RLHF vs DPO vs GRPO</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>经典 PPO-RLHF</th>
+<th>DPO</th>
+<th>GRPO</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>是否做偏好&#x2F;对齐训练</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>是否属于在线 RL</td>
+<td>✅</td>
+<td>❌，经典 DPO 是离线偏好优化</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>是否需要 Preference Pair</td>
+<td>✅ 用来训练 RM</td>
+<td>✅ 直接训练 Policy</td>
+<td>不一定</td>
+</tr>
+<tr>
+<td>是否需要显式 Reward Model</td>
+<td>✅</td>
+<td>❌</td>
+<td>不一定</td>
+</tr>
+<tr>
+<td>是否需要 Reward Signal</td>
+<td>✅</td>
+<td>偏好对本身提供监督</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>是否需要 Critic &#x2F; Value Model</td>
+<td>✅</td>
+<td>❌</td>
+<td><strong>❌</strong></td>
+</tr>
+<tr>
+<td>是否需要 Reference Model</td>
+<td>通常 ✅</td>
+<td>通常 ✅</td>
+<td>通常 ✅</td>
+</tr>
+<tr>
+<td>是否需要在线生成 Response</td>
+<td>✅</td>
+<td>❌</td>
+<td><strong>✅，同一 Prompt 采样一组</strong></td>
+</tr>
+<tr>
+<td>是否有 PPO-style Clip</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>是否计算 Advantage</td>
+<td>✅，通常靠 Critic&#x2F;GAE</td>
+<td>❌</td>
+<td>✅，靠组内相对奖励</td>
+</tr>
+<tr>
+<td>人类必须实时参与训练吗</td>
+<td>❌，人类偏好通常先离线收集</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>可以使用自动可验证 Reward 吗</td>
+<td>✅</td>
+<td>不直接适用其经典形式</td>
+<td><strong>非常适合</strong></td>
+</tr>
+<tr>
+<td>工程复杂度</td>
+<td>高</td>
+<td>低</td>
+<td>中等</td>
+</tr>
+<tr>
+<td>显存开销</td>
+<td>高</td>
+<td>较低</td>
+<td>比 PPO 低</td>
+</tr>
+<tr>
+<td>典型数据</td>
+<td>Prompt + 偏好排名 + Rollout</td>
+<td>Chosen &#x2F; Rejected Pair</td>
+<td>Prompt + Group Rollouts + Reward</td>
+</tr>
+<tr>
+<td>典型优势</td>
+<td>成熟、在线探索能力强</td>
+<td>简单稳定、成本低</td>
+<td>无 Critic、适合 reasoning RL</td>
+</tr>
+<tr>
+<td>典型限制</td>
+<td>复杂、昂贵、不稳定</td>
+<td>受离线偏好数据质量约束</td>
+<td>同一 prompt 要采样多条回答，生成成本高</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="“有什么-没有什么”速查"><a href="#“有什么-没有什么”速查" class="headerlink" title="“有什么 &#x2F; 没有什么”速查"></a>“有什么 &#x2F; 没有什么”速查</h1><table>
+<thead>
+<tr>
+<th>方法</th>
+<th align="right">Actor</th>
+<th align="right">Reference</th>
+<th align="right">Reward Model</th>
+<th align="right">Critic</th>
+<th align="right">Chosen&#x2F;Rejected</th>
+<th align="right">在线 Rollout</th>
+<th align="right">Group Sampling</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PPO-RLHF</td>
+<td align="right">✅</td>
+<td align="right">✅</td>
+<td align="right">✅</td>
+<td align="right">✅</td>
+<td align="right">✅（RM 阶段）</td>
+<td align="right">✅</td>
+<td align="right">❌</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td align="right">✅</td>
+<td align="right">✅</td>
+<td align="right">❌</td>
+<td align="right">❌</td>
+<td align="right">✅</td>
+<td align="right">❌</td>
+<td align="right">❌</td>
+</tr>
+<tr>
+<td>GRPO</td>
+<td align="right">✅</td>
+<td align="right">通常 ✅</td>
+<td align="right">可选</td>
+<td align="right"><strong>❌</strong></td>
+<td align="right">❌&#x2F;可选</td>
+<td align="right"><strong>✅</strong></td>
+<td align="right"><strong>✅</strong></td>
+</tr>
+</tbody></table>
+<p>最适合背的一句话：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PPO：RM + Critic 都有</span><br><span class="line">DPO：RM、Critic 都没有，直接吃偏好对</span><br><span class="line">GRPO：Critic 没有，但仍然在线采样并需要 Reward</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="自注意力机制：MHA-MQA-GQA"><a href="#自注意力机制：MHA-MQA-GQA" class="headerlink" title="自注意力机制：MHA &#x2F; MQA &#x2F; GQA"></a>自注意力机制：MHA &#x2F; MQA &#x2F; GQA</h1><h2 id="16-先回顾-Attention"><a href="#16-先回顾-Attention" class="headerlink" title="16. 先回顾 Attention"></a>16. 先回顾 Attention</h2><p>$$
+Attention(Q,K,V) &#x3D;
+softmax\left(
+\frac{QK^T}{\sqrt{d_k}}
+\right)V
+$$</p>
+<p>含义：</p>
+<ul>
+<li>Q（Query）：我正在找什么；</li>
+<li>K（Key）：每个 token 提供什么“索引”；</li>
+<li>V（Value）：真正被聚合的信息。</li>
+</ul>
+<hr>
+<h2 id="17-MHA：Multi-Head-Attention"><a href="#17-MHA：Multi-Head-Attention" class="headerlink" title="17. MHA：Multi-Head Attention"></a>17. MHA：Multi-Head Attention</h2><h3 id="17-1-实现"><a href="#17-1-实现" class="headerlink" title="17.1 实现"></a>17.1 实现</h3><p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">num_heads = 8</span><br></pre></td></tr></table></figure>
+
+<p>MHA：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Q heads = 8</span><br><span class="line">K heads = 8</span><br><span class="line">V heads = 8</span><br></pre></td></tr></table></figure>
+
+<p>每个 head 都有独立：</p>
+<p>$$
+W_i^Q,W_i^K,W_i^V
+$$</p>
+<p>$$
+head_i &#x3D;
+Attention(QW_i^Q,KW_i^K,VW_i^V)
+$$</p>
+<p>最终：</p>
+<p>$$
+MultiHead &#x3D;
+Concat(head_1,\dots,head_h)W^O
+$$</p>
+<h3 id="17-2-特点"><a href="#17-2-特点" class="headerlink" title="17.2 特点"></a>17.2 特点</h3><p>优点：</p>
+<ul>
+<li>不同 head 学不同关系；</li>
+<li>表达能力强。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>自回归推理时每个 head 都要缓存自己的 K&#x2F;V；</li>
+<li>KV Cache 很大；</li>
+<li>长上下文时内存带宽压力明显。</li>
+</ul>
+<hr>
+<h2 id="18-MQA：Multi-Query-Attention"><a href="#18-MQA：Multi-Query-Attention" class="headerlink" title="18. MQA：Multi-Query Attention"></a>18. MQA：Multi-Query Attention</h2><h3 id="18-1-实现"><a href="#18-1-实现" class="headerlink" title="18.1 实现"></a>18.1 实现</h3><p>仍然保留多个 Query Head：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Q heads = 8</span><br></pre></td></tr></table></figure>
+
+<p>但 K&#x2F;V 只有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">K heads = 1</span><br><span class="line">V heads = 1</span><br></pre></td></tr></table></figure>
+
+<p>也就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Q1 ─┐</span><br><span class="line">Q2 ─┤</span><br><span class="line">Q3 ─┤</span><br><span class="line">... ├── shared K / V</span><br><span class="line">Q8 ─┘</span><br></pre></td></tr></table></figure>
+
+<p>所有 Q Head 都访问相同 K&#x2F;V。</p>
+<h3 id="18-2-为什么快"><a href="#18-2-为什么快" class="headerlink" title="18.2 为什么快"></a>18.2 为什么快</h3><p>自回归推理需要缓存历史 token 的 K&#x2F;V。</p>
+<p>MHA：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">每层缓存 h 组 K/V</span><br></pre></td></tr></table></figure>
+
+<p>MQA：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">每层只缓存 1 组 K/V</span><br></pre></td></tr></table></figure>
+
+<p>因此 KV Cache 大幅下降，内存带宽压力也大幅下降。</p>
+<h3 id="18-3-缺点"><a href="#18-3-缺点" class="headerlink" title="18.3 缺点"></a>18.3 缺点</h3><p>所有 Query Head 共用同一 K&#x2F;V，信息多样性下降，可能损失模型质量。</p>
+<hr>
+<h2 id="19-GQA：Grouped-Query-Attention"><a href="#19-GQA：Grouped-Query-Attention" class="headerlink" title="19. GQA：Grouped-Query Attention"></a>19. GQA：Grouped-Query Attention</h2><h3 id="19-1-实现"><a href="#19-1-实现" class="headerlink" title="19.1 实现"></a>19.1 实现</h3><p>GQA 是 MHA 和 MQA 的折中。</p>
+<p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Q heads = 8</span><br><span class="line">KV heads = 2</span><br></pre></td></tr></table></figure>
+
+<p>那么：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Q1 Q2 Q3 Q4 → K1/V1</span><br><span class="line">Q5 Q6 Q7 Q8 → K2/V2</span><br></pre></td></tr></table></figure>
+
+<p>一般：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">h = Query Head 数</span><br><span class="line">g = KV Head 数</span><br></pre></td></tr></table></figure>
+
+<p>每：</p>
+<p>$$
+h&#x2F;g
+$$</p>
+<p>个 Query Head 共享一个 KV Head。</p>
+<p>边界情况：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">g = h → MHA</span><br><span class="line">g = 1 → MQA</span><br><span class="line">1 &lt; g &lt; h → GQA</span><br></pre></td></tr></table></figure>
+
+<h3 id="19-2-为什么-GQA-常用"><a href="#19-2-为什么-GQA-常用" class="headerlink" title="19.2 为什么 GQA 常用"></a>19.2 为什么 GQA 常用</h3><p>它在两者之间取得平衡：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">MHA：质量高，KV Cache 大</span><br><span class="line">         ↓</span><br><span class="line">GQA：质量/效率折中</span><br><span class="line">         ↓</span><br><span class="line">MQA：KV Cache 最小，可能有更明显质量损失</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="MHA-MQA-GQA-对比表"><a href="#MHA-MQA-GQA-对比表" class="headerlink" title="MHA &#x2F; MQA &#x2F; GQA 对比表"></a>MHA &#x2F; MQA &#x2F; GQA 对比表</h1><p>假设 Query Head 数 (h&#x3D;32)：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th align="right">MHA</th>
+<th align="right">MQA</th>
+<th align="right">GQA（例：8 KV Heads）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Query Heads</td>
+<td align="right">32</td>
+<td align="right">32</td>
+<td align="right">32</td>
+</tr>
+<tr>
+<td>Key Heads</td>
+<td align="right">32</td>
+<td align="right">1</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td>Value Heads</td>
+<td align="right">32</td>
+<td align="right">1</td>
+<td align="right">8</td>
+</tr>
+<tr>
+<td>每个 Q 是否有独立 K&#x2F;V</td>
+<td align="right">✅</td>
+<td align="right">❌</td>
+<td align="right">部分共享</td>
+</tr>
+<tr>
+<td>KV Cache</td>
+<td align="right">最大</td>
+<td align="right">最小</td>
+<td align="right">中间</td>
+</tr>
+<tr>
+<td>推理速度</td>
+<td align="right">相对较慢</td>
+<td align="right">快</td>
+<td align="right">快</td>
+</tr>
+<tr>
+<td>表达能力</td>
+<td align="right">最强</td>
+<td align="right">可能下降</td>
+<td align="right">接近 MHA</td>
+</tr>
+<tr>
+<td>典型定位</td>
+<td align="right">质量优先</td>
+<td align="right">极致效率</td>
+<td align="right"><strong>质量&#x2F;效率平衡</strong></td>
+</tr>
+</tbody></table>
+<p>相对 MHA，GQA 的 KV Cache 大约可以缩小为：</p>
+<p>$$
+\frac{g}{h}
+$$</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">h = 32</span><br><span class="line">g = 8</span><br></pre></td></tr></table></figure>
+
+<p>则 KV Head 数下降到原来的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8 / 32 = 1 / 4</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="第三、四章常见任务与术语速查"><a href="#第三、四章常见任务与术语速查" class="headerlink" title="第三、四章常见任务与术语速查"></a>第三、四章常见任务与术语速查</h1><h2 id="20-NLU"><a href="#20-NLU" class="headerlink" title="20. NLU"></a>20. NLU</h2><p><strong>Natural Language Understanding，自然语言理解。</strong></p>
+<p>让模型理解文本含义。</p>
+<p>典型：</p>
+<ul>
+<li>文本分类；</li>
+<li>情感分析；</li>
+<li>NER；</li>
+<li>NLI；</li>
+<li>句子匹配；</li>
+<li>抽取式 QA。</li>
+</ul>
+<hr>
+<h2 id="21-NLG"><a href="#21-NLG" class="headerlink" title="21. NLG"></a>21. NLG</h2><p><strong>Natural Language Generation，自然语言生成。</strong></p>
+<p>让模型生成自然语言。</p>
+<p>典型：</p>
+<ul>
+<li>对话；</li>
+<li>文本续写；</li>
+<li>摘要；</li>
+<li>翻译；</li>
+<li>写作；</li>
+<li>代码生成。</li>
+</ul>
+<hr>
+<h2 id="22-LM"><a href="#22-LM" class="headerlink" title="22. LM"></a>22. LM</h2><p><strong>Language Modeling，语言模型。</strong></p>
+<p>学习一个 token 序列的概率：</p>
+<p>$$
+P(x_1,\dots,x_T)
+$$</p>
+<p>最典型任务是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">根据前文预测后文</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="23-CLM"><a href="#23-CLM" class="headerlink" title="23. CLM"></a>23. CLM</h2><p><strong>Causal Language Modeling，因果语言模型。</strong></p>
+<p>每个 token 只依赖之前 token：</p>
+<p>$$
+P(x_t|x_{&lt;t})
+$$</p>
+<p>GPT&#x2F;LLaMA 的核心预训练任务。</p>
+<hr>
+<h2 id="24-MLM"><a href="#24-MLM" class="headerlink" title="24. MLM"></a>24. MLM</h2><p><strong>Masked Language Modeling，掩码语言模型。</strong></p>
+<p>遮住部分 token，利用上下文恢复它们。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">北京是中国的 [MASK]</span><br><span class="line">→ 首都</span><br></pre></td></tr></table></figure>
+
+<p>典型模型：BERT。</p>
+<hr>
+<h2 id="25-NSP"><a href="#25-NSP" class="headerlink" title="25. NSP"></a>25. NSP</h2><p><strong>Next Sentence Prediction，下一句预测。</strong></p>
+<p>判断 Sentence B 是否真实跟在 Sentence A 后。</p>
+<p>目的：学习句间关系。</p>
+<p>典型模型：BERT。</p>
+<hr>
+<h2 id="26-SOP"><a href="#26-SOP" class="headerlink" title="26. SOP"></a>26. SOP</h2><p><strong>Sentence Order Prediction，句序预测。</strong></p>
+<p>给出真实相邻句子：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A → B</span><br></pre></td></tr></table></figure>
+
+<p>负例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B → A</span><br></pre></td></tr></table></figure>
+
+<p>判断顺序是否正确。</p>
+<p>典型模型：ALBERT。</p>
+<hr>
+<h2 id="27-Seq2Seq"><a href="#27-Seq2Seq" class="headerlink" title="27. Seq2Seq"></a>27. Seq2Seq</h2><p><strong>Sequence-to-Sequence，序列到序列。</strong></p>
+<p>输入一个序列，输出另一个序列。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">英文 → 中文</span><br><span class="line">文章 → 摘要</span><br><span class="line">问题 + 文档 → 答案</span><br></pre></td></tr></table></figure>
+
+<p>典型架构：Encoder-Decoder。</p>
+<hr>
+<h2 id="28-NLI"><a href="#28-NLI" class="headerlink" title="28. NLI"></a>28. NLI</h2><p><strong>Natural Language Inference，自然语言推理。</strong></p>
+<p>判断 Hypothesis 与 Premise 的关系：</p>
+<ul>
+<li>Entailment：蕴含；</li>
+<li>Contradiction：矛盾；</li>
+<li>Neutral：中立。</li>
+</ul>
+<hr>
+<h2 id="29-QA"><a href="#29-QA" class="headerlink" title="29. QA"></a>29. QA</h2><p><strong>Question Answering，问答。</strong></p>
+<p>根据问题直接回答，或结合给定文本找到答案。</p>
+<p>可分为：</p>
+<ul>
+<li>Extractive QA；</li>
+<li>Generative QA。</li>
+</ul>
+<hr>
+<h2 id="30-Text-Classification"><a href="#30-Text-Classification" class="headerlink" title="30. Text Classification"></a>30. Text Classification</h2><p>文本 → 类别。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">“这个电影很好看”</span><br><span class="line">→ Positive</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="31-Span-Corruption-Text-Infilling"><a href="#31-Span-Corruption-Text-Infilling" class="headerlink" title="31. Span Corruption &#x2F; Text Infilling"></a>31. Span Corruption &#x2F; Text Infilling</h2><p>遮掉一段连续 token，让模型恢复整个 span。</p>
+<p>T5 的经典预训练任务属于这一类。</p>
+<hr>
+<h2 id="32-Autoregressive-Blank-Infilling"><a href="#32-Autoregressive-Blank-Infilling" class="headerlink" title="32. Autoregressive Blank Infilling"></a>32. Autoregressive Blank Infilling</h2><p>GLM 等模型探索过的一类训练方式：</p>
+<ul>
+<li>输入中挖掉一个或多个连续 span；</li>
+<li>模型结合上下文；</li>
+<li>对空白内容以自回归方式生成。</li>
+</ul>
+<p>可以理解为把 MLM 的“双向上下文”和 CLM 的“自回归生成”结合起来。</p>
+<hr>
+<h2 id="33-In-Context-Learning（ICL）"><a href="#33-In-Context-Learning（ICL）" class="headerlink" title="33. In-Context Learning（ICL）"></a>33. In-Context Learning（ICL）</h2><p>不更新模型参数，只在上下文里提供任务说明或示例让模型完成任务。</p>
+<hr>
+<h2 id="34-Zero-shot-Few-shot"><a href="#34-Zero-shot-Few-shot" class="headerlink" title="34. Zero-shot &#x2F; Few-shot"></a>34. Zero-shot &#x2F; Few-shot</h2><h3 id="Zero-shot"><a href="#Zero-shot" class="headerlink" title="Zero-shot"></a>Zero-shot</h3><p>只给指令，不给示例。</p>
+<h3 id="Few-shot"><a href="#Few-shot" class="headerlink" title="Few-shot"></a>Few-shot</h3><p>给少量输入—输出示例，再要求模型完成新样本。</p>
+<hr>
+<h2 id="35-Instruction-Tuning"><a href="#35-Instruction-Tuning" class="headerlink" title="35. Instruction Tuning"></a>35. Instruction Tuning</h2><p>使用大量不同任务的自然语言指令进行 SFT。</p>
+<p>目标：</p>
+<blockquote>
+<p>不是只学会一个任务，而是学会“按照自然语言指令做任务”。</p>
+</blockquote>
+<hr>
+<h2 id="36-CoT"><a href="#36-CoT" class="headerlink" title="36. CoT"></a>36. CoT</h2><p><strong>Chain-of-Thought，思维链。</strong></p>
+<p>让复杂任务通过中间推理步骤得到最终答案。</p>
+<p>面试中可理解为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Problem</span><br><span class="line">  ↓</span><br><span class="line">Reasoning Steps</span><br><span class="line">  ↓</span><br><span class="line">Final Answer</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="最后一页：一眼记住"><a href="#最后一页：一眼记住" class="headerlink" title="最后一页：一眼记住"></a>最后一页：一眼记住</h1><h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">BERT</span><br><span class="line">= Encoder-Only</span><br><span class="line">= 双向 Attention</span><br><span class="line">= MLM</span><br><span class="line">= NLU</span><br><span class="line"></span><br><span class="line">T5</span><br><span class="line">= Encoder-Decoder</span><br><span class="line">= Encoder 理解 + Decoder 生成</span><br><span class="line">= Cross-Attention</span><br><span class="line">= Span Corruption</span><br><span class="line">= Seq2Seq</span><br><span class="line"></span><br><span class="line">GPT / LLaMA</span><br><span class="line">= Decoder-Only</span><br><span class="line">= Causal Attention</span><br><span class="line">= CLM</span><br><span class="line">= Next Token Prediction</span><br><span class="line">= 主流 LLM</span><br></pre></td></tr></table></figure>
+
+<h2 id="训练"><a href="#训练" class="headerlink" title="训练"></a>训练</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Pretrain</span><br><span class="line">海量无标注数据</span><br><span class="line">↓</span><br><span class="line">学语言 + 知识</span><br><span class="line"></span><br><span class="line">SFT</span><br><span class="line">指令-回答数据</span><br><span class="line">↓</span><br><span class="line">学会遵循指令</span><br><span class="line"></span><br><span class="line">PPO-RLHF</span><br><span class="line">人类偏好 → RM → PPO</span><br><span class="line">↓</span><br><span class="line">学会偏好对齐</span><br></pre></td></tr></table></figure>
+
+<h2 id="偏好优化"><a href="#偏好优化" class="headerlink" title="偏好优化"></a>偏好优化</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">PPO-RLHF</span><br><span class="line">Reward Model ✅</span><br><span class="line">Critic ✅</span><br><span class="line">Online Rollout ✅</span><br><span class="line"></span><br><span class="line">DPO</span><br><span class="line">Reward Model ❌</span><br><span class="line">Critic ❌</span><br><span class="line">Preference Pair ✅</span><br><span class="line">Online Rollout ❌</span><br><span class="line"></span><br><span class="line">GRPO</span><br><span class="line">Reward Signal ✅</span><br><span class="line">Critic ❌</span><br><span class="line">Online Rollout ✅</span><br><span class="line">Group Sampling ✅</span><br></pre></td></tr></table></figure>
+
+<h2 id="Attention"><a href="#Attention" class="headerlink" title="Attention"></a>Attention</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">MHA：Q 多，K/V 也多</span><br><span class="line">MQA：Q 多，K/V 只有 1 组</span><br><span class="line">GQA：Q 多，K/V 分组共享</span><br><span class="line"></span><br><span class="line">MHA → 质量</span><br><span class="line">MQA → 极致 KV Cache 优化</span><br><span class="line">GQA → 二者折中</span><br></pre></td></tr></table></figure>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-14T11:09:49.851Z" itemprop="dateModified">最后编辑：2026-09-14</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" 学习nanobot的项目实现" href="/2026/09/01/学习nanobot的实现/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第二章Transformer架构的阅读笔记" href="/2026/09/14/Happy-LLM_第二章_Transformer架构/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>

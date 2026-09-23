@@ -131,6 +131,25 @@
     overflow-wrap: anywhere;
   }
 </style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
 
   
 <meta name="generator" content="Hexo 7.3.0"></head>
@@ -235,6 +254,15 @@
                                                                 <i class="fa fa-bookmark"></i>
                                                             
                                                             pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
                                                         </a>
                                                     </li>
                                                 
@@ -364,7 +392,8 @@
 <p><strong>第一阶段：先跑起来，确认入口</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/nyc/nanobot</span><br><span class="line">nanobot agent -m <span class="string">&quot;你好&quot;</span></span><br><span class="line"><span class="comment"># 或</span></span><br><span class="line">nanobot gateway</span><br></pre></td></tr></table></figure>
 <p>先看 <a href="/home/nyc/nanobot/pyproject.toml:91">pyproject.toml</a> 的 CLI 入口，再读 <a href="/home/nyc/nanobot/nanobot/cli/entry.py:25">cli&#x2F;entry.py</a>、<a href="/home/nyc/nanobot/nanobot/cli/gateway_runtime.py:289">cli&#x2F;gateway_runtime.py</a>。目标是回答：Gateway 启动时创建了哪些对象，谁负责关闭它们。</p>
-<p><strong>第二阶段：追踪一次用户消息</strong><br>按这个顺序阅读代码：</p>
+<p><strong>第二阶段：追踪一次用户消息</strong>
+按这个顺序阅读代码：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Channel/CLI</span><br><span class="line">  -&gt; InboundMessage</span><br><span class="line">  -&gt; MessageBus.inbound</span><br><span class="line">  -&gt; AgentLoop.run()</span><br><span class="line">  -&gt; AgentLoop._process_message()</span><br><span class="line">  -&gt; AgentRunner.run()</span><br><span class="line">  -&gt; Provider.chat()</span><br><span class="line">  -&gt; ToolRegistry.execute()（可选）</span><br><span class="line">  -&gt; OutboundMessage</span><br><span class="line">  -&gt; MessageBus.outbound</span><br><span class="line">  -&gt; ChannelManager</span><br></pre></td></tr></table></figure>
 
 <p>对应核心文件：</p>
@@ -376,14 +405,16 @@
 <li><a href="/home/nyc/nanobot/nanobot/channels/manager.py:79">channels&#x2F;manager.py</a>：出站消息路由。</li>
 </ul>
 <p>建议在这些位置临时加 <code>logger.debug</code> 或使用断点，打印 <code>session_key</code>、<code>messages</code> 数量、工具名、最终 <code>OutboundMessage</code>。</p>
-<p><strong>第三阶段：理解 Agent 为什么“记得”上下文</strong><br>先读 <a href="/home/nyc/nanobot/nanobot/session/keys.py:1">session&#x2F;keys.py</a>，理解不同渠道如何映射 session；再读：</p>
+<p><strong>第三阶段：理解 Agent 为什么“记得”上下文</strong>
+先读 <a href="/home/nyc/nanobot/nanobot/session/keys.py:1">session&#x2F;keys.py</a>，理解不同渠道如何映射 session；再读：</p>
 <ul>
 <li><a href="/home/nyc/nanobot/nanobot/session/manager.py:1">session&#x2F;manager.py</a>：会话读写、历史 replay、摘要。</li>
 <li><a href="/home/nyc/nanobot/nanobot/agent/context.py:78">agent&#x2F;context.py</a>：system prompt 和请求 messages 如何拼装。</li>
 <li><a href="/home/nyc/nanobot/nanobot/agent/memory.py:75">agent&#x2F;memory.py</a>：长期记忆与 Dream consolidation。</li>
 </ul>
 <p>练习：新建两个不同 session，比较保存的消息历史；再把历史拉长，观察 compact&#x2F;summary 如何影响下一次模型请求。</p>
-<p><strong>第四阶段：理解工具和安全边界</strong><br>从一个简单工具开始，例如文件工具：</p>
+<p><strong>第四阶段：理解工具和安全边界</strong>
+从一个简单工具开始，例如文件工具：</p>
 <ul>
 <li><a href="/home/nyc/nanobot/nanobot/agent/tools/base.py:159">agent&#x2F;tools&#x2F;base.py</a>：<code>Tool</code> 契约。</li>
 <li><a href="/home/nyc/nanobot/nanobot/agent/tools/registry.py:19">agent&#x2F;tools&#x2F;registry.py</a>：注册、Schema、参数验证与执行。</li>
@@ -400,7 +431,8 @@
 <li>MCP：<code>agent/tools/mcp.py</code>，并关注其由 Gateway 持有生命周期。</li>
 <li>自动化：<code>cron/service.py</code>、<code>triggers/</code>、<code>agent/cron_turns.py</code>。</li>
 </ul>
-<p><strong>第六阶段：用测试反向学习</strong><br>不要只读实现。每读一个模块，就找对应测试：</p>
+<p><strong>第六阶段：用测试反向学习</strong>
+不要只读实现。每读一个模块，就找对应测试：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rg <span class="string">&quot;AgentLoop|MessageBus|ToolRegistry&quot;</span> tests nanobot -g <span class="string">&#x27;*test*.py&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <p>例如先读 <code>tests/agent/</code> 的 loop&#x2F;runner 测试，再回到实现。测试通常比生产代码更直接地表达“这个模块必须保证什么”。</p>
@@ -444,6 +476,10 @@
             </div>
             
             
+            <div class="nav-next clearfix">
+                <a title=" happy-llm第三四章预训练语言模型和大语言模型的阅读笔记" href="/2026/09/14/Happy-LLM_第三四章/">下一篇 <i class="fa fa-angle-right"></i></a>
+            </div>
+            
         </nav>
     
     
@@ -480,7 +516,7 @@
                 文章
             </span>
             <span class="count">
-                19
+                27
             </span>
         </a>
         <a class="meta-item" href="/categories/">
@@ -488,7 +524,7 @@
                 分类
             </span>
             <span class="count">
-                2
+                3
             </span>
         </a>
         <a class="meta-item" href="/tags/">
@@ -496,7 +532,7 @@
                 标签
             </span>
             <span class="count">
-                5
+                6
             </span>
         </a>
     </div>
@@ -507,7 +543,7 @@
                 
   <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
     <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
   </aside>
 
 
@@ -516,7 +552,7 @@
   <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
     <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
       <div class="tag-clouds">
-        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.67em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/hello-agents/" style="font-size: 0.8em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.73em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
       </div>
   </aside>
 
@@ -530,34 +566,50 @@
         
           
           
-            <a class="list-group-item" href="/2026/09/01/%E5%AD%A6%E4%B9%A0nanobot%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> 学习nanobot的项目实现</a>
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/scaling_managed_agents_reading_note/"><i class="fa fa-book"></i> Scaling Managed Agents: Decoupling the brain from the hands 阅读笔记</a>
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/pi-agent/"><i class="fa fa-book"></i> pi-agent</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/"><i class="fa fa-book"></i> nanobot的项目架构</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> nanobot的项目实现</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
             
           
         
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
           
             
           

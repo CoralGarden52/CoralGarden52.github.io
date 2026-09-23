@@ -126,6 +126,25 @@
     overflow-wrap: anywhere;
   }
 </style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
 
   
 <meta name="generator" content="Hexo 7.3.0"></head>
@@ -233,6 +252,15 @@
                                                         </a>
                                                     </li>
                                                 
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
                                             </ul>
                                         
                                     </li>
@@ -337,6 +365,417 @@
             
             
                 <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/pi-agent/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/pi-agent/pi-agent.png" alt="pi-agent">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/pi-agent/" itemprop="mainEntityOfPage"><span itemprop="name headline">pi-agent</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            123456pi-coding-agent &#x2F; 自定义应用        │        ├─ pi-tui：终端交互界面        ├─ pi-agent-core：ReAct、工具、事件、消息队列        ├─ pi-...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.582Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/pi-agent/" rel="tag">pi-agent</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/pi-agent/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/nanobot/%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84.png" alt="nanobot的项目架构">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/" itemprop="mainEntityOfPage"><span itemprop="name headline">nanobot的项目架构</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            总体判断当前 nanobot 是一个以 Python asyncio 为核心的模块化单体（modular monolith）AI Agent Runtime，而不是微服务系统。它通过清晰的适配层支持多种入口（WebUI、TUI、CLI...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.581Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/nanobot/" rel="tag">nanobot</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/nanobot/%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84.png" alt="nanobot的项目实现">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/" itemprop="mainEntityOfPage"><span itemprop="name headline">nanobot的项目实现</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            以 Agent 应用开发工程师 的视角从零开始构建 nanobot，正确路径是先构造一个可验证的 Agent 最小闭环，再逐步把它演化为一个可长期运行、可扩展、可部署的个人 Agent 平台。整个过程可以理解为从 “一次 CLI 问答...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.580Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/nanobot/" rel="tag">nanobot</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/nanobot%E7%9A%84memorry%E5%92%8Cdream%E7%9A%84%E5%8C%BA%E5%88%AB/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/nanobot/%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84.png" alt="nanobot的Memory和Dream的区别">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/nanobot%E7%9A%84memorry%E5%92%8Cdream%E7%9A%84%E5%8C%BA%E5%88%AB/" itemprop="mainEntityOfPage"><span itemprop="name headline">nanobot的Memory和Dream的区别</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            这里的Dream指的是什么？
+这里的 Dream 是 nanobot 的“长期记忆整理”后台任务，不是某个模型或第三方服务。
+它会定期读取对话历史 memory&#x2F;history.jsonl，结合当前的 SOUL.md、USER.md ...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.578Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/nanobot/" rel="tag">nanobot</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/nanobot%E7%9A%84memorry%E5%92%8Cdream%E7%9A%84%E5%8C%BA%E5%88%AB/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/nanobot%E7%9A%84agentrunner%E5%92%8Cagentloop%E7%9A%84%E5%8C%BA%E5%88%AB/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/nanobot/%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84.png" alt="nanobot的AgentLoop和AgentRunner的区别">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/nanobot%E7%9A%84agentrunner%E5%92%8Cagentloop%E7%9A%84%E5%8C%BA%E5%88%AB/" itemprop="mainEntityOfPage"><span itemprop="name headline">nanobot的AgentLoop和AgentRunner的区别</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            
+
+
+AgentRunner
+接收 AgentRunSpec；请求 Provider；汇集流式文本、reasoning 和工具调用；执行工具；追加工具结果；控制迭代、超时与最终结果
+不选择 Channel，不创建业务 Session，...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.576Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/nanobot/" rel="tag">nanobot</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/nanobot%E7%9A%84agentrunner%E5%92%8Cagentloop%E7%9A%84%E5%8C%BA%E5%88%AB/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/learn_claude_code_s15_s19_multi_agent_platform_note/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/Learn_Claude_Code/s15%E2%80%93s19.png" alt="Learn Claude Code 系统加固阅读笔记：s15–s19">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/learn_claude_code_s15_s19_multi_agent_platform_note/" itemprop="mainEntityOfPage"><span itemprop="name headline">Learn Claude Code 系统加固阅读笔记：s15–s19</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            Learn Claude Code 多 Agent 平台阅读笔记：s15–s19一、总结s15–s19 的主线是：把单个 coding agent 扩展成一个可协作、可自治、可隔离、可接入外部能力的多 Agent 平台。
+如果说前面章...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.575Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/Learn-Claude-Code/" rel="tag">Learn_Claude_Code</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/learn_claude_code_s15_s19_multi_agent_platform_note/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/learn_claude_code_s12_s14_runtime_note/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/Learn_Claude_Code/s12%E2%80%93s14.png" alt="Learn Claude Code 系统加固阅读笔记：s12–s14">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/learn_claude_code_s12_s14_runtime_note/" itemprop="mainEntityOfPage"><span itemprop="name headline">Learn Claude Code 系统加固阅读笔记：s12–s14</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            Learn Claude Code 任务运行时阅读笔记：s12–s14一、总结s12–s14 的主线是：把 coding agent 从“会执行当前工具调用”，升级成“能长期组织任务、异步等待结果、按时间触发工作”的任务运行时系统。
+...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.574Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/Learn-Claude-Code/" rel="tag">Learn_Claude_Code</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/learn_claude_code_s12_s14_runtime_note/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
+                    <a href="/2026/09/01/learn_claude_code_s07_s11_system_hardening_note/">
+                        <img class="kratos-entry-thumb-img" src="/assets/posts/Learn_Claude_Code/s07%E2%80%93s11.png" alt="Learn Claude Code 系统加固阅读笔记：s07–s11">
+                    </a>
+                </div>
+            
+            <div class="kratos-entry-post-inner">
+                <header class="kratos-entry-header">
+                        <a class="label-link" href="/categories/agent/">agent</a>
+                    <h2 class="kratos-entry-title"><a href="/2026/09/01/learn_claude_code_s07_s11_system_hardening_note/" itemprop="mainEntityOfPage"><span itemprop="name headline">Learn Claude Code 系统加固阅读笔记：s07–s11</span></a>
+                </header>
+                <div class="kratos-entry-content">
+                    <p itemProp="description">
+                        
+                            Learn Claude Code 系统加固阅读笔记：s07–s11一、总结s07–s11 的主线是：把一个能跑的 coding agent，加固成一个更安全、更可维护、更可恢复的系统。
+如果说 s01–s06 解决的是核心闭环：
+1...
+                        
+                    </p>
+                </div>
+            </div>
+        </div>
+        <footer class="kratos-entry-post-meta">
+            <span class="pull-left">
+                <time datetime="2026-09-01T10:45:17.573Z" itemprop="datePublished">
+                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
+                </time>
+                <a>
+                    
+                        <i class="fa fa-tags"></i>
+                        <a class="tag-none-link" href="/tags/Learn-Claude-Code/" rel="tag">Learn_Claude_Code</a>
+                    
+                </a>
+                
+                
+            </span>
+            <span class="pull-right">
+                <a class="read-more" href="/2026/09/01/learn_claude_code_s07_s11_system_hardening_note/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
+            </span>
+        </footer>
+    </div>
+</article>
+    
+
+    
+    
+        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
+    <div class="kratos-entry-border clearfix">
+        
+        <div class="kratos-entry-post-main">
+            
+            
+                <div class="kratos-entry-thumb">
                     <a href="/2026/09/01/learn_claude_code_s01_s06_reading_note/">
                         <img class="kratos-entry-thumb-img" src="/assets/posts/Learn_Claude_Code/s01%E2%80%93s06.png" alt="Learn Claude Code 核心闭环阅读笔记：s01–s06">
                     </a>
@@ -427,360 +866,10 @@
 </article>
     
 
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agents-6-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agents-6.png" alt="Hello-Agents第六章框架开发实践的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agents-6-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agents第六章框架开发实践的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            背诵版总结本章重点介绍了四种代表性智能体框架：AutoGen、AgentScope、CAMEL 和 LangGraph。AutoGen 强调“对话驱动协作”，适合把复杂任务组织成多个角色之间的自动化群聊；AgentScope 强调“工...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.567Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agents-6-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agents-4-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agents-4.png" alt="Hello-Agents第四章智能体经典范式构建的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agents-4-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agents第四章智能体经典范式构建的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记一句话概括这一章主要讲了三种经典智能体构建范式：ReAct、Plan-and-Solve、Reflection。它们分别代表了智能体解决问题的三种思路：边想边做、先规划后执行、执行后反思优化。
-背诵版总结第四章主要介绍了三种经...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.565Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agents-4-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agent-9-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agent-9.png" alt="Hello-Agent第九章上下文工程的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agent-9-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agent第九章上下文工程的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记一句话概括第九章讲的是 Context Engineering（上下文工程）：在每一次模型调用前，如何系统地筛选、组织、压缩和补充上下文，让 Agent 在长任务、多工具、多轮交互中保持稳定、聚焦和可控。
-背诵版总结上下文工程...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.564Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agent-9-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agent-8-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agent-8.png" alt="Hello-Agent第八章记忆与检索的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agent-8-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agent第八章记忆与检索的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记背诵版总结第八章的核心是给 HelloAgents 框架补上两个关键能力：记忆系统 Memory 和 检索增强生成 RAG。前面的章节已经实现了 Agent 的基础架构、范式和工具调用，但如果智能体没有记忆，就无法记住用户偏好...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.563Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agent-8-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agent-12-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agent-12.png" alt="Hello-Agent第十二章智能体性能评估的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agent-12-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agent第十二章智能体性能评估的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记一句话概括第十二章讲的是 智能体性能评估系统：当 Agent 具备推理、工具调用、记忆、检索、通信协议等能力后，需要用系统化评估方法判断它是否真的可靠、是否比旧版本更好、是否具备上线条件。
-背诵版总结智能体评估的核心价值是把 ...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.561Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agent-12-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/hello-agent-10-reading-notes/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/hello-agents/hello-agent-10.png" alt="Hello-Agent第十章智能体通信协议的阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/hello-agent-10-reading-notes/" itemprop="mainEntityOfPage"><span itemprop="name headline">Hello-Agent第十章智能体通信协议的阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记一句话概括第十章主要讲 智能体通信协议：当 Agent 不再只是单体问答系统，而是需要连接外部工具、调用其他 Agent、加入大规模智能体网络时，就需要标准化通信协议。本章重点介绍了 MCP、A2A、ANP 三类协议，其中 M...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.560Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                        <i class="fa fa-tags"></i>
-                        <a class="tag-none-link" href="/tags/hello-agents/" rel="tag">hello-agents</a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/hello-agent-10-reading-notes/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
-    
-    
-        <article class="kratos-hentry clearfix" itemscope itemtype="https://schema.org/Article">
-    <div class="kratos-entry-border clearfix">
-        
-        <div class="kratos-entry-post-main">
-            
-            
-                <div class="kratos-entry-thumb">
-                    <a href="/2026/09/01/agentskills/">
-                        <img class="kratos-entry-thumb-img" src="/assets/posts/agentskills/agentskills-cover.png" alt="Agent Skills阅读笔记">
-                    </a>
-                </div>
-            
-            <div class="kratos-entry-post-inner">
-                <header class="kratos-entry-header">
-                        <a class="label-link" href="/categories/agent/">agent</a>
-                    <h2 class="kratos-entry-title"><a href="/2026/09/01/agentskills/" itemprop="mainEntityOfPage"><span itemprop="name headline">Agent Skills阅读笔记</span></a>
-                </header>
-                <div class="kratos-entry-content">
-                    <p itemProp="description">
-                        
-                            面试速记这篇文章可以按“是什么、为什么、怎么设计、怎么评估、怎么落地”来记。Agent Skills 本质上是一种给 AI Agent 扩展能力的开放格式，把领域知识、项目规范、固定流程、脚本、模板和参考资料封装成可复用的技能包，让 ...
-                        
-                    </p>
-                </div>
-            </div>
-        </div>
-        <footer class="kratos-entry-post-meta">
-            <span class="pull-left">
-                <time datetime="2026-09-01T10:45:17.559Z" itemprop="datePublished">
-                    <a><i class="fa fa-calendar"></i> 2026-09-01</a>
-                </time>
-                <a>
-                    
-                </a>
-                
-                
-            </span>
-            <span class="pull-right">
-                <a class="read-more" href="/2026/09/01/agentskills/" title="阅读全文">阅读全文<i class="fa fa-chevron-circle-right"></i></a>
-            </span>
-        </footer>
-    </div>
-</article>
-    
-
 
 
     <div class='text-center pagination'>
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
     </div>
 
 
@@ -817,7 +906,7 @@
                 文章
             </span>
             <span class="count">
-                19
+                27
             </span>
         </a>
         <a class="meta-item" href="/categories/">
@@ -825,7 +914,7 @@
                 分类
             </span>
             <span class="count">
-                2
+                3
             </span>
         </a>
         <a class="meta-item" href="/tags/">
@@ -833,7 +922,7 @@
                 标签
             </span>
             <span class="count">
-                5
+                6
             </span>
         </a>
     </div>
@@ -842,7 +931,7 @@
                 
   <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
     <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
   </aside>
 
 
@@ -851,7 +940,7 @@
   <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
     <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
       <div class="tag-clouds">
-        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.67em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/hello-agents/" style="font-size: 0.8em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.73em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
       </div>
   </aside>
 
@@ -865,34 +954,50 @@
         
           
           
-            <a class="list-group-item" href="/2026/09/01/%E5%AD%A6%E4%B9%A0nanobot%E7%9A%84%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> 学习nanobot的项目实现</a>
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/scaling_managed_agents_reading_note/"><i class="fa fa-book"></i> Scaling Managed Agents: Decoupling the brain from the hands 阅读笔记</a>
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/pi-agent/"><i class="fa fa-book"></i> pi-agent</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E6%9E%B6%E6%9E%84/"><i class="fa fa-book"></i> nanobot的项目架构</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
             
           
         
           
           
-            <a class="list-group-item" href="/2026/09/01/nanobot%E9%A1%B9%E7%9B%AE%E5%AE%9E%E7%8E%B0/"><i class="fa fa-book"></i> nanobot的项目实现</a>
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
             
           
         
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
           
             
           

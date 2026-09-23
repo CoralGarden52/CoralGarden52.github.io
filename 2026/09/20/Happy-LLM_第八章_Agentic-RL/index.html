@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+  <!-- 元数据 -->
+  <meta charset="utf-8">
+  
+    <link rel="icon" href="/assets/favicon.png">
+  
+  
+  <title>happy-llm第八章大模型强化学习的阅读笔记 | 珊瑚的花园</title>
+  <link rel="canonical" href="http://example.com/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/">
+  <meta name="author" content="CoralGarden52" />
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telphone=no, email=no" />
+  
+    <meta name="keywords" content="happy-llm" />
+  
+  <meta name="description" content="面试速记 基于 Datawhale《Happy-LLM》第八章 大模型强化学习 &#x2F; Agentic RL 整理，并整合本次粘贴文本中关于 PyTRIO、Verl、DAPO、FSDP、GRPO、OPD、Search-R1、ReTool、importance sampling、token 对齐、on-policy 等补充讨论。 说明：第八章正文包含大量代码。本文对正文中的 86 个代码&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="happy-llm第八章大模型强化学习的阅读笔记">
+<meta property="og:url" content="http://example.com/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/index.html">
+<meta property="og:site_name" content="珊瑚的花园">
+<meta property="og:description" content="面试速记 基于 Datawhale《Happy-LLM》第八章 大模型强化学习 &#x2F; Agentic RL 整理，并整合本次粘贴文本中关于 PyTRIO、Verl、DAPO、FSDP、GRPO、OPD、Search-R1、ReTool、importance sampling、token 对齐、on-policy 等补充讨论。 说明：第八章正文包含大量代码。本文对正文中的 86 个代码&amp;#x">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/posts/happy-llm/happy-llm-8.png">
+<meta property="article:published_time" content="2026-09-20T03:18:05.392Z">
+<meta property="article:modified_time" content="2026-09-20T03:24:45.126Z">
+<meta property="article:author" content="CoralGarden52">
+<meta property="article:tag" content="happy-llm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/posts/happy-llm/happy-llm-8.png">
+  
+  <!-- JSON-LD 结构化数据 -->
+  
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BlogPosting","headline":"happy-llm第八章大模型强化学习的阅读笔记","description":"面试速记\n基于 Datawhale《Happy-LLM》第八章 大模型强化学习 &#x2F; Agenti...","image":"http://example.com/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/assets/posts/happy-llm/happy-llm-8.png","author":{"@type":"Person","name":"CoralGarden52"},"publisher":{"@type":"Organization","name":"珊瑚的花园","logo":{"@type":"ImageObject","url":"http://example.com/assets/user.webp"}},"datePublished":"2026-09-20T03:18:05.392Z","dateModified":"2026-09-20T03:24:45.126Z","mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"}}
+    </script>
+  
+  <!-- 关键 CSS 预加载 -->
+  <link rel="preload" href="/css/kr-core.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/light.min.css" as="style" crossorigin>
+  <link rel="preload" href="/css/kr-theme/dark.min.css" as="style" crossorigin>
+  <!-- 样式表文件 -->
+  <link rel="stylesheet" id="kratos-css" href="/css/kr-core.min.css" media="all">
+  <link rel="stylesheet" id="theme-light-css" href="/css/kr-theme/light.min.css" media="all">
+  <link rel="stylesheet" id="theme-dark-css" href="/css/kr-theme/dark.min.css" media="(prefers-color-scheme: dark)">
+  
+    <link rel="stylesheet"  id="highlight-css" href="/css/highlight/highlight.js/night-eighties.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/css/highlight/highlight.js/night-eighties.min.css"></noscript>
+  
+  <script src="/js/kr-theme.min.js"></script>
+  <link rel="stylesheet"  id="fontawe-css" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/font-awesome@4.7.0/css/font-awesome.min.css"></noscript>
+  
+    <link rel="stylesheet"  id="nprogress-css" href="/vendors/nprogress@0.2.0/nprogress.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/nprogress@0.2.0/nprogress.css"></noscript>
+  
+  
+    <link rel="stylesheet"  href="/vendors/viewerjs@1.11.6/dist/viewer.min.css" media="print" onload="this.media='all'" onerror="this.media='all'"><noscript><link rel="stylesheet" href="/vendors/viewerjs@1.11.6/dist/viewer.min.css"></noscript>
+  
+  <!-- 预先加载的JS文件 -->
+  
+    <script src="/vendors/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  
+  <!-- 自定义站点横幅和背景 -->
+  <style>
+    
+      .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+      html[data-theme="dark"] .kratos-cover.kratos-cover-2 {
+        background-image: url('/assets/banner.webp');
+      }
+    
+    
+      @media(min-width:768px) {
+        body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+        html[data-theme="dark"] body.custom-background {
+          background-image: url('/assets/background.webp');
+        }
+      }
+    
+    
+      .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+      html[data-theme="dark"] .widget-kratos-about .photo-background {
+        background-image: url('/assets/about.webp');
+      }
+    
+  </style>
+
+  <!-- 额外的追加注入项 -->
+  
+    <style>
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu {
+    left: 50%;
+    width: max-content;
+    min-width: 220px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu:before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    border-radius: 4px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #kratos-desktop-topnav .sf-menu > li > ul.sub-menu li a i {
+    flex: 0 0 1em;
+    margin-right: 0;
+    color: #9a9a9a;
+  }
+
+  #offcanvas-menu ul li a {
+    overflow-wrap: anywhere;
+  }
+</style>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  document.addEventListener('pjax:complete', function () {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise();
+    }
+  });
+</script>
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body class="custom-background">
+        <div id="kratos-wrapper">
+    <div id="kratos-page">
+        <div id="kratos-header">
+            <header id="kratos-desktop-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="nav-header">
+                        <nav id="kratos-menu-wrap">
+                            <ul id="kratos-primary-menu" class="sf-menu">
+                                
+                                    <li>
+                                        
+                                            <a href="/">
+                                        
+                                            
+                                                <i class="fa fa-home"></i>
+                                            
+                                            首页
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/archives/">
+                                        
+                                            
+                                                <i class="fa fa-file"></i>
+                                            
+                                            档案馆
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/categories/">
+                                        
+                                            
+                                                <i class="fa fa-folder"></i>
+                                            
+                                            分类
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-book"></i>
+                                            
+                                            学习合集
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a href="/tags/hello-agents/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            hello-agents
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/anthropic-engineering/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            anthropic_engineering
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/Learn-Claude-Code/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            Learn_Claude_Code
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/nanobot/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            nanobot
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/pi-agent/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            pi-agent
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a href="/tags/happy-llm/">
+                                                            
+                                                                <i class="fa fa-bookmark"></i>
+                                                            
+                                                            happy-llm
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a href="/about/">
+                                        
+                                            
+                                                <i class="fa fa-user"></i>
+                                            
+                                            关于我
+                                        </a>
+                                        
+                                    </li>
+                                
+                                    <li>
+                                        
+                                            <a>
+                                        
+                                            
+                                                <i class="fa fa-link"></i>
+                                            
+                                            链接
+                                        </a>
+                                        
+                                            <ul class="sub-menu">
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://github.com/Candinya/Kratos-Rebirth">
+                                                            
+                                                                <i class="fa fa-code"></i>
+                                                            
+                                                            代码仓库
+                                                        </a>
+                                                    </li>
+                                                
+                                                    <li>
+                                                        <a target="_blank" rel="noopener" href="https://wiki.krt.moe">
+                                                            
+                                                                <i class="fa fa-book"></i>
+                                                            
+                                                            项目文档
+                                                        </a>
+                                                    </li>
+                                                
+                                            </ul>
+                                        
+                                    </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </header>
+            <header id="kratos-mobile-topnav" class="kratos-topnav">
+                <div class="container">
+                    <div class="color-logo"><a href="/">珊瑚的花园</a></div>
+                    <div id="kratos-nav-toggle-wrapper" class="nav-toggle">
+                        <a id="kratos-nav-toggle" class="kratos-nav-toggle">
+                            <i></i>
+                        </a>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <div class="kratos-start kratos-hero-2">
+            <!-- <div class="kratos-overlay"></div> -->
+            <div class="kratos-cover kratos-cover-2 text-center">
+                <div class="desc desc2 animate-box">
+                    <a href="/">
+                        <h2>珊瑚的花园</h2> <br />
+                        <span></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="kratos-blog-post">
+            <div class="container">
+                <div id="main" class="row">
+
+
+        
+
+            
+
+            <section class="kr-main-col col-md-8">
+
+        
+
+            <article itemscope itemtype="https://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/">
+    <div class="kratos-hentry kratos-page-inner clearfix">
+        <header class="kratos-page-header">
+            
+                <h1 class="kratos-page-title text-center" itemprop="name headline">happy-llm第八章大模型强化学习的阅读笔记</h1>
+            
+            <ul class="kratos-page-meta text-center">
+                <li><time datetime="2026-09-20T03:18:05.392Z" itemprop="datePublished"><i class="fa fa-calendar"></i> 2026-09-20</time></li>
+                <li itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <i class="fa fa-user"></i> 作者 <span itemprop="name">CoralGarden52</span>
+                </li>
+                
+                    <li>
+                        <i class="fa fa-edit"></i> 
+                        
+                        
+                            ~24.89K
+                        
+                        字
+                    </li>
+                
+                
+                
+            </ul>
+        </header>
+        <div class="kratos-page-content kr-post">
+            
+            
+            
+            <hr />
+            <div itemprop="articleBody"><h1 id="面试速记"><a href="#面试速记" class="headerlink" title="面试速记"></a>面试速记</h1><blockquote>
+<p>基于 Datawhale《Happy-LLM》第八章 <strong>大模型强化学习 &#x2F; Agentic RL</strong> 整理，并整合本次粘贴文本中关于 PyTRIO、Verl、DAPO、FSDP、GRPO、OPD、Search-R1、ReTool、importance sampling、token 对齐、on-policy 等补充讨论。</p>
+<p><strong>说明：</strong>第八章正文包含大量代码。本文对正文中的 <strong>86 个代码&#x2F;命令&#x2F;轨迹示例块逐一解释</strong>；为了避免笔记变成源码复制，正文只保留关键逻辑的<strong>简化版代码&#x2F;伪代码</strong>，完整源码应以 Happy-LLM 仓库为准。</p>
+</blockquote>
+<h2 id="背诵版总结"><a href="#背诵版总结" class="headerlink" title="背诵版总结"></a>背诵版总结</h2><ol>
+<li>第八章的主题是 <strong>Agentic RL</strong>：不仅让 LLM“回答得更好”，还让模型在搜索、代码执行等环境中通过 <strong>rollout → feedback → advantage → policy update</strong> 学会行动。</li>
+<li>全章四条主线：</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GRPO</span><br><span class="line">→ OPD</span><br><span class="line">→ Search-R1</span><br><span class="line">→ ReTool</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>四个案例统一使用 <strong>PyTRIO</strong>。其核心闭环可以背成：</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">当前策略生成 rollout</span><br><span class="line">→ 环境 / Teacher 提供反馈</span><br><span class="line">→ 构造 token-level advantage</span><br><span class="line">→ 构造 Datum</span><br><span class="line">→ forward_backward()</span><br><span class="line">→ optim_step()</span><br><span class="line">→ 刷新 sampler</span><br><span class="line">→ 下一轮 rollout</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><strong>GRPO</strong>：同一个 prompt 采样一组回答，使用组内 reward 的均值&#x2F;标准差得到相对 advantage，不需要单独 Value&#x2F;Critic Model。</li>
+<li>GRPO 组内优势：</li>
+</ol>
+<p>$$
+A_i &#x3D;
+\frac{
+r_i-\mu_r
+}{
+\sigma_r+\epsilon
+}
+$$</p>
+<ol start="6">
+<li><strong>importance sampling ratio</strong>：</li>
+</ol>
+<p>$$
+\rho_t(\theta) &#x3D;
+\frac{
+\pi_\theta(y_t\mid s_t)
+}{
+\pi_{\theta_{\mathrm{old}}}(y_t\mid s_t)
+}
+$$</p>
+<p>它是策略更新中的一个“纠偏&#x2F;重加权工具”，而 <strong>GRPO 是完整 RL 算法</strong>；两者不是同一层级概念。
+7. <strong>PPO</strong> 在 importance sampling 基础上加入 clipping，限制单次策略变化过大。
+8. GRPO 的 <code>run_rollout_group()</code> 做四件事：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">同题采样多条 completion</span><br><span class="line">→ 保存旧策略 logprob</span><br><span class="line">→ 规则判题得到 reward</span><br><span class="line">→ 组内标准化得到 advantage</span><br></pre></td></tr></table></figure>
+
+<ol start="9">
+<li><strong>completion</strong> 就是 prompt 之后由模型生成的那段 token 序列，不一定等于“最终答案”；它可能包含推理过程、工具调用和最终答案。</li>
+<li><code>build_grpo_datum()</code> 的关键是<strong>右移一位</strong>：模型每个输入位置预测下一个 token；prompt 只是条件，completion 才是策略动作，因此 prompt 区域的 policy loss 输入使用 0 占位。</li>
+<li><strong>on-policy 约束</strong>：第 (k) 次更新后，第 (k+1) 次 rollout 应尽量使用更新后的当前策略生成。Sampler 必须定期刷新，否则数据逐渐变成 off-policy。</li>
+<li><strong>OPD &#x3D; On-Policy Distillation</strong>：Student 自己生成轨迹，Teacher 不重新生成答案，而是在 Student 实际走过的每一个 token 状态上给出概率反馈。</li>
+<li>OPD 使用 reverse KL 的单样本信号：</li>
+</ol>
+<p>$$
+d_t &#x3D;
+\log \pi_{\theta_{\mathrm{old}}}(y_t\mid s_t) -
+\log \pi_T(y_t\mid s_t)
+$$</p>
+<p>$$
+A_t &#x3D;
+-\beta d_t
+$$</p>
+<ol start="14">
+<li>GRPO 是<strong>轨迹级稀疏 reward → advantage</strong>；OPD 是 <strong>Teacher 的逐 token 稠密反馈 → advantage</strong>。</li>
+<li><strong>Search-R1</strong>：模型自己决定“何时搜索、搜什么”，搜索结果作为 observation 加入上下文，然后继续生成；最终答案 reward 反向强化前面的搜索策略。</li>
+<li>Search-R1 与传统 RAG 的核心区别：</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RAG：</span><br><span class="line">系统预先决定检索流程</span><br><span class="line"></span><br><span class="line">Search-R1：</span><br><span class="line">模型通过 RL 学习是否搜索、搜索什么、是否继续搜索</span><br></pre></td></tr></table></figure>
+
+<ol start="17">
+<li><strong>observation mask</strong>：搜索结果&#x2F;工具返回会进入上下文，但不是模型动作，因此：</li>
+</ol>
+<ul>
+<li>可以被后续 token 看到；</li>
+<li>不参与 policy loss；</li>
+<li>old logprob &#x2F; advantage 填 0。</li>
+</ul>
+<ol start="18">
+<li><strong>ReTool</strong> 把 Search-R1 的“搜索环境”替换成“Python 代码解释器”。模型可以写代码、看到 stdout&#x2F;stderr、根据错误重试，再输出最终答案。</li>
+<li>ReTool 只需要最终 outcome reward；成功轨迹中的代码调用、推理和答案共享轨迹 advantage，因此模型能学习“怎样使用代码工具有助于成功”。</li>
+<li><strong>PyTRIO vs Verl</strong>：</li>
+</ol>
+<ul>
+<li>PyTRIO：强调低工程门槛、托管式 API、适合快速研究 Agentic RL；</li>
+<li>Verl：面向大规模高性能 RL 训练，集成 FSDP&#x2F;Megatron-LM、vLLM&#x2F;SGLang 等，工程复杂度更高。</li>
+</ul>
+<ol start="21">
+<li>第八章正文之外的扩展算法：</li>
+</ol>
+<ul>
+<li>DAPO：GRPO&#x2F;PPO 路线的稳定性与采样效率改进；</li>
+<li>GSPO：把策略比率&#x2F;裁剪提升到 sequence 级；</li>
+<li>OPSD：On-Policy Self-Distillation；</li>
+<li>ALFWorld：文本化具身家务环境；</li>
+<li>FSDP：PyTorch 原生全分片数据并行，属于系统层而非 RL 算法。</li>
+</ul>
+<p>一句话：</p>
+<blockquote>
+<p><strong>第八章的核心不是死记某个算法，而是掌握一条统一数据流：当前模型自己产生轨迹，环境或 Teacher 在真实轨迹上给反馈，把反馈对齐到模型自己生成的 token，再更新策略并用新策略重新采样。</strong></p>
+</blockquote>
+<hr>
+<h2 id="面试表达模板"><a href="#面试表达模板" class="headerlink" title="面试表达模板"></a>面试表达模板</h2><h3 id="1-请概括第八章"><a href="#1-请概括第八章" class="headerlink" title="1. 请概括第八章"></a>1. 请概括第八章</h3><blockquote>
+<p>第八章讲 Agentic RL，核心包含 GRPO、OPD、Search-R1 和 ReTool。GRPO 用同题多采样得到组内相对优势；OPD 让 Student 在自己的状态分布上生成轨迹，再由 Teacher 对这些 token 提供逐 token 概率反馈；Search-R1 把 RL 扩展到搜索环境，让模型学习何时搜索和搜索什么；ReTool 则把环境换成代码解释器，让模型学会通过代码执行和错误反馈完成任务。四者都统一成 rollout、反馈、advantage、Datum、策略更新和 sampler 刷新的闭环。</p>
+</blockquote>
+<h3 id="2-GRPO-和-PPO-的主要区别是什么？"><a href="#2-GRPO-和-PPO-的主要区别是什么？" class="headerlink" title="2. GRPO 和 PPO 的主要区别是什么？"></a>2. GRPO 和 PPO 的主要区别是什么？</h3><blockquote>
+<p>PPO 通常需要 Critic&#x2F;Value Model 来估计 advantage；GRPO 对同一个 prompt 采样一组回答，使用组内 reward 做相对标准化，直接得到 advantage，从而省掉单独的 Value Model。策略更新仍可使用 importance sampling ratio，并可以进一步使用 PPO clipping 控制策略变化。</p>
+</blockquote>
+<h3 id="3-OPD-为什么叫-On-Policy？"><a href="#3-OPD-为什么叫-On-Policy？" class="headerlink" title="3. OPD 为什么叫 On-Policy？"></a>3. OPD 为什么叫 On-Policy？</h3><blockquote>
+<p>因为监督样本不是固定离线数据，而是 Student 当前策略自己生成的轨迹。Teacher 沿着 Student 实际访问的状态逐 token 打分，所以 Student 每次学到的是“自己当前真的会走到的状态”上的 Teacher 信号，减少离线蒸馏中的 distribution shift。</p>
+</blockquote>
+<h3 id="4-Search-R1-与-RAG-有什么区别？"><a href="#4-Search-R1-与-RAG-有什么区别？" class="headerlink" title="4. Search-R1 与 RAG 有什么区别？"></a>4. Search-R1 与 RAG 有什么区别？</h3><blockquote>
+<p>RAG 通常由系统固定执行一次或若干次检索，然后把结果交给 LLM；Search-R1 把搜索本身作为模型动作，让模型通过强化学习学会是否搜索、如何组织查询、何时继续搜索以及什么时候回答。搜索结果是 environment observation，而搜索词和最终答案都是模型策略产生的动作。</p>
+</blockquote>
+<h3 id="5-ReTool-的核心是什么？"><a href="#5-ReTool-的核心是什么？" class="headerlink" title="5. ReTool 的核心是什么？"></a>5. ReTool 的核心是什么？</h3><blockquote>
+<p>ReTool 将代码解释器视为 RL 环境。模型生成代码工具调用，执行器返回 stdout、stderr 或 timeout，这些结果进入下一轮上下文，模型可以继续推理和修正。最终答案是否正确形成 outcome reward，再通过轨迹 advantage 对此前的代码调用、推理和最终回答共同进行信用分配。</p>
+</blockquote>
+<hr>
+<h2 id="高频面试问题"><a href="#高频面试问题" class="headerlink" title="高频面试问题"></a>高频面试问题</h2><h3 id="Q1：rollout、reward、advantage-分别是什么？"><a href="#Q1：rollout、reward、advantage-分别是什么？" class="headerlink" title="Q1：rollout、reward、advantage 分别是什么？"></a>Q1：rollout、reward、advantage 分别是什么？</h3><ul>
+<li><strong>Rollout</strong>：当前策略从 prompt 出发生成的一条完整轨迹。</li>
+<li><strong>Reward</strong>：环境对轨迹结果的评价，例如数学答案是否正确。</li>
+<li><strong>Advantage</strong>：某条动作&#x2F;轨迹相对基线“好多少”，决定提高还是降低对应动作概率。</li>
+</ul>
+<p>在 LLM 中可以对应为：</p>
+<table>
+<thead>
+<tr>
+<th>RL 概念</th>
+<th>LLM 中的含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>State</td>
+<td>prompt + 已生成 token + observation</td>
+</tr>
+<tr>
+<td>Action</td>
+<td>下一个模型生成 token</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>LLM next-token 分布</td>
+</tr>
+<tr>
+<td>Trajectory</td>
+<td>一段回答或多轮工具轨迹</td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>判题器、搜索引擎、代码解释器</td>
+</tr>
+<tr>
+<td>Reward</td>
+<td>正确性、格式、任务是否成功</td>
+</tr>
+</tbody></table>
+<h3 id="Q2：importance-sampling-与-GRPO-的区别？"><a href="#Q2：importance-sampling-与-GRPO-的区别？" class="headerlink" title="Q2：importance sampling 与 GRPO 的区别？"></a>Q2：importance sampling 与 GRPO 的区别？</h3><p><code>importance_sampling</code> 是<strong>统计&#x2F;策略优化技术</strong>，GRPO 是<strong>完整算法</strong>。</p>
+<p>$$
+\rho_t &#x3D;
+\frac{
+\pi_\theta(a_t\mid s_t)
+}{
+\pi_{\mathrm{old}}(a_t\mid s_t)
+}
+$$</p>
+<p>它用来处理“rollout 是旧策略生成、更新时模型已经是新策略”的概率分布差异。</p>
+<p>GRPO 还包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">分组采样</span><br><span class="line">+ reward</span><br><span class="line">+ group-relative advantage</span><br><span class="line">+ policy update</span><br></pre></td></tr></table></figure>
+
+<p>所以：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">importance sampling</span><br><span class="line">⊂ GRPO 的更新工具之一</span><br><span class="line"></span><br><span class="line">GRPO</span><br><span class="line">= 一整套 RL 训练算法</span><br></pre></td></tr></table></figure>
+
+<h3 id="Q3：completion-是什么？"><a href="#Q3：completion-是什么？" class="headerlink" title="Q3：completion 是什么？"></a>Q3：completion 是什么？</h3><p>假设：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Prompt:</span><br><span class="line">Solve 2 + 3.</span><br><span class="line"></span><br><span class="line">Model:</span><br><span class="line">First calculate ... \boxed&#123;5&#125;</span><br></pre></td></tr></table></figure>
+
+<p>则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Prompt</span><br><span class="line">= 已知输入</span><br><span class="line"></span><br><span class="line">Completion</span><br><span class="line">= 模型从 prompt 后开始生成的全部 token</span><br></pre></td></tr></table></figure>
+
+<p>它可能同时包含：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Reasoning</span><br><span class="line">Tool Call</span><br><span class="line">Final Answer</span><br></pre></td></tr></table></figure>
+
+<h3 id="Q4：为什么-build-grpo-datum-要右移？"><a href="#Q4：为什么-build-grpo-datum-要右移？" class="headerlink" title="Q4：为什么 build_grpo_datum() 要右移？"></a>Q4：为什么 <code>build_grpo_datum()</code> 要右移？</h3><p>自回归模型的目标是：</p>
+<p>$$
+x_t
+\rightarrow
+x_{t+1}
+$$</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">prompt     = [x1, x2, x3]</span><br><span class="line">completion = [y1, y2]</span><br><span class="line"></span><br><span class="line">model_input = [x1, x2, x3, y1]</span><br><span class="line">target      = [ 0,  0, y1, y2]</span><br></pre></td></tr></table></figure>
+
+<p>关键位置：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入 x3</span><br><span class="line">→ 预测 y1</span><br><span class="line"></span><br><span class="line">输入 y1</span><br><span class="line">→ 预测 y2</span><br></pre></td></tr></table></figure>
+
+<p>所以不是“prompt 第一个 token 不需要预测”这么简单，而是：</p>
+<blockquote>
+<p><strong>policy loss 只关心模型生成的 completion token。prompt 内部即使存在 next-token 关系，也不是 RL 要优化的动作，因此对应 loss 输入被 mask&#x2F;占位。</strong></p>
+</blockquote>
+<h3 id="Q5：为什么-prompt-loss-区长度是-len-prompt-1？"><a href="#Q5：为什么-prompt-loss-区长度是-len-prompt-1？" class="headerlink" title="Q5：为什么 prompt loss 区长度是 len(prompt)-1？"></a>Q5：为什么 prompt loss 区长度是 <code>len(prompt)-1</code>？</h3><p>因为第一个要训练的动作是 completion 的第一个 token (y_1)。</p>
+<p>在 causal LM 对齐中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prompt 最后一个 token</span><br></pre></td></tr></table></figure>
+
+<p>会作为输入状态的一部分，用于预测：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">completion 第一个 token</span><br></pre></td></tr></table></figure>
+
+<p>因此在 target 序列中，需要为 prompt 内部预测位置保留：</p>
+<p>$$
+m-1
+$$</p>
+<p>个占位，再接上 completion 的 (T) 个真实 target。</p>
+<h3 id="Q6：为什么-old-logprob-必须在-rollout-时保存？"><a href="#Q6：为什么-old-logprob-必须在-rollout-时保存？" class="headerlink" title="Q6：为什么 old logprob 必须在 rollout 时保存？"></a>Q6：为什么 old logprob 必须在 rollout 时保存？</h3><p>因为策略更新使用：</p>
+<p>$$
+\frac{
+\pi_{\theta}(a_t\mid s_t)
+}{
+\pi_{\theta_{\mathrm{old}}}(a_t\mid s_t)
+}
+$$</p>
+<p>如果训练后再重新计算 denominator，它已经不是 rollout 时的旧策略概率，importance ratio 就失去意义。</p>
+<h3 id="Q7：退化组是什么？"><a href="#Q7：退化组是什么？" class="headerlink" title="Q7：退化组是什么？"></a>Q7：退化组是什么？</h3><p>若同一题采样 (G) 条回答：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[1,1,1,1]</span><br></pre></td></tr></table></figure>
+
+<p>或：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[0,0,0,0]</span><br></pre></td></tr></table></figure>
+
+<p>则组内 reward 没有差异，标准化后的 advantage 都接近 0。</p>
+<p>这类 group 无法告诉模型：</p>
+<blockquote>
+<p>“同一道题中哪种生成方式更好”。</p>
+</blockquote>
+<p>因此通常跳过或动态重采样。</p>
+<h3 id="Q8：为什么-sampler-刷新是-on-policy-约束？"><a href="#Q8：为什么-sampler-刷新是-on-policy-约束？" class="headerlink" title="Q8：为什么 sampler 刷新是 on-policy 约束？"></a>Q8：为什么 sampler 刷新是 on-policy 约束？</h3><p>假设第 (k) 步更新了参数：</p>
+<p>$$
+\theta_k
+\rightarrow
+\theta_{k+1}
+$$</p>
+<p>下一批数据最好来自：</p>
+<p>$$
+\pi_{\theta_{k+1}}
+$$</p>
+<p>而不是继续使用旧的：</p>
+<p>$$
+\pi_{\theta_k}
+$$</p>
+<p>否则训练数据与当前 policy 的分布差越来越大，逐渐变成 off-policy。</p>
+<h3 id="Q9：OPD-的-Teacher-是怎么“逐-token-打分”的？"><a href="#Q9：OPD-的-Teacher-是怎么“逐-token-打分”的？" class="headerlink" title="Q9：OPD 的 Teacher 是怎么“逐 token 打分”的？"></a>Q9：OPD 的 Teacher 是怎么“逐 token 打分”的？</h3><p>Teacher 不自己生成另一条答案，而是读取：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prompt</span><br><span class="line">+</span><br><span class="line">Student completion</span><br></pre></td></tr></table></figure>
+
+<p>然后在每一个 Student token 位置计算：</p>
+<p>$$
+\log \pi_T(y_t\mid x,y_{&lt;t})
+$$</p>
+<p>因此 Student 的每个动作都有 Teacher 信号。</p>
+<h3 id="Q10：为什么-Teacher-和-Student-tokenizer-要兼容？"><a href="#Q10：为什么-Teacher-和-Student-tokenizer-要兼容？" class="headerlink" title="Q10：为什么 Teacher 和 Student tokenizer 要兼容？"></a>Q10：为什么 Teacher 和 Student tokenizer 要兼容？</h3><p>OPD 是逐 token 对齐：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Student 第 t 个 token</span><br><span class="line">↔ Teacher 对同一个 token 的概率</span><br></pre></td></tr></table></figure>
+
+<p>如果同一文本被两个 tokenizer 切成不同 token 序列，位置 (t) 就不再表示同一个动作，逐 token KL&#x2F;advantage 会失效。</p>
+<h3 id="Q11：reverse-KL-在-OPD-里怎么变成-advantage？"><a href="#Q11：reverse-KL-在-OPD-里怎么变成-advantage？" class="headerlink" title="Q11：reverse KL 在 OPD 里怎么变成 advantage？"></a>Q11：reverse KL 在 OPD 里怎么变成 advantage？</h3><p>$$
+d_t &#x3D;
+\log\pi_{\mathrm{old}}(y_t\mid s_t) -
+\log\pi_T(y_t\mid s_t)
+$$</p>
+<p>再设：</p>
+<p>$$
+A_t &#x3D;
+-\beta d_t
+$$</p>
+<p>当 Teacher 比 Student 更偏好该 token 时，Student 获得正向调整；反之被压低。</p>
+<h3 id="Q12：OPD-与传统离线知识蒸馏有什么不同？"><a href="#Q12：OPD-与传统离线知识蒸馏有什么不同？" class="headerlink" title="Q12：OPD 与传统离线知识蒸馏有什么不同？"></a>Q12：OPD 与传统离线知识蒸馏有什么不同？</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>离线蒸馏</th>
+<th>OPD</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轨迹来源</td>
+<td>固定数据集</td>
+<td>Student 当前策略</td>
+</tr>
+<tr>
+<td>Teacher 评分状态</td>
+<td>数据集中状态</td>
+<td>Student 实际访问状态</td>
+</tr>
+<tr>
+<td>Distribution Shift</td>
+<td>较明显</td>
+<td>更小</td>
+</tr>
+<tr>
+<td>信号</td>
+<td>Teacher 分布</td>
+<td>Teacher 分布</td>
+</tr>
+<tr>
+<td>是否 on-policy</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<h3 id="Q13：Search-R1-为什么不是普通-RAG？"><a href="#Q13：Search-R1-为什么不是普通-RAG？" class="headerlink" title="Q13：Search-R1 为什么不是普通 RAG？"></a>Q13：Search-R1 为什么不是普通 RAG？</h3><p>RAG：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">系统决定：</span><br><span class="line">先检索 → 把结果给模型</span><br></pre></td></tr></table></figure>
+
+<p>Search-R1：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">模型决定：</span><br><span class="line">要不要搜？</span><br><span class="line">搜什么？</span><br><span class="line">拿到结果后还要不要再搜？</span><br><span class="line">什么时候最终回答？</span><br></pre></td></tr></table></figure>
+
+<p>所以 Search-R1 学习的是：</p>
+<blockquote>
+<p><strong>检索策略本身。</strong></p>
+</blockquote>
+<h3 id="Q14：什么是-observation-mask？"><a href="#Q14：什么是-observation-mask？" class="headerlink" title="Q14：什么是 observation mask？"></a>Q14：什么是 observation mask？</h3><p>工具返回内容不是模型自己生成的 action。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Assistant: search(&quot;...&quot;)</span><br><span class="line">Tool: 搜索结果文本</span><br><span class="line">Assistant: Answer: ...</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">search(...)       → policy action，要训练</span><br><span class="line">Tool observation  → 环境输入，不训练</span><br><span class="line">Answer            → policy action，要训练</span><br></pre></td></tr></table></figure>
+
+<p>因此 observation token：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">old_logprob = 0</span><br><span class="line">advantage   = 0</span><br></pre></td></tr></table></figure>
+
+<p>但仍保留在上下文，供后续 Assistant token 使用。</p>
+<h3 id="Q15：ReTool-如何让模型学会“代码报错后修正”？"><a href="#Q15：ReTool-如何让模型学会“代码报错后修正”？" class="headerlink" title="Q15：ReTool 如何让模型学会“代码报错后修正”？"></a>Q15：ReTool 如何让模型学会“代码报错后修正”？</h3><p>轨迹可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">生成代码</span><br><span class="line">→ NameError</span><br><span class="line">→ stderr 进入上下文</span><br><span class="line">→ 再生成修正版代码</span><br><span class="line">→ 得到正确结果</span><br><span class="line">→ 最终答案正确</span><br></pre></td></tr></table></figure>
+
+<p>最终 reward 为正后，整条成功动作链中的：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">第一次工具选择</span><br><span class="line">第二次修正代码</span><br><span class="line">最终答案</span><br></pre></td></tr></table></figure>
+
+<p>共享正 advantage，因此模型逐渐学会利用错误反馈自我修正。</p>
+<h3 id="Q16：PyTRIO-和-Verl-的区别？"><a href="#Q16：PyTRIO-和-Verl-的区别？" class="headerlink" title="Q16：PyTRIO 和 Verl 的区别？"></a>Q16：PyTRIO 和 Verl 的区别？</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>PyTRIO</th>
+<th>Verl</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td>低门槛 Agentic-RL 实验</td>
+<td>大规模生产级 RL</td>
+</tr>
+<tr>
+<td>基础设施</td>
+<td>服务端&#x2F;托管抽象较多</td>
+<td>自己管理 GPU 集群与后端</td>
+</tr>
+<tr>
+<td>API</td>
+<td>简洁 Python SDK</td>
+<td>完整分布式 RL 工程栈</td>
+</tr>
+<tr>
+<td>适合</td>
+<td>快速验证算法</td>
+<td>大规模、高吞吐训练</td>
+</tr>
+<tr>
+<td>工程复杂度</td>
+<td>较低</td>
+<td>较高</td>
+</tr>
+</tbody></table>
+<h3 id="Q17：FSDP-与-ZeRO-的关系？"><a href="#Q17：FSDP-与-ZeRO-的关系？" class="headerlink" title="Q17：FSDP 与 ZeRO 的关系？"></a>Q17：FSDP 与 ZeRO 的关系？</h3><p>两者都解决模型状态冗余。</p>
+<ul>
+<li><strong>ZeRO</strong> 是 DeepSpeed 的分阶段体系：<ul>
+<li>Stage 1：优化器状态；</li>
+<li>Stage 2：+ 梯度；</li>
+<li>Stage 3：+ 参数。</li>
+</ul>
+</li>
+<li><strong>FSDP</strong> 是 PyTorch 原生的全分片数据并行，核心目标接近 ZeRO-3。</li>
+</ul>
+<p>它们属于<strong>系统&#x2F;分布式训练层</strong>，不是 RL 算法。</p>
+<hr>
+<h1 id="第八章整体结构"><a href="#第八章整体结构" class="headerlink" title="第八章整体结构"></a>第八章整体结构</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">8.1 GRPO</span><br><span class="line">    ↓</span><br><span class="line">学会 rollout / reward / advantage / policy update</span><br><span class="line"></span><br><span class="line">8.2 OPD</span><br><span class="line">    ↓</span><br><span class="line">把 reward 换成 Teacher 逐 token 反馈</span><br><span class="line"></span><br><span class="line">8.3 Search-R1</span><br><span class="line">    ↓</span><br><span class="line">把单轮回答扩展到多轮搜索环境</span><br><span class="line"></span><br><span class="line">8.4 ReTool</span><br><span class="line">    ↓</span><br><span class="line">把搜索环境换成代码解释器</span><br></pre></td></tr></table></figure>
+
+<p>统一主线：</p>
+<p>$$
+\text{Current Policy}
+\rightarrow
+\text{Rollout}
+\rightarrow
+\text{Feedback}
+\rightarrow
+\text{Advantage}
+\rightarrow
+\text{Policy Update}
+\rightarrow
+\text{New Policy}
+$$</p>
+<hr>
+<h1 id="1-PyTRIO-与-Verl"><a href="#1-PyTRIO-与-Verl" class="headerlink" title="1. PyTRIO 与 Verl"></a>1. PyTRIO 与 Verl</h1><h2 id="1-1-PyTRIO"><a href="#1-1-PyTRIO" class="headerlink" title="1.1 PyTRIO"></a>1.1 PyTRIO</h2><p>第八章全部示例使用 PyTRIO。</p>
+<p>可以把它理解成：</p>
+<blockquote>
+<p><strong>把“本地算法控制”与“远端模型采样、前向反向、优化和权重管理”分离的 RL 后训练 SDK。</strong></p>
+</blockquote>
+<p>典型 API：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化示例</span></span><br><span class="line">client = ServiceClient()</span><br><span class="line">trainer = client.create_lora_training_client(...)</span><br><span class="line">sampler = trainer.save_weights_and_get_sampling_client()</span><br><span class="line"></span><br><span class="line">future = trainer.forward_backward(datums, loss_fn=<span class="string">&quot;importance_sampling&quot;</span>)</span><br><span class="line">trainer.optim_step(adam_params)</span><br></pre></td></tr></table></figure>
+
+<p>重点不是自己实现 GPU 集群调度，而是研究：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">怎样 rollout</span><br><span class="line">怎样设计 reward</span><br><span class="line">怎样构造 advantage</span><br><span class="line">怎样对齐 token</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-Verl"><a href="#1-2-Verl" class="headerlink" title="1.2 Verl"></a>1.2 Verl</h2><p>Verl 更偏向生产级大规模 RL 训练：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PPO / GRPO / DAPO 等算法</span><br><span class="line">+</span><br><span class="line">FSDP / Megatron-LM 等训练后端</span><br><span class="line">+</span><br><span class="line">vLLM / SGLang 等推理后端</span><br></pre></td></tr></table></figure>
+
+<p>适合有 GPU 集群并追求吞吐、扩展性和复杂并行策略的场景。</p>
+<hr>
+<h1 id="2-GRPO"><a href="#2-GRPO" class="headerlink" title="2. GRPO"></a>2. GRPO</h1><h2 id="2-1-从语言模型到-RL"><a href="#2-1-从语言模型到-RL" class="headerlink" title="2.1 从语言模型到 RL"></a>2.1 从语言模型到 RL</h2><p>LLM 策略：</p>
+<p>$$
+\pi_\theta(y\mid x) &#x3D;
+\prod_{t&#x3D;1}^{T}
+\pi_\theta(y_t\mid x,y_{&lt;t})
+$$</p>
+<p>LLM 中的“动作”就是下一个 token。</p>
+<p>GRPO 的关键：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">同一道题</span><br><span class="line">↓</span><br><span class="line">采样 G 条回答</span><br><span class="line">↓</span><br><span class="line">每条得到 reward</span><br><span class="line">↓</span><br><span class="line">组内相对标准化</span><br><span class="line">↓</span><br><span class="line">得到 advantage</span><br><span class="line">↓</span><br><span class="line">更新策略</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-Group-Relative-Advantage"><a href="#2-2-Group-Relative-Advantage" class="headerlink" title="2.2 Group Relative Advantage"></a>2.2 Group Relative Advantage</h2><p>$$
+A_i &#x3D;
+\frac{
+r_i-\mathrm{mean}(r_1,\ldots,r_G)
+}{
+\mathrm{std}(r_1,\ldots,r_G)+\varepsilon
+}
+$$</p>
+<p>它把“题目难度”抵消掉，重点比较：</p>
+<blockquote>
+<p>同一道题里，哪种生成方式相对更好。</p>
+</blockquote>
+<h2 id="2-3-Importance-Sampling-与-PPO"><a href="#2-3-Importance-Sampling-与-PPO" class="headerlink" title="2.3 Importance Sampling 与 PPO"></a>2.3 Importance Sampling 与 PPO</h2><p>简化 importance sampling loss：</p>
+<p>$$
+L_{\mathrm{IS}}
+\propto
+-\rho_t A_t
+$$</p>
+<p>PPO：</p>
+<p>$$
+L_{\mathrm{PPO}} &#x3D;
+-\min
+\left(
+\rho_tA_t,
+\mathrm{clip}(\rho_t,1-\epsilon,1+\epsilon)A_t
+\right)
+$$</p>
+<p>区别：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Importance Sampling</span><br><span class="line">→ 直接用 ratio * advantage</span><br><span class="line"></span><br><span class="line">PPO</span><br><span class="line">→ 再给 ratio 加“限速器”</span><br></pre></td></tr></table></figure>
+
+<h3 id="粘贴文本中的-CISPO-补充"><a href="#粘贴文本中的-CISPO-补充" class="headerlink" title="粘贴文本中的 CISPO 补充"></a>粘贴文本中的 CISPO 补充</h3><p>CISPO 属于第八章正文之外的扩展讨论。可简单理解为：</p>
+<blockquote>
+<p>对 importance ratio 做约束&#x2F;裁剪处理，但避免 PPO 在某些越界 token 上直接失去有效梯度，从而改善 RL 训练稳定性。</p>
+</blockquote>
+<p>正文代码只保留：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">importance_sampling</span><br><span class="line">ppo</span><br></pre></td></tr></table></figure>
+
+<p>两个 PyTRIO 内置 loss。</p>
+<hr>
+<h1 id="3-GRPO-关键代码解释"><a href="#3-GRPO-关键代码解释" class="headerlink" title="3. GRPO 关键代码解释"></a>3. GRPO 关键代码解释</h1><h2 id="3-1-Rollout-数据结构"><a href="#3-1-Rollout-数据结构" class="headerlink" title="3.1 Rollout 数据结构"></a>3.1 Rollout 数据结构</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line"><span class="meta">@dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RolloutSample</span>:</span><br><span class="line">    tokens: <span class="built_in">list</span>[<span class="built_in">int</span>]</span><br><span class="line">    logprobs: <span class="built_in">list</span>[<span class="built_in">float</span>]   <span class="comment"># rollout 时旧策略概率</span></span><br><span class="line">    text: <span class="built_in">str</span></span><br><span class="line">    reward: <span class="built_in">float</span></span><br><span class="line">    advantage: <span class="built_in">float</span></span><br></pre></td></tr></table></figure>
+
+<p>核心：</p>
+<blockquote>
+<p><strong>必须保存 rollout 时的 old logprob。</strong></p>
+</blockquote>
+<h2 id="3-2-run-rollout-group-核心逻辑"><a href="#3-2-run-rollout-group-核心逻辑" class="headerlink" title="3.2 run_rollout_group() 核心逻辑"></a>3.2 <code>run_rollout_group()</code> 核心逻辑</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化伪代码</span></span><br><span class="line">result = sampler.sample(</span><br><span class="line">    prompt=prompt_tokens,</span><br><span class="line">    num_samples=group_size,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">samples = []</span><br><span class="line"><span class="keyword">for</span> seq <span class="keyword">in</span> result:</span><br><span class="line">    reward = grade(seq.text, ground_truth)</span><br><span class="line">    samples.append(&#123;</span><br><span class="line">        <span class="string">&quot;tokens&quot;</span>: seq.tokens,</span><br><span class="line">        <span class="string">&quot;old_logprobs&quot;</span>: seq.logprobs,</span><br><span class="line">        <span class="string">&quot;reward&quot;</span>: reward,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">rewards = [x[<span class="string">&quot;reward&quot;</span>] <span class="keyword">for</span> x <span class="keyword">in</span> samples]</span><br><span class="line">mean = average(rewards)</span><br><span class="line">std = standard_deviation(rewards)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> sample <span class="keyword">in</span> samples:</span><br><span class="line">    sample[<span class="string">&quot;advantage&quot;</span>] = (sample[<span class="string">&quot;reward&quot;</span>] - mean) / (std + <span class="number">1e-8</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这是 GRPO 的最核心代码。</p>
+<h2 id="3-3-build-grpo-datum-的右移"><a href="#3-3-build-grpo-datum-的右移" class="headerlink" title="3.3 build_grpo_datum() 的右移"></a>3.3 <code>build_grpo_datum()</code> 的右移</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line">obs_len = <span class="built_in">len</span>(prompt_tokens) - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">model_input = prompt_tokens + completion[:-<span class="number">1</span>]</span><br><span class="line">target = [<span class="number">0</span>] * obs_len + completion</span><br><span class="line">old_logprob = [<span class="number">0.0</span>] * obs_len + completion_old_logprobs</span><br><span class="line">advantage = [<span class="number">0.0</span>] * obs_len + [A] * <span class="built_in">len</span>(completion)</span><br></pre></td></tr></table></figure>
+
+<p>核心理解：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Prompt</span><br><span class="line">= State / Observation</span><br><span class="line"></span><br><span class="line">Completion</span><br><span class="line">= Policy Action</span><br></pre></td></tr></table></figure>
+
+<p>RL loss 只训练模型自己的动作。</p>
+<h2 id="3-4-每-step-刷新-sampler"><a href="#3-4-每-step-刷新-sampler" class="headerlink" title="3.4 每 step 刷新 sampler"></a>3.4 每 step 刷新 sampler</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line"><span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(steps):</span><br><span class="line">    sampler = trainer.save_weights_and_get_sampling_client()</span><br><span class="line">    trajectories = rollout(sampler)</span><br><span class="line">    train(trajectories)</span><br></pre></td></tr></table></figure>
+
+<p>这是 on-policy 的关键工程动作。</p>
+<hr>
+<h1 id="4-OPD：On-Policy-Distillation"><a href="#4-OPD：On-Policy-Distillation" class="headerlink" title="4. OPD：On-Policy Distillation"></a>4. OPD：On-Policy Distillation</h1><h2 id="4-1-为什么需要-OPD？"><a href="#4-1-为什么需要-OPD？" class="headerlink" title="4.1 为什么需要 OPD？"></a>4.1 为什么需要 OPD？</h2><p>传统离线蒸馏：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">固定数据</span><br><span class="line">→ Teacher 标注</span><br><span class="line">→ Student 学</span><br></pre></td></tr></table></figure>
+
+<p>问题：</p>
+<p>Student 真正生成时可能进入训练数据没有覆盖的错误状态。</p>
+<p>OPD：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Student 自己 rollout</span><br><span class="line">↓</span><br><span class="line">Teacher 沿 Student 真实轨迹打分</span><br><span class="line">↓</span><br><span class="line">Student 更新</span><br></pre></td></tr></table></figure>
+
+<p>Teacher 能覆盖 Student 当前实际访问的状态。</p>
+<h2 id="4-2-Teacher-必须评价同一条-Student-轨迹"><a href="#4-2-Teacher-必须评价同一条-Student-轨迹" class="headerlink" title="4.2 Teacher 必须评价同一条 Student 轨迹"></a>4.2 Teacher 必须评价同一条 Student 轨迹</h2><p>关键代码逻辑：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line">all_ids = prompt_ids + student_completion_ids</span><br><span class="line">all_teacher_logprobs = teacher.compute_logprobs(all_ids)</span><br><span class="line"></span><br><span class="line">teacher_completion_logprobs = all_teacher_logprobs[<span class="built_in">len</span>(prompt_ids):]</span><br></pre></td></tr></table></figure>
+
+<p>Teacher 不生成自己的答案。</p>
+<p>它做的是：</p>
+<blockquote>
+<p>“如果我处在 Student 当前这个上下文，我会给 Student 刚生成的 token 多大概率？”</p>
+</blockquote>
+<h2 id="4-3-Reverse-KL-Advantage"><a href="#4-3-Reverse-KL-Advantage" class="headerlink" title="4.3 Reverse KL Advantage"></a>4.3 Reverse KL Advantage</h2><p>$$
+d_t &#x3D;
+\log\pi_{\mathrm{Student}}(y_t\mid s_t) -
+\log\pi_{\mathrm{Teacher}}(y_t\mid s_t)
+$$</p>
+<p>$$
+A_t&#x3D;-\beta d_t
+$$</p>
+<p>因此 OPD 的 advantage 是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">token 1 → A1</span><br><span class="line">token 2 → A2</span><br><span class="line">token 3 → A3</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>而 GRPO：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">整条 completion</span><br><span class="line">→ 同一个轨迹 advantage A</span><br><span class="line">→ 复制到所有 completion token</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-4-Tokenizer-对齐"><a href="#4-4-Tokenizer-对齐" class="headerlink" title="4.4 Tokenizer 对齐"></a>4.4 Tokenizer 对齐</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">student_ids = student_tokenizer.encode(text)</span><br><span class="line">teacher_ids = teacher_tokenizer.encode(text)</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> student_ids == teacher_ids</span><br></pre></td></tr></table></figure>
+
+<p>这是逐 token Teacher 反馈成立的前提之一。</p>
+<hr>
+<h1 id="5-Search-R1"><a href="#5-Search-R1" class="headerlink" title="5. Search-R1"></a>5. Search-R1</h1><h2 id="5-1-Search-R1-与-RAG"><a href="#5-1-Search-R1-与-RAG" class="headerlink" title="5.1 Search-R1 与 RAG"></a>5.1 Search-R1 与 RAG</h2><p>传统 RAG：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Query</span><br><span class="line">→ 固定 Retriever</span><br><span class="line">→ Context</span><br><span class="line">→ LLM</span><br></pre></td></tr></table></figure>
+
+<p>Search-R1：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LLM</span><br><span class="line">→ 判断是否搜索</span><br><span class="line">→ 生成 search query</span><br><span class="line">→ Search Environment</span><br><span class="line">→ Observation</span><br><span class="line">→ LLM</span><br><span class="line">→ 可能再次搜索</span><br><span class="line">→ Final Answer</span><br></pre></td></tr></table></figure>
+
+<p>它训练的是“搜索策略”。</p>
+<h2 id="5-2-搜索工具协议"><a href="#5-2-搜索工具协议" class="headerlink" title="5.2 搜索工具协议"></a>5.2 搜索工具协议</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line">SEARCH_TOOL = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;search&quot;</span>,</span><br><span class="line">    <span class="string">&quot;parameters&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;query&quot;</span>: <span class="string">&quot;string&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>模型的动作可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">search(&quot;The Little Prince author&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>环境返回：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Antoine de Saint-Exupéry ...</span><br></pre></td></tr></table></figure>
+
+<p>然后模型再决定下一步。</p>
+<h2 id="5-3-多轮状态机"><a href="#5-3-多轮状态机" class="headerlink" title="5.3 多轮状态机"></a>5.3 多轮状态机</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化伪代码</span></span><br><span class="line"><span class="keyword">while</span> <span class="keyword">not</span> trajectory.done:</span><br><span class="line">    assistant = sample(current_prompt)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> assistant.is_search_call:</span><br><span class="line">        result = search(assistant.query)</span><br><span class="line">        append_tool_observation(result)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">elif</span> assistant.is_final_answer:</span><br><span class="line">        trajectory.done = <span class="literal">True</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        trajectory.invalid = <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+
+<p>这就是 Agentic RL 的 rollout。</p>
+<h2 id="5-4-Observation-Mask"><a href="#5-4-Observation-Mask" class="headerlink" title="5.4 Observation Mask"></a>5.4 Observation Mask</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line">full_tokens += tool_observation_tokens</span><br><span class="line">old_logprobs += [<span class="number">0.0</span>] * <span class="built_in">len</span>(tool_observation_tokens)</span><br><span class="line">advantages += [<span class="number">0.0</span>] * <span class="built_in">len</span>(tool_observation_tokens)</span><br><span class="line"></span><br><span class="line">full_tokens += assistant_tokens</span><br><span class="line">old_logprobs += assistant_old_logprobs</span><br><span class="line">advantages += [trajectory_advantage] * <span class="built_in">len</span>(assistant_tokens)</span><br></pre></td></tr></table></figure>
+
+<p>工具 observation：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">进入 Context</span><br><span class="line">但不进入 Policy Loss</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-5-Outcome-Reward"><a href="#5-5-Outcome-Reward" class="headerlink" title="5.5 Outcome Reward"></a>5.5 Outcome Reward</h2><p>Search-R1 只看最终短答案：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">格式正确 + 精确匹配 → 1</span><br><span class="line">格式正确 + 答案错误 → 0</span><br><span class="line">格式错误              → 负奖励</span><br></pre></td></tr></table></figure>
+
+<p>然后同题 group 做相对 advantage。</p>
+<p>因此一次正确答案可以强化：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">什么时候搜索</span><br><span class="line">搜索词怎么写</span><br><span class="line">什么时候继续搜</span><br><span class="line">什么时候停止搜索</span><br><span class="line">最终答案怎么输出</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="6-ReTool"><a href="#6-ReTool" class="headerlink" title="6. ReTool"></a>6. ReTool</h1><h2 id="6-1-ReTool-是什么？"><a href="#6-1-ReTool-是什么？" class="headerlink" title="6.1 ReTool 是什么？"></a>6.1 ReTool 是什么？</h2><p>ReTool 把 RL 环境变成：</p>
+<blockquote>
+<p><strong>Python Code Interpreter</strong></p>
+</blockquote>
+<p>轨迹：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Question</span><br><span class="line">↓</span><br><span class="line">LLM 生成代码</span><br><span class="line">↓</span><br><span class="line">Python Sandbox</span><br><span class="line">↓</span><br><span class="line">stdout / stderr</span><br><span class="line">↓</span><br><span class="line">LLM 继续推理或修正</span><br><span class="line">↓</span><br><span class="line">最终 \boxed&#123;answer&#125;</span><br><span class="line">↓</span><br><span class="line">Reward</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-2-Code-Tool-Schema"><a href="#6-2-Code-Tool-Schema" class="headerlink" title="6.2 Code Tool Schema"></a>6.2 Code Tool Schema</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 简化版</span></span><br><span class="line">CODE_TOOL = &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;code_interpreter&quot;</span>,</span><br><span class="line">    <span class="string">&quot;parameters&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;code&quot;</span>: <span class="string">&quot;string&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-3-自我修正"><a href="#6-3-自我修正" class="headerlink" title="6.3 自我修正"></a>6.3 自我修正</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">第一次代码：</span><br><span class="line">print(sum(values))</span><br><span class="line"></span><br><span class="line">Tool:</span><br><span class="line">NameError</span><br><span class="line"></span><br><span class="line">第二次代码：</span><br><span class="line">values = [...]</span><br><span class="line">print(sum(values))</span><br><span class="line"></span><br><span class="line">Tool:</span><br><span class="line">128</span><br><span class="line"></span><br><span class="line">Assistant:</span><br><span class="line">\boxed&#123;128&#125;</span><br></pre></td></tr></table></figure>
+
+<p>RL 不需要人工告诉模型：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">“遇到 NameError 时应该重写变量”</span><br></pre></td></tr></table></figure>
+
+<p>只需要最终任务成功 reward，成功轨迹就会被强化。</p>
+<h2 id="6-4-Sandbox"><a href="#6-4-Sandbox" class="headerlink" title="6.4 Sandbox"></a>6.4 Sandbox</h2><p>核心职责：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">执行模型代码</span><br><span class="line">限制运行时间</span><br><span class="line">捕获 stdout</span><br><span class="line">捕获 stderr</span><br><span class="line">捕获 timeout</span><br><span class="line">把结果变成 observation</span><br></pre></td></tr></table></figure>
+
+<p>真实生产中必须使用严格隔离环境，不能直接在宿主机执行不可信模型代码。</p>
+<h2 id="6-5-ReTool-的-Feedback-Mask"><a href="#6-5-ReTool-的-Feedback-Mask" class="headerlink" title="6.5 ReTool 的 Feedback Mask"></a>6.5 ReTool 的 Feedback Mask</h2><p>与 Search-R1 相同：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">模型生成代码</span><br><span class="line">→ policy token，训练</span><br><span class="line"></span><br><span class="line">stdout / stderr</span><br><span class="line">→ environment observation，不训练</span><br><span class="line"></span><br><span class="line">模型后续推理和答案</span><br><span class="line">→ policy token，训练</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="7-粘贴文本中的扩展概念整理"><a href="#7-粘贴文本中的扩展概念整理" class="headerlink" title="7. 粘贴文本中的扩展概念整理"></a>7. 粘贴文本中的扩展概念整理</h1><h2 id="7-1-DAPO"><a href="#7-1-DAPO" class="headerlink" title="7.1 DAPO"></a>7.1 DAPO</h2><p>DAPO 属于 GRPO&#x2F;PPO 路线的改进，重点包括：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Clip-Higher</span><br><span class="line">Dynamic Sampling</span><br><span class="line">Token-level Policy Gradient</span><br><span class="line">Overlong Reward Shaping</span><br></pre></td></tr></table></figure>
+
+<p>特别是 Dynamic Sampling：</p>
+<blockquote>
+<p>跳过&#x2F;重采样 reward 全相同的无效组，提高有效 rollout 的比例。</p>
+</blockquote>
+<h2 id="7-2-GSPO"><a href="#7-2-GSPO" class="headerlink" title="7.2 GSPO"></a>7.2 GSPO</h2><p>GSPO 将策略优化的关键比率从：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">token level</span><br></pre></td></tr></table></figure>
+
+<p>提升到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sequence level</span><br></pre></td></tr></table></figure>
+
+<p>目标是减小长序列 RL 中 token-level ratio 的高方差问题。</p>
+<h2 id="7-3-OPSD"><a href="#7-3-OPSD" class="headerlink" title="7.3 OPSD"></a>7.3 OPSD</h2><p>OPSD：</p>
+<blockquote>
+<p><strong>On-Policy Self-Distillation</strong></p>
+</blockquote>
+<p>和 OPD 的区别是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OPD：</span><br><span class="line">外部 Teacher</span><br><span class="line"></span><br><span class="line">OPSD：</span><br><span class="line">固定/特权信息增强的 Self Teacher</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-4-ALFWorld"><a href="#7-4-ALFWorld" class="headerlink" title="7.4 ALFWorld"></a>7.4 ALFWorld</h2><p>ALFWorld 是文本化具身环境。</p>
+<p>Agent 需要完成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">寻找物体</span><br><span class="line">移动物体</span><br><span class="line">使用物体</span><br><span class="line">完成家庭任务</span><br></pre></td></tr></table></figure>
+
+<p>常用于研究：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">长轨迹</span><br><span class="line">稀疏 reward</span><br><span class="line">Agent credit assignment</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-5-FSDP"><a href="#7-5-FSDP" class="headerlink" title="7.5 FSDP"></a>7.5 FSDP</h2><p>FSDP：</p>
+<blockquote>
+<p><strong>Fully Sharded Data Parallel</strong></p>
+</blockquote>
+<p>属于 PyTorch 分布式训练系统。</p>
+<p>核心：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">参数</span><br><span class="line">梯度</span><br><span class="line">优化器状态</span><br></pre></td></tr></table></figure>
+
+<p>在数据并行组中分片。</p>
+<h3 id="FSDP-vs-ZeRO"><a href="#FSDP-vs-ZeRO" class="headerlink" title="FSDP vs ZeRO"></a>FSDP vs ZeRO</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>FSDP</th>
+<th>ZeRO</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>生态</td>
+<td>PyTorch 原生</td>
+<td>DeepSpeed</td>
+</tr>
+<tr>
+<td>核心</td>
+<td>全分片 DP</td>
+<td>Stage 1&#x2F;2&#x2F;3 分片体系</td>
+</tr>
+<tr>
+<td>与 ZeRO-3</td>
+<td>目标接近</td>
+<td>ZeRO-3 本身</td>
+</tr>
+<tr>
+<td>是否 RL 算法</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<h2 id="7-6-关于-SAR-OPD-IDT-OPD"><a href="#7-6-关于-SAR-OPD-IDT-OPD" class="headerlink" title="7.6 关于 SAR-OPD &#x2F; IDT-OPD"></a>7.6 关于 SAR-OPD &#x2F; IDT-OPD</h2><p>粘贴文本中提到了 <strong>Medical OPD 的 SAR-OPD 与 IDT-OPD</strong>，但所附文本本身也指出没有可靠公开定义并进行了推测。</p>
+<p>因此本文不把推测当成事实。</p>
+<blockquote>
+<p>如果后续需要学习 Medical OPD，应该直接以对应论文&#x2F;仓库对 SAR-OPD、IDT-OPD 的正式定义为准。</p>
+</blockquote>
+<hr>
+<h1 id="8-第八章-86-个代码片段逐段解释"><a href="#8-第八章-86-个代码片段逐段解释" class="headerlink" title="8. 第八章 86 个代码片段逐段解释"></a>8. 第八章 86 个代码片段逐段解释</h1><blockquote>
+<p>下面按 Happy-LLM 第八章源码出现顺序列出。这里解释的是<strong>每个代码块在完整训练系统中承担什么职责</strong>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="right">#</th>
+<th>所属部分</th>
+<th>类型</th>
+<th>代码片段作用与解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td>章首环境</td>
+<td><code>bash</code></td>
+<td>创建 Python 3.13 虚拟环境、安装第八章依赖并执行 <code>trio login</code>；作用是准备 PyTRIO 实验环境。</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>章首环境</td>
+<td><code>python</code></td>
+<td>创建 <code>ServiceClient</code> 并查询当前 PyTRIO 服务支持的模型列表；正式实验前确认 Student&#x2F;Teacher 模型是否可用。</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>GRPO：奖励</td>
+<td><code>python</code></td>
+<td>实现 <code>\boxed&#123;&#125;</code> 抽取、答案归一化和规则判题；把数学题最终答案转成可验证的 0&#x2F;1 reward。</td>
+</tr>
+<tr>
+<td align="right">4</td>
+<td>GRPO：配置</td>
+<td><code>python</code></td>
+<td>限定本章 GRPO 示例支持的策略更新损失为 <code>importance_sampling</code> 和 <code>ppo</code>。</td>
+</tr>
+<tr>
+<td align="right">5</td>
+<td>GRPO：RolloutSample</td>
+<td><code>python</code></td>
+<td>定义单条 rollout 的训练记录：completion tokens、旧策略 logprobs、文本、reward、advantage。</td>
+</tr>
+<tr>
+<td align="right">6</td>
+<td>GRPO：奖励函数</td>
+<td><code>python</code></td>
+<td>带注释地重述答案抽取、GSM8K 标准答案解析和判题逻辑；说明 reward 如何从文本变成标量。</td>
+</tr>
+<tr>
+<td align="right">7</td>
+<td>GRPO：Prompt</td>
+<td><code>python</code></td>
+<td>使用 Chat Template 与 few-shot 前缀构造 prompt，并编码成 token IDs；保证训练和采样使用统一格式。</td>
+</tr>
+<tr>
+<td align="right">8</td>
+<td>GRPO：run_rollout_group</td>
+<td><code>python</code></td>
+<td>对同一个 prompt 一次采样 <code>group_size</code> 个 completion，保存旧 logprob、计算规则 reward，再做组内 reward 标准化得到 advantage。</td>
+</tr>
+<tr>
+<td align="right">9</td>
+<td>GRPO：build_grpo_datum</td>
+<td><code>python</code></td>
+<td>把 prompt 与 completion 右移对齐成 PyTRIO <code>Datum</code>，并把 prompt 区域的 target&#x2F;logprob&#x2F;advantage 用 0 占位，只让 completion 参与策略损失。</td>
+</tr>
+<tr>
+<td align="right">10</td>
+<td>GRPO：Token 对齐示例</td>
+<td><code>text</code></td>
+<td>用极小 token 序列展示 input、target、old_logprob、advantage 如何错位一位并保持等长。</td>
+</tr>
+<tr>
+<td align="right">11</td>
+<td>GRPO：策略损失</td>
+<td><code>python</code></td>
+<td>调用 <code>forward_backward(datums, loss_fn=...)</code>；同一批 GRPO 数据可切换 importance sampling 或 PPO clipping。</td>
+</tr>
+<tr>
+<td align="right">12</td>
+<td>GRPO：客户端初始化</td>
+<td><code>python</code></td>
+<td>创建 LoRA training client、Tokenizer、采样参数和 Adam 参数；把训练端、采样端和优化器参数准备好。</td>
+</tr>
+<tr>
+<td align="right">13</td>
+<td>GRPO：主循环</td>
+<td><code>python</code></td>
+<td>串联 batch 选择、sampler 刷新、rollout、退化组过滤、Datum 构造和训练提交，是同步版 GRPO 的核心训练循环。</td>
+</tr>
+<tr>
+<td align="right">14</td>
+<td>GRPO：优化</td>
+<td><code>python</code></td>
+<td>提交 <code>optim_step</code> 并等待前向反向与优化 future 完成；体现 PyTRIO 云端异步任务、本地显式同步。</td>
+</tr>
+<tr>
+<td align="right">15</td>
+<td>GRPO：保存</td>
+<td><code>python</code></td>
+<td>把训练后的权重保存成 sampler 可加载的权重版本，供后续 rollout&#x2F;评测使用。</td>
+</tr>
+<tr>
+<td align="right">16</td>
+<td>GRPO：同步运行</td>
+<td><code>bash</code></td>
+<td>最小一步同步 GRPO 试跑命令；用于验证数据、采样、reward、Datum 和更新链路能否跑通。</td>
+</tr>
+<tr>
+<td align="right">17</td>
+<td>GRPO：异步运行</td>
+<td><code>bash</code></td>
+<td>异步版 GRPO 试跑；算法数据不变，只并发处理多个 prompt 的 rollout 提高吞吐。</td>
+</tr>
+<tr>
+<td align="right">18</td>
+<td>OPD：Teacher logprob</td>
+<td><code>python</code></td>
+<td>Teacher 在 Student 的同一条 prompt+completion 轨迹上计算 completion token 的 logprob；为逐 token 蒸馏提供信号。</td>
+</tr>
+<tr>
+<td align="right">19</td>
+<td>OPD：Tokenizer 对齐</td>
+<td><code>python</code></td>
+<td>将同一文本分别用 Student&#x2F;Teacher Tokenizer 编码并断言相同；防止 token 对不齐导致逐 token KL 无意义。</td>
+</tr>
+<tr>
+<td align="right">20</td>
+<td>OPD：数据路径</td>
+<td><code>python</code></td>
+<td>定义 DeepMath-103K 本地目录和默认 shard 数，集中管理数据文件位置。</td>
+</tr>
+<tr>
+<td align="right">21</td>
+<td>OPD：加载 DeepMath</td>
+<td><code>python</code></td>
+<td>按 shard 下载&#x2F;读取 DeepMath Parquet 数据、拼接并采样训练样本；把大数据集分片流式管理。</td>
+</tr>
+<tr>
+<td align="right">22</td>
+<td>OPD：Prompt</td>
+<td><code>python</code></td>
+<td>把数学题与后缀拼成 user message，再用 Chat Template 构建 Student rollout prompt。</td>
+</tr>
+<tr>
+<td align="right">23</td>
+<td>OPD：Student&#x2F;Teacher 客户端</td>
+<td><code>python</code></td>
+<td>创建 Student LoRA training client 与独立 Teacher sampling client；Student 可训练，Teacher 只打分。</td>
+</tr>
+<tr>
+<td align="right">24</td>
+<td>OPD：完整 Teacher 评分</td>
+<td><code>python</code></td>
+<td>计算整条 prompt+completion 的 logprob，再切出 completion 区间并校验长度与空值。</td>
+</tr>
+<tr>
+<td align="right">25</td>
+<td>OPD：build_opd_datum</td>
+<td><code>python</code></td>
+<td>沿用 GRPO 的右移 token schema，但 advantage 改为每个 token 独立的 reverse-KL advantage。</td>
+</tr>
+<tr>
+<td align="right">26</td>
+<td>OPD：sampler 刷新</td>
+<td><code>python</code></td>
+<td>按 <code>sampler_refresh_steps</code> 刷新 Student sampler；默认每 step 刷新以保持 on-policy。</td>
+</tr>
+<tr>
+<td align="right">27</td>
+<td>OPD：rollout + reverse KL</td>
+<td><code>python</code></td>
+<td>Student 生成 completion，记录旧 logprob；Teacher 沿同一轨迹评分，并据此生成逐 token advantage。</td>
+</tr>
+<tr>
+<td align="right">28</td>
+<td>OPD：更新</td>
+<td><code>python</code></td>
+<td>将 OPD Datums 用 importance sampling 做前向反向，再执行 Adam 更新；实现 Student 参数学习。</td>
+</tr>
+<tr>
+<td align="right">29</td>
+<td>OPD：指标</td>
+<td><code>python</code></td>
+<td>汇总 completion token 数、吞吐、reverse-KL 等训练指标，用于诊断蒸馏是否有效。</td>
+</tr>
+<tr>
+<td align="right">30</td>
+<td>OPD：保存</td>
+<td><code>python</code></td>
+<td>保存训练后的 Student 权重，供后续 sampling&#x2F;evaluation。</td>
+</tr>
+<tr>
+<td align="right">31</td>
+<td>OPD：同步运行</td>
+<td><code>bash</code></td>
+<td>最小同步 OPD 试跑命令，限制 shard、sample size 和生成长度以降低成本。</td>
+</tr>
+<tr>
+<td align="right">32</td>
+<td>OPD：异步运行</td>
+<td><code>bash</code></td>
+<td>异步 OPD 试跑；通过更大 batch&#x2F;group 并发 Student rollout 和 Teacher 评分。</td>
+</tr>
+<tr>
+<td align="right">33</td>
+<td>Search-R1：文件链</td>
+<td><code>text</code></td>
+<td>展示 <code>prepare_data → protocol → search → rollout → train → eval</code> 的模块职责，先建立整体代码地图。</td>
+</tr>
+<tr>
+<td align="right">34</td>
+<td>Search-R1：样本格式</td>
+<td><code>json</code></td>
+<td>给出统一 JSONL 样本结构：id、question、answers、data_source。</td>
+</tr>
+<tr>
+<td align="right">35</td>
+<td>Search-R1：数据归一化</td>
+<td><code>python</code></td>
+<td>从原始数据中抽取问题和参考答案，过滤无效样本并统一字段格式。</td>
+</tr>
+<tr>
+<td align="right">36</td>
+<td>Search-R1：SearchExample</td>
+<td><code>python</code></td>
+<td>用不可变 dataclass 表示一条搜索问答样本，明确 rollout 所需字段。</td>
+</tr>
+<tr>
+<td align="right">37</td>
+<td>Search-R1：多跳示例</td>
+<td><code>text</code></td>
+<td>展示模型先搜作者、再根据 observation 搜出生国家的多轮搜索轨迹。</td>
+</tr>
+<tr>
+<td align="right">38</td>
+<td>Search-R1：SEARCH_TOOL</td>
+<td><code>python</code></td>
+<td>定义 search Function Calling JSON Schema，规定工具名、描述与 <code>query</code> 参数。</td>
+</tr>
+<tr>
+<td align="right">39</td>
+<td>Search-R1：解析 Assistant</td>
+<td><code>python</code></td>
+<td>解析模型输出中的 <code>&lt;tool_call&gt;</code>，区分 answer、search call 和 invalid 格式。</td>
+</tr>
+<tr>
+<td align="right">40</td>
+<td>Search-R1：搜索结果数据类</td>
+<td><code>python</code></td>
+<td>统一定义 <code>SearchItem</code> 与 <code>SearchResult</code>，把不同后端返回转换成共同结构。</td>
+</tr>
+<tr>
+<td align="right">41</td>
+<td>Search-R1：后端工厂</td>
+<td><code>python</code></td>
+<td>根据 backend 配置创建 DeepSeek&#x2F;Wikipedia 等搜索客户端，并统一 timeout。</td>
+</tr>
+<tr>
+<td align="right">42</td>
+<td>Search-R1：Wikipedia 请求</td>
+<td><code>python</code></td>
+<td>构造 Wikipedia API 查询、解析候选页面和摘要，并转成统一 SearchResult；它是真实环境交互层。</td>
+</tr>
+<tr>
+<td align="right">43</td>
+<td>Search-R1：Observation 文本格式</td>
+<td><code>text</code></td>
+<td>规定搜索结果如何格式化成 <code>[序号] Title/Content/Source/URL</code>，再追加回对话上下文。</td>
+</tr>
+<tr>
+<td align="right">44</td>
+<td>Search-R1：轨迹数据结构</td>
+<td><code>python</code></td>
+<td>定义 AssistantTurn、Trajectory 等对象，保存每轮 prompt&#x2F;completion&#x2F;logprob、reward、搜索次数和完成状态。</td>
+</tr>
+<tr>
+<td align="right">45</td>
+<td>Search-R1：异步采样</td>
+<td><code>python</code></td>
+<td>批量构造多个 SamplingParams 与 sampling future，并发生成多条 Assistant turn。</td>
+</tr>
+<tr>
+<td align="right">46</td>
+<td>Search-R1：consume_assistant</td>
+<td><code>python</code></td>
+<td>把一轮模型输出写入轨迹并解析：若是搜索调用则生成 PendingSearch，若是最终答案则结束轨迹。</td>
+</tr>
+<tr>
+<td align="right">47</td>
+<td>Search-R1：并发搜索</td>
+<td><code>python</code></td>
+<td>用线程池&#x2F;并发配置执行所有 PendingSearch，避免搜索后端串行成为 rollout 瓶颈。</td>
+</tr>
+<tr>
+<td align="right">48</td>
+<td>Search-R1：finish_search</td>
+<td><code>python</code></td>
+<td>将 SearchResult 截断&#x2F;格式化成 tool observation，追加 messages，并检查轨迹 token 预算。</td>
+</tr>
+<tr>
+<td align="right">49</td>
+<td>Search-R1：首轮请求</td>
+<td><code>python</code></td>
+<td>为每个根问题构造第一次 sampling request；<code>group_size</code> 在首轮展开多个同题轨迹。</td>
+</tr>
+<tr>
+<td align="right">50</td>
+<td>Search-R1：首轮 rollout</td>
+<td><code>python</code></td>
+<td>并发采样首轮 Assistant 输出，解析搜索调用并统一执行 pending searches。</td>
+</tr>
+<tr>
+<td align="right">51</td>
+<td>Search-R1：多轮状态机</td>
+<td><code>python</code></td>
+<td><code>while</code> 循环持续执行“生成→解析→搜索→observation→再生成”，直到答案、非法格式或预算耗尽。</td>
+</tr>
+<tr>
+<td align="right">52</td>
+<td>Search-R1：build_next_prompt</td>
+<td><code>python</code></td>
+<td>重新渲染 canonical Chat Template，并处理工具消息，使新 prompt 是旧 token 轨迹的严格前缀扩展。</td>
+</tr>
+<tr>
+<td align="right">53</td>
+<td>Search-R1：连续性断言</td>
+<td><code>python</code></td>
+<td>验证下一轮 prompt 以已有 full_tokens 为前缀；若失败说明重新 tokenize 后轨迹已错位，应立即报错。</td>
+</tr>
+<tr>
+<td align="right">54</td>
+<td>Search-R1：答案协议</td>
+<td><code>text</code></td>
+<td>规定最终回答必须是单行 <code>Answer: &lt;short answer&gt;</code>，便于规则判题。</td>
+</tr>
+<tr>
+<td align="right">55</td>
+<td>Search-R1：Reward</td>
+<td><code>python</code></td>
+<td>归一化预测&#x2F;参考短答案，做 exact match，并对格式错误、答案错误、答案正确设置分档 reward。</td>
+</tr>
+<tr>
+<td align="right">56</td>
+<td>Search-R1：组内 Advantage</td>
+<td><code>python</code></td>
+<td>按 question 分组，用组均值&#x2F;标准差计算相对优势，并识别 reward 全相同的退化组。</td>
+</tr>
+<tr>
+<td align="right">57</td>
+<td>Search-R1：Observation Mask</td>
+<td><code>python</code></td>
+<td>搜索 observation token 的 old_logprob 和 advantage 写 0；Assistant 自己生成的 token 才写真实值。</td>
+</tr>
+<tr>
+<td align="right">58</td>
+<td>Search-R1：build_datum</td>
+<td><code>python</code></td>
+<td>把多轮 prompt、tool observation、assistant completion 合成连续 token 轨迹并构造 PyTRIO Datum，是 Search-R1 训练对齐核心。</td>
+</tr>
+<tr>
+<td align="right">59</td>
+<td>Search-R1：训练 Step</td>
+<td><code>python</code></td>
+<td>从 batch 创建最新 sampler、执行 rollout、算 reward&#x2F;advantage、构建 datums，再调用训练客户端更新策略。</td>
+</tr>
+<tr>
+<td align="right">60</td>
+<td>Search-R1：Micro-batch 权重</td>
+<td><code>python</code></td>
+<td>按 micro-batch 样本数&#x2F;总样本数缩放 advantage，使拆分 micro-batch 后总体 loss 仍等价于全局均值。</td>
+</tr>
+<tr>
+<td align="right">61</td>
+<td>Search-R1：评测配置</td>
+<td><code>python</code></td>
+<td>构造 group_size&#x3D;1 等评测 RolloutConfig，固定搜索次数、轨迹长度和后端参数。</td>
+</tr>
+<tr>
+<td align="right">62</td>
+<td>Search-R1：准备数据</td>
+<td><code>bash</code></td>
+<td>运行 <code>prepare_data.py</code> 下载&#x2F;整理 NQ、HotpotQA 等数据。</td>
+</tr>
+<tr>
+<td align="right">63</td>
+<td>Search-R1：训练命令</td>
+<td><code>bash</code></td>
+<td>一步最小训练命令，指定问题数、group size、最大搜索次数、搜索后端和并发度。</td>
+</tr>
+<tr>
+<td align="right">64</td>
+<td>Search-R1：Base 评测</td>
+<td><code>bash</code></td>
+<td>用同一搜索环境评测 Base Model，并把逐题结果写成 JSONL。</td>
+</tr>
+<tr>
+<td align="right">65</td>
+<td>Search-R1：Checkpoint 评测</td>
+<td><code>bash</code></td>
+<td>通过 <code>--model-path trio://...</code> 评测训练后 checkpoint，和 Base Model 做公平对比。</td>
+</tr>
+<tr>
+<td align="right">66</td>
+<td>ReTool：文件链</td>
+<td><code>text</code></td>
+<td>展示 <code>prepare_data → protocol → sandbox → rollout → reward → train</code> 的代码职责。</td>
+</tr>
+<tr>
+<td align="right">67</td>
+<td>ReTool：代码工具示例</td>
+<td><code>text</code></td>
+<td>展示模型生成 code_interpreter 调用，环境返回数值，模型再输出 <code>\boxed&#123;&#125;</code> 最终答案。</td>
+</tr>
+<tr>
+<td align="right">68</td>
+<td>ReTool：自我修正示例</td>
+<td><code>text</code></td>
+<td>展示首次代码报 NameError 后，模型根据 stderr 重写完整代码并再次调用工具。</td>
+</tr>
+<tr>
+<td align="right">69</td>
+<td>ReTool：数据归一化</td>
+<td><code>python</code></td>
+<td>从训练数据中解析 prompt 与 reward_model 信息，去掉旧模板并统一成 MathExample。</td>
+</tr>
+<tr>
+<td align="right">70</td>
+<td>ReTool：CODE_TOOL</td>
+<td><code>python</code></td>
+<td>定义 <code>code_interpreter</code> Function Calling Schema，并强调每次执行是 fresh process。</td>
+</tr>
+<tr>
+<td align="right">71</td>
+<td>ReTool：解析 Assistant</td>
+<td><code>python</code></td>
+<td>解析 code tool call &#x2F; final answer &#x2F; invalid 输出，和 Search-R1 共用类似工具协议。</td>
+</tr>
+<tr>
+<td align="right">72</td>
+<td>ReTool：执行结果接回轨迹</td>
+<td><code>python</code></td>
+<td>构造下一轮 prompt，把代码 execution result 作为 tool observation 追加，同时保持 token 前缀连续。</td>
+</tr>
+<tr>
+<td align="right">73</td>
+<td>ReTool：Outcome Reward</td>
+<td><code>python</code></td>
+<td>从最后一个 <code>\boxed&#123;...&#125;</code> 中正确解析嵌套括号并判题，为整条代码轨迹产生结果奖励。</td>
+</tr>
+<tr>
+<td align="right">74</td>
+<td>ReTool：PPO 配置</td>
+<td><code>python</code></td>
+<td>配置非对称 PPO clip 阈值，并用 PyTRIO <code>loss_fn=&#39;ppo&#39;</code> 做策略更新。</td>
+</tr>
+<tr>
+<td align="right">75</td>
+<td>ReTool：LocalPythonSandbox</td>
+<td><code>python</code></td>
+<td>以子进程运行模型生成代码，设置 CPU&#x2F;超时&#x2F;环境限制并捕获 stdout、stderr、return code；是代码环境核心。</td>
+</tr>
+<tr>
+<td align="right">76</td>
+<td>ReTool：Tool Result 格式化</td>
+<td><code>python</code></td>
+<td>把成功 stdout、stderr、异常和 timeout 转成模型可读的 tool message，并做内容清洗。</td>
+</tr>
+<tr>
+<td align="right">77</td>
+<td>ReTool：轨迹数据结构</td>
+<td><code>python</code></td>
+<td>定义 AssistantTurn、Trajectory，保存多轮代码调用和答案生成状态。</td>
+</tr>
+<tr>
+<td align="right">78</td>
+<td>ReTool：begin_advance</td>
+<td><code>python</code></td>
+<td>解析一轮 Assistant 结果：若请求 code_interpreter，则建立 PendingExecution；若给最终答案则结束。</td>
+</tr>
+<tr>
+<td align="right">79</td>
+<td>ReTool：并发执行代码</td>
+<td><code>python</code></td>
+<td>异步并发执行多个 PendingExecution，再把每个结果写回对应轨迹，提升 rollout 环境吞吐。</td>
+</tr>
+<tr>
+<td align="right">80</td>
+<td>ReTool：训练 rollout</td>
+<td><code>python</code></td>
+<td>每 step 保存当前权重生成 sampler，再执行带代码工具的 rollout_batch。</td>
+</tr>
+<tr>
+<td align="right">81</td>
+<td>ReTool：Feedback Mask</td>
+<td><code>python</code></td>
+<td>构造多轮 Datum：interpreter observation 的 loss 输入置 0，Assistant 生成的代码&#x2F;推理&#x2F;答案共享轨迹 advantage。</td>
+</tr>
+<tr>
+<td align="right">82</td>
+<td>ReTool：PPO 更新</td>
+<td><code>python</code></td>
+<td>把 Datums 打包成 micro-batches，做全局均值权重修正，逐 micro-batch 调 <code>forward_backward(..., &#39;ppo&#39;)</code>，最后 <code>optim_step</code>。</td>
+</tr>
+<tr>
+<td align="right">83</td>
+<td>ReTool：评测配置</td>
+<td><code>python</code></td>
+<td>按 text-only&#x2F;retool 模式配置 <code>val_n</code>、代码调用上限、轨迹预算、temperature&#x2F;top-p 等。</td>
+</tr>
+<tr>
+<td align="right">84</td>
+<td>ReTool：准备数据</td>
+<td><code>bash</code></td>
+<td>运行数据准备脚本。</td>
+</tr>
+<tr>
+<td align="right">85</td>
+<td>ReTool：最小训练</td>
+<td><code>bash</code></td>
+<td>一步最小 ReTool 训练命令，限制题数、组大小、代码调用次数和 sandbox workers。</td>
+</tr>
+<tr>
+<td align="right">86</td>
+<td>ReTool：对照评测</td>
+<td><code>bash</code></td>
+<td>分别用 text-only 与 retool 模式评测，并固定 val_n、temperature、top-p；用于测量工具环境的净收益。</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="9-四套实践的代码结构对比"><a href="#9-四套实践的代码结构对比" class="headerlink" title="9. 四套实践的代码结构对比"></a>9. 四套实践的代码结构对比</h1><table>
+<thead>
+<tr>
+<th>实践</th>
+<th>Rollout</th>
+<th>Feedback</th>
+<th>Advantage</th>
+<th>环境</th>
+<th>Loss</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GRPO</td>
+<td>同题多 completion</td>
+<td>规则 reward</td>
+<td>Group Relative</td>
+<td>数学判题器</td>
+<td>Importance Sampling &#x2F; PPO</td>
+</tr>
+<tr>
+<td>OPD</td>
+<td>Student completion</td>
+<td>Teacher token logprob</td>
+<td>Reverse-KL token advantage</td>
+<td>Teacher</td>
+<td>Importance Sampling</td>
+</tr>
+<tr>
+<td>Search-R1</td>
+<td>多轮搜索轨迹</td>
+<td>最终答案 reward</td>
+<td>Group Relative</td>
+<td>Search Engine</td>
+<td>Importance Sampling</td>
+</tr>
+<tr>
+<td>ReTool</td>
+<td>多轮代码轨迹</td>
+<td>最终答案 reward</td>
+<td>Group Relative</td>
+<td>Python Sandbox</td>
+<td>PPO</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="10-四者的统一理解"><a href="#10-四者的统一理解" class="headerlink" title="10. 四者的统一理解"></a>10. 四者的统一理解</h1><h2 id="GRPO"><a href="#GRPO" class="headerlink" title="GRPO"></a>GRPO</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">模型生成</span><br><span class="line">→ 判题器反馈</span><br><span class="line">→ 哪条回答相对更好？</span><br></pre></td></tr></table></figure>
+
+<h2 id="OPD"><a href="#OPD" class="headerlink" title="OPD"></a>OPD</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Student 生成</span><br><span class="line">→ Teacher 逐 token 反馈</span><br><span class="line">→ 每个动作应该向 Teacher 靠多少？</span><br></pre></td></tr></table></figure>
+
+<h2 id="Search-R1"><a href="#Search-R1" class="headerlink" title="Search-R1"></a>Search-R1</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">模型生成搜索动作</span><br><span class="line">→ 搜索环境返回 observation</span><br><span class="line">→ 多轮交互</span><br><span class="line">→ 最终答案是否正确？</span><br></pre></td></tr></table></figure>
+
+<h2 id="ReTool"><a href="#ReTool" class="headerlink" title="ReTool"></a>ReTool</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">模型生成代码动作</span><br><span class="line">→ Python 返回 stdout/stderr</span><br><span class="line">→ 模型自我修正</span><br><span class="line">→ 最终答案是否正确？</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="11-一页速记"><a href="#11-一页速记" class="headerlink" title="11. 一页速记"></a>11. 一页速记</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">第八章</span><br><span class="line">= Agentic RL</span><br><span class="line"></span><br><span class="line">统一闭环：</span><br><span class="line">Policy</span><br><span class="line">→ Rollout</span><br><span class="line">→ Feedback</span><br><span class="line">→ Advantage</span><br><span class="line">→ Datum</span><br><span class="line">→ forward_backward</span><br><span class="line">→ optim_step</span><br><span class="line">→ Refresh Sampler</span><br><span class="line"></span><br><span class="line">GRPO：</span><br><span class="line">同题多采样</span><br><span class="line">Group Reward</span><br><span class="line">Group Relative Advantage</span><br><span class="line">不需要 Value Model</span><br><span class="line"></span><br><span class="line">importance_sampling：</span><br><span class="line">旧策略数据</span><br><span class="line">→ 新策略更新</span><br><span class="line">→ ratio 纠偏</span><br><span class="line"></span><br><span class="line">PPO：</span><br><span class="line">importance ratio</span><br><span class="line">+ clip 限制更新幅度</span><br><span class="line"></span><br><span class="line">completion：</span><br><span class="line">Prompt 后模型生成的全部 Token</span><br><span class="line"></span><br><span class="line">build_grpo_datum：</span><br><span class="line">右移一位</span><br><span class="line">Prompt Mask</span><br><span class="line">Completion Train</span><br><span class="line"></span><br><span class="line">On-Policy：</span><br><span class="line">更新模型后</span><br><span class="line">用新策略重新 Rollout</span><br><span class="line"></span><br><span class="line">OPD：</span><br><span class="line">Student 自己生成</span><br><span class="line">Teacher 沿同一轨迹逐 Token 打分</span><br><span class="line">Reverse KL</span><br><span class="line">稠密 Advantage</span><br><span class="line"></span><br><span class="line">Search-R1：</span><br><span class="line">模型自主决定是否搜索</span><br><span class="line">Search Observation 不算 Loss</span><br><span class="line">最终答案 Reward 训练搜索策略</span><br><span class="line"></span><br><span class="line">ReTool：</span><br><span class="line">模型自主写代码</span><br><span class="line">stdout/stderr 作为 Observation</span><br><span class="line">可以报错后重试</span><br><span class="line">最终答案 Reward 训练代码使用策略</span><br><span class="line"></span><br><span class="line">PyTRIO：</span><br><span class="line">低门槛 Agentic-RL SDK</span><br><span class="line"></span><br><span class="line">Verl：</span><br><span class="line">大规模工业 RL 框架</span><br><span class="line"></span><br><span class="line">DAPO：</span><br><span class="line">GRPO/PPO 稳定性与采样效率改进</span><br><span class="line"></span><br><span class="line">GSPO：</span><br><span class="line">Sequence-level Policy Optimization</span><br><span class="line"></span><br><span class="line">OPSD：</span><br><span class="line">On-Policy Self-Distillation</span><br><span class="line"></span><br><span class="line">FSDP：</span><br><span class="line">PyTorch 全分片数据并行</span><br><span class="line"></span><br><span class="line">ALFWorld：</span><br><span class="line">文本化具身 Agent 环境</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="12-最后总结"><a href="#12-最后总结" class="headerlink" title="12. 最后总结"></a>12. 最后总结</h1><p>第八章可以用三个层次理解：</p>
+<h3 id="第一层：先学会-RL-的基本数据流"><a href="#第一层：先学会-RL-的基本数据流" class="headerlink" title="第一层：先学会 RL 的基本数据流"></a>第一层：先学会 RL 的基本数据流</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Rollout</span><br><span class="line">Reward</span><br><span class="line">Advantage</span><br><span class="line">Old Logprob</span><br><span class="line">Policy Update</span><br></pre></td></tr></table></figure>
+
+<h3 id="第二层：把稀疏-Reward-换成更丰富的-Feedback"><a href="#第二层：把稀疏-Reward-换成更丰富的-Feedback" class="headerlink" title="第二层：把稀疏 Reward 换成更丰富的 Feedback"></a>第二层：把稀疏 Reward 换成更丰富的 Feedback</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GRPO：</span><br><span class="line">最终 Reward</span><br><span class="line"></span><br><span class="line">OPD：</span><br><span class="line">Teacher Token Probability</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三层：把单轮回答变成-Agent-环境轨迹"><a href="#第三层：把单轮回答变成-Agent-环境轨迹" class="headerlink" title="第三层：把单轮回答变成 Agent 环境轨迹"></a>第三层：把单轮回答变成 Agent 环境轨迹</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Search-R1：</span><br><span class="line">Search Tool</span><br><span class="line"></span><br><span class="line">ReTool：</span><br><span class="line">Code Interpreter</span><br></pre></td></tr></table></figure>
+
+<p>最终一句话：</p>
+<blockquote>
+<p><strong>第八章真正想训练的不是“某一道题的答案”，而是模型在自己真实会访问的状态上，怎样选择更好的下一步动作。GRPO 学生成策略，OPD 学 Teacher 行为，Search-R1 学搜索策略，ReTool 学代码工具策略。</strong></p>
+</blockquote>
+<hr>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><p>Datawhale, Happy-LLM，第八章《大模型强化学习》<br><a target="_blank" rel="noopener" href="https://datawhalechina.github.io/happy-llm/">https://datawhalechina.github.io/happy-llm/</a></p>
+</li>
+<li><p>Datawhale Happy-LLM GitHub<br><code>docs/chapter8/第八章 大模型强化学习.md</code></p>
+</li>
+<li><p>第八章配套目录<br><code>docs/chapter8/grpo</code><br><code>docs/chapter8/opd</code><br><code>docs/chapter8/search-r1</code><br><code>docs/chapter8/retool</code></p>
+</li>
+<li><p>本文还整合了本次粘贴文本中的扩展讨论，包括 PyTRIO&#x2F;Verl、DAPO、FSDP、GSPO、OPSD、ALFWorld、importance sampling、completion、GRPO Datum 对齐、on-policy 刷新、OPD Teacher logprob、Search-R1 与 RAG 的区别等。</p>
+</li>
+</ol>
+</div>
+        </div>
+        
+            <div class="kratos-copyright text-center clearfix">
+                <span itemprop="copyrightNotice">本作品采用 <a rel="license nofollow" target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/">知识共享署名-相同方式共享 4.0 国际许可协议</a> 进行许可</span>
+            </div>
+        
+        <footer class="kratos-entry-footer clearfix">
+            
+            
+            
+                <div class="post-actions text-center clearfix" id="post-actions">
+                
+                    <a class="donate" href="javascript:;" onclick="krOpenDonateModal()"><i class="fa fa-bitcoin"></i> 打赏</a>
+                
+                
+                    <a class="share" href="javascript:;" onclick="krOpenShareModal()"><i class="fa fa-share-alt"></i> 分享</a>
+                
+                </div>
+            
+            <div class="footer-tag clearfix">
+                <div class="pull-left">
+                <i class="fa fa-tags"></i>
+                    <a class="tag-none-link" href="/tags/happy-llm/" rel="tag">happy-llm</a>
+                </div>
+                <div class="pull-date">
+                    <time datetime="2026-09-20T03:24:45.126Z" itemprop="dateModified">最后编辑：2026-09-20</time>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+        <nav class="navigation post-navigation clearfix" role="navigation">
+            
+            <div class="nav-previous clearfix">
+                <a title=" happy-llm第七章：大模型应用的阅读笔记" href="/2026/09/16/Happy-LLM_第七章_大模型应用_面试速记/"><i class="fa fa-angle-left"></i> 上一篇</a>
+            </div>
+            
+            
+        </nav>
+    
+    
+        <div class="comment-post">
+            
+        </div>
+    
+</article>
+
+        
+
+            </section>
+
+            
+                
+
+<section id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+    <!-- 文章和页面根据splitter来分割，没有的话就从头开始设置为sticky -->
+    
+    
+                <aside id="krw-about" class="widget widget-kratos-about clearfix">
+    <div class="photo-background"></div>
+    <div class="photo-wrapper clearfix">
+        <div class="photo-wrapper-tip text-center">
+            <img class="about-photo" src="/assets/user.webp" alt="CoralGarden52" loading="lazy" decoding="auto" />
+        </div>
+    </div>
+    <div class="textwidget">
+        <p class="text-center"></p>
+    </div>
+    <div class="site-meta">
+        <a class="meta-item" href="/archives/">
+            <span class="title">
+                文章
+            </span>
+            <span class="count">
+                27
+            </span>
+        </a>
+        <a class="meta-item" href="/categories/">
+            <span class="title">
+                分类
+            </span>
+            <span class="count">
+                3
+            </span>
+        </a>
+        <a class="meta-item" href="/tags/">
+            <span class="title">
+                标签
+            </span>
+            <span class="count">
+                6
+            </span>
+        </a>
+    </div>
+</aside>
+            
+                    <div class="sticky-area">
+                
+                
+  <aside id="krw-categories" class="widget widget-kratos-categories clearfix">
+    <h4 class="widget-title"><i class="fa fa-folder"></i>分类列表</h4>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/agent/">agent</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/llm/">llm</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%88%B7%E9%A2%98/">刷题</a><span class="category-list-count">1</span></li></ul>
+  </aside>
+
+
+            
+                
+  <aside id="krw-tags" class="widget widget-kratos-tags clearfix">
+    <h4 class="widget-title"><i class="fa fa-tags"></i>标签聚合</h4>
+      <div class="tag-clouds">
+        <a href="/tags/Learn-Claude-Code/" style="font-size: 0.65em;">Learn_Claude_Code</a> <a href="/tags/anthropic-engineering/" style="font-size: 0.6em;">anthropic_engineering</a> <a href="/tags/happy-llm/" style="font-size: 0.8em;">happy-llm</a> <a href="/tags/hello-agents/" style="font-size: 0.75em;">hello-agents</a> <a href="/tags/nanobot/" style="font-size: 0.7em;">nanobot</a> <a href="/tags/pi-agent/" style="font-size: 0.6em;">pi-agent</a>
+      </div>
+  </aside>
+
+            
+                
+  <aside id="krw-posts" class="widget widget-kratos-posts">
+  <h4 class="widget-title"><i class="fa fa-file"></i>最新文章</h4>
+  <div class="tab-content">
+      <ul class="list-group">
+        
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/20/Happy-LLM_%E7%AC%AC%E5%85%AB%E7%AB%A0_Agentic-RL/"><i class="fa fa-book"></i> happy-llm第八章大模型强化学习的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/16/Happy-LLM_%E7%AC%AC%E4%B8%83%E7%AB%A0_%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BA%94%E7%94%A8_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0/"><i class="fa fa-book"></i> happy-llm第七章：大模型应用的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E9%9D%A2%E8%AF%95%E9%80%9F%E8%AE%B0_PEFT_LoRA_PrefixTuning/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践的阅读笔记</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E5%85%AD%E7%AB%A0_%E6%A1%86%E6%9E%B6%E4%B8%8E%E7%89%B9%E6%9C%89%E5%90%8D%E8%AF%8D%E6%95%B4%E7%90%86/"><i class="fa fa-book"></i> happy-llm第六章：大模型训练流程实践——框架与特有名词整理</a>
+            
+          
+        
+          
+          
+            <a class="list-group-item" href="/2026/09/15/Happy-LLM_%E7%AC%AC%E4%BA%94%E7%AB%A0_%E5%8A%A8%E6%89%8B%E6%90%AD%E5%BB%BA%E5%A4%A7%E6%A8%A1%E5%9E%8B/"><i class="fa fa-book"></i> happy-llm第五章动手搭建大模型的阅读笔记</a>
+            
+          
+        
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+      </ul>
+  </div>
+  </aside>
+
+            
+    </div>
+</section>
+            
+
+        
+
+                </div>
+    </div>
+</div>
+
+<footer>
+    <div id="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3 footer-list text-center">
+                    <ul class="kratos-social-icons">
+                        
+                            <li>
+                                <a href="https://github.com/kratos-rebirth" target="_blank" rel="nofollow">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="/atom.xml" target="_blank" rel="nofollow">
+                                    <i class="fa fa-rss"></i>
+                                </a>
+                            </li>
+                        
+                    </ul>
+                    <ul class="kratos-copyright">
+                        <div>
+                            <li>&copy; 2026 珊瑚的花园 版权所有.</li>
+                            <li>本站已在风雨中飘摇<span id="kr-since">Loading...</span></li>
+                        </div>
+                        <div>
+                            <li>自豪地使用 <a href="https://github.com/Candinya/Kratos-Rebirth" target="_blank">Kratos:Rebirth</a> 主题</li>
+                            <li>站点由 <a href="https://github.com/Candinya/Kratos-Rebirth/graphs/contributors" target="_blank">CoralGarden52</a> 用 <i class="fa fa-heart" style="color:#d43f57"></i> 搭建</li>
+                        </div>
+                        <!-- 额外的追加注入项 -->
+                        
+                            <div>
+                                
+                                    <li>由 <a href="https://hexo.io" target="_blank" rel="nofollow">Hexo</a> 强力驱动</li>
+                                
+                                    <li>在 <a href="https://github.io" target="_blank">Github Pages</a> 暖心托管</li>
+                                
+                            </div>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="kr-tool text-center">
+            <div class="tool">
+                <!-- 额外的追加注入项 -->
+                
+                
+                    <div class="box search-box">
+                        <a href="/search">
+                            <span class="fa fa-search"></span>
+                        </a>
+                    </div>
+                
+                <div class="box theme-box" id="theme-toggle">
+                    <span class="fa fa-adjust"></span>
+                </div>
+            </div>
+            <div id="gotop-box" class="box gotop-box">
+                <span class="fa fa-chevron-up"></span>
+            </div>
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+
+
+    <div id="kr-donate-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseDonateModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-bitcoin"></i>
+            </div>
+            <div class="kr-modal-title">赞助喵</div>
+            <button class="kr-modal-close" onclick="krCloseDonateModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-donate-message">非常感谢您的喜欢！ <i class="fa fa-heart" style="color:#d43f57"></i></div>
+            <div class="kr-donate-qr" id="kr-donate-qr">
+                
+                    <img class="kr-donate-placeholder" src="https://dev.krt.moe/demo-assets/donate.webp" alt="赞助喵" />
+                
+            </div>
+            <div class="kr-donate-platforms">
+                
+                    
+                        <button class="kr-donate-platform-button" style="color: skyblue;" title="模拟支付" onclick="krDonateModalShowPlatformQR('example_payment', 'skyblue')">
+                            <i class="fa fa-credit-card"></i>
+                        </button>
+                    
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/donate.min.js"></script>
+
+
+
+
+    <div id="kr-share-modal" class="kr-modal">
+    <div class="kr-modal-bg" onclick="krCloseShareModal()"></div>
+    <div class="kr-modal-content">
+        <div class="kr-modal-header">
+            <div class="kr-modal-icon">
+                <i class="fa fa-share-alt"></i>
+            </div>
+            <div class="kr-modal-title">分享这一刻</div>
+            <button class="kr-modal-close" onclick="krCloseShareModal()">
+                <i class="fa fa-times-circle"></i>
+            </button>
+        </div>
+        <div class="kr-modal-body">
+            <div class="kr-share-message">让朋友们也来瞅瞅！</div>
+            <div class="kr-share-qr" id="kr-share-qr"></div>
+            <div class="kr-share-platforms">
+                
+                    <button class="kr-share-platform-button" style="color: #62b6e7;" title="喵窝" onclick="krShareModalOpenPlatform('https://nya.one/share?text=%3E%20$TITLE%0A%3E%0A%3E%20$SUMMARY%0A----%20$SITE%0A%0A$URL')">
+                        <svg fill="currentColor" width="18" height="18" viewBox="0 0 329 388"><path d="M0,36.226c0,-19.993 16.233,-36.226 36.226,-36.226c13.788,0 25.787,7.719 31.908,19.068l188.366,229.845l0,-111.259c-6.356,5.508 -14.645,8.843 -23.707,8.843c-19.994,0 -36.226,-16.232 -36.226,-36.226c-0,-8.551 2.968,-16.413 7.93,-22.613l-0.015,-0.013l56.614,-69.08c6.2,-11.073 18.047,-18.565 31.63,-18.565c19.994,0 36.227,16.233 36.227,36.226l-0,314.644c-0,19.994 -16.233,36.226 -36.227,36.226c-13.166,0 -24.701,-7.039 -31.044,-17.555l-189.229,-230.899l-0,212.228c-0,19.994 -16.233,36.226 -36.227,36.226c-19.993,0 -36.226,-16.232 -36.226,-36.226l0,-314.644Z" /></svg>
+                    </button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<script defer src="/js/kr-modal/share.min.js"></script>
+
+
+
+<!-- 额外的追加注入项 -->
+
+
+        <script>
+    if (!window.kr) {
+        window.kr = {};
+    }
+    window.kr.notMobile = (!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)));
+    window.kr.siteRoot = "/";
+</script>
+
+
+  <script defer src="/vendors/nprogress@0.2.0/nprogress.js"></script>
+
+
+
+  <script defer src="/vendors/viewerjs@1.11.6/dist/viewer.min.js"></script>
+
+
+<script defer src="/js/kr-core.min.js"></script>
+
+
+  <script defer src="/js/kr-pjax.min.js"></script>
+
+
+<!-- 额外的追加注入项 -->
+
+
+    </body>
+</html>
