@@ -98,6 +98,10 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: kratos-rebirth
 
+# Keep line breaks inside display math available to MathJax.
+marked:
+  breaks: false
+
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
